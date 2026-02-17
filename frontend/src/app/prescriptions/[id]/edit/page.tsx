@@ -83,6 +83,7 @@ export default function EditPrescriptionPage() {
         timing_tamil: "",
         duration: med.duration,
         instructions: med.instructions,
+        instructions_ta: med.instructions_ta ?? "",
       };
     }),
     procedures: (prescription.procedures ?? []).map((proc) => ({
@@ -91,10 +92,14 @@ export default function EditPrescriptionPage() {
       duration: proc.duration,
     })),
     diet_advice: prescription.diet_advice ?? "",
+    diet_advice_ta: prescription.diet_advice_ta ?? "",
     lifestyle_advice: prescription.lifestyle_advice ?? "",
+    lifestyle_advice_ta: prescription.lifestyle_advice_ta ?? "",
     exercise_advice: prescription.exercise_advice ?? "",
+    exercise_advice_ta: prescription.exercise_advice_ta ?? "",
     follow_up_date: prescription.follow_up_date ?? "",
     follow_up_notes: prescription.follow_up_notes ?? "",
+    follow_up_notes_ta: prescription.follow_up_notes_ta ?? "",
   };
 
   return (

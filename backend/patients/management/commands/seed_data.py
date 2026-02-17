@@ -154,10 +154,14 @@ class Command(BaseCommand):
                     prescription = Prescription.objects.create(
                         consultation=consultation,
                         diet_advice="Avoid cold foods, consume warm soups and rasam",
+                        diet_advice_ta="குளிர்ச்சியான உணவுகளை தவிர்க்கவும், சூடான சூப் மற்றும் ரசம் சாப்பிடவும்",
                         lifestyle_advice="Apply warm sesame oil before bath",
+                        lifestyle_advice_ta="குளிப்பதற்கு முன் வெதுவெதுப்பான நல்லெண்ணெய் தடவவும்",
                         exercise_advice="Gentle yoga, 15 minutes daily",
+                        exercise_advice_ta="எளிய யோகா, தினமும் 15 நிமிடங்கள்",
                         follow_up_date=today + timedelta(days=7),
                         follow_up_notes="Review joint mobility",
+                        follow_up_notes_ta="மூட்டு இயக்கத்தை ஆய்வு செய்யவும்",
                     )
 
                     Medication.objects.create(
@@ -168,6 +172,7 @@ class Command(BaseCommand):
                         frequency_tamil="காலை-மாலை",
                         duration="30 days",
                         instructions="Mix with warm water, take before food",
+                        instructions_ta="வெந்நீரில் கலந்து சாப்பாட்டிற்கு முன் சாப்பிடவும்",
                         sort_order=1,
                     )
                     Medication.objects.create(
@@ -178,6 +183,7 @@ class Command(BaseCommand):
                         frequency_tamil="காலை-மாலை",
                         duration="15 days",
                         instructions="Take on empty stomach",
+                        instructions_ta="வெறும் வயிற்றில் சாப்பிடவும்",
                         sort_order=2,
                     )
                     Medication.objects.create(
@@ -188,6 +194,7 @@ class Command(BaseCommand):
                         frequency_tamil="ஒரு முறை",
                         duration="30 days",
                         instructions="Apply on affected joints before bath",
+                        instructions_ta="பாதிக்கப்பட்ட மூட்டுகளில் குளிப்பதற்கு முன் தடவவும்",
                         sort_order=3,
                     )
 

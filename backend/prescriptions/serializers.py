@@ -8,7 +8,7 @@ class MedicationSerializer(serializers.ModelSerializer):
         model = Medication
         fields = [
             "id", "drug_name", "dosage", "frequency", "frequency_tamil",
-            "duration", "instructions", "sort_order",
+            "duration", "instructions", "instructions_ta", "sort_order",
         ]
 
 

@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import {
   FREQUENCY_OPTIONS,
-  TIMING_OPTIONS,
 } from "@/lib/constants/envagai-options";
-import { PRINT_LABELS, ADVICE_LABELS } from "@/lib/constants/bilingual-labels";
+import {
+  PRINT_LABELS,
+  ADVICE_LABELS,
+  MEDICATION_LABELS,
+} from "@/lib/constants/bilingual-labels";
 import { PrintTrigger } from "./PrintTrigger";
 
 type Props = {
@@ -54,23 +57,28 @@ export const metadata: Metadata = {
   title: "Print Prescription",
 };
 
-function BilingualPrintHeader({
-  en,
-  ta,
-}: {
-  en: string;
-  ta: string;
-}) {
+const tamil = { style: { fontFamily: "var(--font-tamil)" } };
+
+/** Tamil-primary label with small English underneath */
+function TamilHeader({ ta, en }: { ta: string; en: string }) {
   return (
     <span>
-      {en}{" "}
-      <span
-        className="text-[8pt] font-normal text-gray-500"
-        style={{ fontFamily: "var(--font-tamil)" }}
-      >
+      <span {...tamil} className="font-semibold">
         {ta}
-      </span>
+      </span>{" "}
+      <span className="text-[8pt] font-normal text-gray-400">{en}</span>
     </span>
+  );
+}
+
+/** Small English-only label (used in table headers) */
+function BilingualTh({ ta, en }: { ta: string; en: string }) {
+  return (
+    <>
+      <span {...tamil}>{ta}</span>
+      <br />
+      <span className="text-[7pt] font-normal text-gray-400">{en}</span>
+    </>
   );
 }
 
@@ -91,30 +99,18 @@ export default async function PrintPrescriptionPage({ params }: Props) {
   return (
     <div className="print-prescription mx-auto bg-white p-[10mm]">
       <style>{`
-        /* A5 default */
+        /* A4 layout to match pre-printed letterhead */
         .print-prescription {
-          max-width: 148mm;
+          max-width: 210mm;
           font-size: 11pt;
           line-height: 1.4;
           color: black;
         }
 
-        /* A4 when toggled */
-        html[data-paper-size="A4"] .print-prescription {
-          max-width: 210mm;
-          font-size: 12pt;
-        }
-
         @media print {
           @page {
-            size: A5 portrait;
-            margin: 15mm 10mm 20mm 10mm;
-          }
-          html[data-paper-size="A4"] {
-            @page {
-              size: A4 portrait;
-              margin: 20mm 15mm 25mm 15mm;
-            }
+            size: A4 portrait;
+            margin: 52mm 12mm 20mm 12mm;
           }
           body {
             background: white;
@@ -144,56 +140,48 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         .print-prescription th {
           background: #f5f5f5;
           font-weight: 600;
+          font-size: 9pt;
         }
         .medication-item {
           break-inside: avoid;
         }
       `}</style>
 
-      {/* Clinic Header */}
-      <div className="mb-4 border-b-2 border-black pb-3 text-center">
-        <h1 className="text-lg font-bold">SIVANETHRAM</h1>
-        <p className="text-xs">Siddha Clinic & Research Centre</p>
-        <p className="text-xs text-gray-600">
-          Doctor Name | BSMS, MD(S) | Reg. No: XXXXX
+      {/* Clinic header is NOT rendered — doctor prints on pre-printed letterhead */}
+      {/* Screen-only header for reference */}
+      <div className="no-print mb-4 border-b-2 border-gray-300 pb-3 text-center">
+        <h1 className="text-lg font-bold">SIVANETHRA SIDDHA CLINIC</h1>
+        <p className="text-xs">Dr. M. Subashini, BSMS, MD (Siddha)</p>
+        <p className="text-[8pt] italic text-gray-400">
+          This header is hidden when printing — pre-printed letterhead is used
         </p>
       </div>
 
-      {/* Patient Info */}
+      {/* Patient Info — matches letterhead "Name • Age • Sex" and "Date" layout */}
       {patient && (
-        <div className="mb-4 grid grid-cols-2 gap-1 text-[10pt]">
-          <div>
-            <strong>
-              <BilingualPrintHeader
-                en="Name:"
-                ta={PRINT_LABELS.patientDetails.ta}
-              />
-            </strong>{" "}
-            {patient.name}
-          </div>
-          <div>
-            <strong>Record ID:</strong> {patient.record_id}
-          </div>
-          <div>
-            <strong>Age/Gender:</strong> {patient.age}y /{" "}
-            {patient.gender.charAt(0).toUpperCase()}
-          </div>
-          <div>
-            <strong>Date:</strong>{" "}
-            {consultation
-              ? new Date(consultation.consultation_date).toLocaleDateString(
-                  "en-IN",
-                )
-              : new Date().toLocaleDateString("en-IN")}
+        <div className="mb-3 text-[10pt]">
+          <div className="flex items-baseline justify-between">
+            <div>
+              {patient.name} &bull; {patient.age}y &bull;{" "}
+              {patient.gender.charAt(0).toUpperCase()}
+              <span className="ml-3 text-[9pt] text-gray-500">
+                ({patient.record_id})
+              </span>
+            </div>
+            <div>
+              {consultation
+                ? new Date(consultation.consultation_date).toLocaleDateString(
+                    "en-IN",
+                  )
+                : new Date().toLocaleDateString("en-IN")}
+            </div>
           </div>
           {consultation?.diagnosis && (
-            <div className="col-span-2">
-              <strong>
-                <BilingualPrintHeader
-                  en={PRINT_LABELS.diagnosis.en + ":"}
-                  ta={PRINT_LABELS.diagnosis.ta}
-                />
-              </strong>{" "}
+            <div className="mt-1">
+              <TamilHeader
+                ta={PRINT_LABELS.diagnosis.ta + ":"}
+                en={PRINT_LABELS.diagnosis.en}
+              />{" "}
               {consultation.diagnosis}
             </div>
           )}
@@ -203,17 +191,33 @@ export default async function PrintPrescriptionPage({ params }: Props) {
       {/* Rx Symbol */}
       <div className="mb-3 text-xl font-bold">&#8478;</div>
 
-      {/* Medications Table */}
+      {/* Medications Table — Tamil-primary headers */}
       {medications.length > 0 && (
         <table className="mb-4">
           <thead>
             <tr>
               <th className="w-8">#</th>
-              <th>Medicine</th>
-              <th>Dosage</th>
-              <th>Frequency</th>
-              <th>Timing</th>
-              <th>Duration</th>
+              <th>
+                <BilingualTh
+                  ta={MEDICATION_LABELS.drugName.ta}
+                  en="Medicine"
+                />
+              </th>
+              <th>
+                <BilingualTh ta={MEDICATION_LABELS.dosage.ta} en="Dosage" />
+              </th>
+              <th>
+                <BilingualTh
+                  ta={MEDICATION_LABELS.frequency.ta}
+                  en="Frequency"
+                />
+              </th>
+              <th>
+                <BilingualTh
+                  ta={MEDICATION_LABELS.duration.ta}
+                  en="Duration"
+                />
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -225,53 +229,45 @@ export default async function PrintPrescriptionPage({ params }: Props) {
                   dosage: string;
                   frequency: string;
                   frequency_tamil: string;
-                  timing: string;
-                  timing_tamil: string;
                   duration: string;
                   instructions: string;
+                  instructions_ta: string;
                 },
                 idx: number,
               ) => {
                 const freqOpt = FREQUENCY_OPTIONS.find(
                   (f) => f.value === med.frequency,
                 );
-                const timingOpt = TIMING_OPTIONS.find(
-                  (t) => t.value === med.timing,
-                );
+                const instrText = med.instructions_ta || med.instructions;
                 return (
                   <tr key={med.id} className="medication-item">
                     <td>{idx + 1}</td>
                     <td>
                       {med.drug_name}
-                      {med.instructions && (
-                        <div className="text-[8pt] text-gray-500">
-                          ({med.instructions})
+                      {instrText && (
+                        <div
+                          className="text-[8pt] text-gray-500"
+                          {...(med.instructions_ta ? tamil : {})}
+                        >
+                          ({instrText})
                         </div>
                       )}
                     </td>
                     <td>{med.dosage}</td>
                     <td>
-                      {freqOpt
-                        ? freqOpt.label.split(" \u2014 ")[0]
-                        : med.frequency}
-                      {med.frequency_tamil && (
-                        <div
-                          className="text-[8pt]"
-                          style={{ fontFamily: "var(--font-tamil)" }}
-                        >
-                          {med.frequency_tamil}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      {timingOpt ? timingOpt.label : med.timing}
-                      {med.timing_tamil && (
-                        <div
-                          className="text-[8pt]"
-                          style={{ fontFamily: "var(--font-tamil)" }}
-                        >
-                          {med.timing_tamil}
-                        </div>
+                      {med.frequency_tamil ? (
+                        <>
+                          <span {...tamil}>{med.frequency_tamil}</span>
+                          <div className="text-[7pt] text-gray-400">
+                            {freqOpt
+                              ? freqOpt.label.split(" \u2014 ")[0]
+                              : med.frequency}
+                          </div>
+                        </>
+                      ) : (
+                        freqOpt
+                          ? freqOpt.label.split(" \u2014 ")[0]
+                          : med.frequency
                       )}
                     </td>
                     <td>{med.duration}</td>
@@ -283,13 +279,13 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         </table>
       )}
 
-      {/* Procedures */}
+      {/* Procedures — Tamil-primary header */}
       {procedures.length > 0 && (
         <div className="mb-4">
           <p className="font-semibold">
-            <BilingualPrintHeader
-              en={PRINT_LABELS.procedures.en + ":"}
-              ta={PRINT_LABELS.procedures.ta}
+            <TamilHeader
+              ta={PRINT_LABELS.procedures.ta + ":"}
+              en={PRINT_LABELS.procedures.en}
             />
           </p>
           <ul className="list-inside list-disc text-[10pt]">
@@ -311,45 +307,45 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         </div>
       )}
 
-      {/* Advice */}
-      {(prescription.diet_advice ||
-        prescription.lifestyle_advice ||
-        prescription.exercise_advice) && (
+      {/* Advice — Tamil-primary labels, prefer Tamil content */}
+      {(prescription.diet_advice || prescription.diet_advice_ta ||
+        prescription.lifestyle_advice || prescription.lifestyle_advice_ta ||
+        prescription.exercise_advice || prescription.exercise_advice_ta) && (
         <div className="mb-4 text-[10pt]">
           <p className="font-semibold">
-            <BilingualPrintHeader
-              en={PRINT_LABELS.advice.en + ":"}
-              ta={PRINT_LABELS.advice.ta}
+            <TamilHeader
+              ta={PRINT_LABELS.advice.ta + ":"}
+              en={PRINT_LABELS.advice.en}
             />
           </p>
-          {prescription.diet_advice && (
-            <p>
-              <strong>{ADVICE_LABELS.diet.en}:</strong>{" "}
-              {prescription.diet_advice}
+          {(prescription.diet_advice_ta || prescription.diet_advice) && (
+            <p {...(prescription.diet_advice_ta ? tamil : {})}>
+              <strong {...tamil}>{ADVICE_LABELS.diet.ta}:</strong>{" "}
+              {prescription.diet_advice_ta || prescription.diet_advice}
             </p>
           )}
-          {prescription.lifestyle_advice && (
-            <p>
-              <strong>{ADVICE_LABELS.lifestyle.en}:</strong>{" "}
-              {prescription.lifestyle_advice}
+          {(prescription.lifestyle_advice_ta || prescription.lifestyle_advice) && (
+            <p {...(prescription.lifestyle_advice_ta ? tamil : {})}>
+              <strong {...tamil}>{ADVICE_LABELS.lifestyle.ta}:</strong>{" "}
+              {prescription.lifestyle_advice_ta || prescription.lifestyle_advice}
             </p>
           )}
-          {prescription.exercise_advice && (
-            <p>
-              <strong>{ADVICE_LABELS.exercise.en}:</strong>{" "}
-              {prescription.exercise_advice}
+          {(prescription.exercise_advice_ta || prescription.exercise_advice) && (
+            <p {...(prescription.exercise_advice_ta ? tamil : {})}>
+              <strong {...tamil}>{ADVICE_LABELS.exercise.ta}:</strong>{" "}
+              {prescription.exercise_advice_ta || prescription.exercise_advice}
             </p>
           )}
         </div>
       )}
 
-      {/* Follow-up */}
+      {/* Follow-up — Tamil-primary */}
       {prescription.follow_up_date && (
         <div className="mb-4 text-[10pt]">
           <strong>
-            <BilingualPrintHeader
-              en={PRINT_LABELS.followUp.en + ":"}
-              ta={PRINT_LABELS.followUp.ta}
+            <TamilHeader
+              ta={PRINT_LABELS.followUp.ta + ":"}
+              en={PRINT_LABELS.followUp.en}
             />
           </strong>{" "}
           {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
@@ -357,20 +353,16 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             month: "long",
             year: "numeric",
           })}
-          {prescription.follow_up_notes && (
-            <span> — {prescription.follow_up_notes}</span>
+          {(prescription.follow_up_notes_ta || prescription.follow_up_notes) && (
+            <span {...(prescription.follow_up_notes_ta ? tamil : {})}>
+              {" — "}
+              {prescription.follow_up_notes_ta || prescription.follow_up_notes}
+            </span>
           )}
         </div>
       )}
 
-      {/* Signature */}
-      <div className="mt-12 text-right">
-        <div
-          className="mb-1 inline-block border-b border-black"
-          style={{ width: "150px" }}
-        />
-        <p className="text-[10pt] font-semibold">Doctor&apos;s Signature</p>
-      </div>
+      {/* Signature area — not rendered, pre-printed on letterhead */}
 
       {/* Print trigger */}
       <PrintTrigger />
