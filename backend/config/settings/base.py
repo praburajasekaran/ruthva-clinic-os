@@ -101,4 +101,7 @@ SPECTACULAR_SETTINGS = {
     "TITLE": "Sivanethram API",
     "DESCRIPTION": "Siddha Clinic Management System API",
     "VERSION": "1.0.0",
+    "ENUM_NAME_OVERRIDES": {
+        "AssessmentEnum": "consultations.models.Consultation.ASSESSMENT_CHOICES",
+    },
 }
