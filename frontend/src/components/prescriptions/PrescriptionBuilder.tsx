@@ -296,10 +296,11 @@ export function PrescriptionBuilder({
                 </div>
                 <button
                   type="button"
+                  aria-label={`Remove procedure ${idx + 1}`}
                   onClick={() =>
                     dispatch({ type: "REMOVE_PROCEDURE", index: idx })
                   }
-                  className="mb-0.5 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="mb-0.5 flex h-11 w-11 items-center justify-center rounded-lg text-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
                 >
                   &times;
                 </button>

@@ -358,11 +358,12 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
             ).map(({ field, notesField, label, labelTamil }) => (
               <div key={field}>
                 <BilingualLabel english={label} tamil={labelTamil} as="label" className="mb-2" />
-                <div className="flex gap-2">
+                <div className="flex gap-2" role="group" aria-label={`${label} status`}>
                   <button
                     type="button"
+                    aria-pressed={state[field] === "normal"}
                     onClick={() => setField(field, state[field] === "normal" ? "" : "normal")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       state[field] === "normal"
                         ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -372,8 +373,9 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
                   </button>
                   <button
                     type="button"
+                    aria-pressed={state[field] === "abnormal"}
                     onClick={() => setField(field, state[field] === "abnormal" ? "" : "abnormal")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       state[field] === "abnormal"
                         ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -382,15 +384,18 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
                     Abnormal
                   </button>
                 </div>
-                {state[field] === "abnormal" && (
-                  <textarea
-                    value={state[notesField]}
-                    onChange={(e) => setField(notesField, e.target.value)}
-                    placeholder={`Describe ${label.toLowerCase()} abnormality...`}
-                    rows={2}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                  />
-                )}
+                <div aria-live="polite">
+                  {state[field] === "abnormal" && (
+                    <textarea
+                      aria-label={`${label} abnormality notes`}
+                      value={state[notesField]}
+                      onChange={(e) => setField(notesField, e.target.value)}
+                      placeholder={`Describe ${label.toLowerCase()} abnormality...`}
+                      rows={2}
+                      className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                    />
+                  )}
+                </div>
               </div>
             ))}
           </div>
