@@ -39,9 +39,21 @@ class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
         fields = [
+<<<<<<< HEAD
             "id", "medicine", "medicine_id", "medicine_name",
             "drug_name", "dosage", "frequency", "frequency_tamil",
             "duration", "instructions", "instructions_ta", "sort_order",
+=======
+            "id",
+            "drug_name",
+            "dosage",
+            "frequency",
+            "frequency_tamil",
+            "duration",
+            "instructions",
+            "instructions_ta",
+            "sort_order",
+>>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
         ]
         extra_kwargs = {"medicine": {"required": False, "allow_null": True}}
 
