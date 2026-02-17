@@ -65,6 +65,13 @@ class PrescriptionDetailSerializer(serializers.ModelSerializer):
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at"]
 
+    def validate_consultation(self, value):
+        if self.instance and self.instance.consultation != value:
+            raise serializers.ValidationError(
+                "Cannot reassign prescription to a different consultation."
+            )
+        return value
+
     def create(self, validated_data):
         medications_data = validated_data.pop("medications", [])
         procedures_data = validated_data.pop("procedures", [])

@@ -142,24 +142,60 @@ function reducer(
 type PrescriptionBuilderProps = {
   consultationId: number;
   patientId: number;
+  mode?: "create" | "edit";
+  prescriptionId?: number;
+  initialData?: {
+    medications?: MedicationData[];
+    procedures?: ProcedureData[];
+    diet_advice?: string;
+    lifestyle_advice?: string;
+    exercise_advice?: string;
+    follow_up_date?: string;
+    follow_up_notes?: string;
+  };
 };
 
 export function PrescriptionBuilder({
   consultationId,
   patientId,
+  mode = "create",
+  prescriptionId,
+  initialData,
 }: PrescriptionBuilderProps) {
   const router = useRouter();
-  const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
+  const isEdit = mode === "edit";
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => {
+      if (initialData) {
+        return {
+          medications: initialData.medications?.length
+            ? initialData.medications
+            : [{ ...emptyMedication }],
+          procedures: initialData.procedures ?? [],
+          diet_advice: initialData.diet_advice ?? "",
+          lifestyle_advice: initialData.lifestyle_advice ?? "",
+          exercise_advice: initialData.exercise_advice ?? "",
+          follow_up_date: initialData.follow_up_date ?? "",
+          follow_up_notes: initialData.follow_up_notes ?? "",
+        };
+      }
+      return getInitialState();
+    },
+  );
+
   const { mutate, isLoading } = useMutation<unknown, Prescription>(
-    "post",
-    "/prescriptions/",
+    isEdit ? "patch" : "post",
+    isEdit ? `/prescriptions/${prescriptionId}/` : "/prescriptions/",
   );
 
   async function handleSubmit(e: FormEvent, andPrint: boolean) {
     e.preventDefault();
 
     const payload = {
-      consultation: consultationId,
+      ...(isEdit ? {} : { consultation: consultationId }),
       medications: state.medications
         .filter((m) => m.drug_name.trim())
         .map((m, i) => ({
@@ -191,7 +227,9 @@ export function PrescriptionBuilder({
 
     const result = await mutate(payload);
     if (result) {
-      if (andPrint) {
+      if (isEdit) {
+        router.push(`/prescriptions/${prescriptionId}`);
+      } else if (andPrint) {
         router.push(`/prescriptions/${result.id}/print`);
       } else {
         router.push(`/patients/${patientId}`);
@@ -426,16 +464,24 @@ export function PrescriptionBuilder({
         >
           Cancel
         </Button>
-        <Button type="submit" variant="secondary" isLoading={isLoading}>
-          Save Draft
-        </Button>
-        <Button
-          type="button"
-          isLoading={isLoading}
-          onClick={(e) => handleSubmit(e, true)}
-        >
-          Save & Print
-        </Button>
+        {isEdit ? (
+          <Button type="submit" isLoading={isLoading}>
+            Update Prescription
+          </Button>
+        ) : (
+          <>
+            <Button type="submit" variant="secondary" isLoading={isLoading}>
+              Save Draft
+            </Button>
+            <Button
+              type="button"
+              isLoading={isLoading}
+              onClick={(e) => handleSubmit(e, true)}
+            >
+              Save & Print
+            </Button>
+          </>
+        )}
       </div>
     </form>
   );
