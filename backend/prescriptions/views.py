@@ -1,1 +1,39 @@
-# Views will be implemented in Phase 1
+from django.db.models import Count
+from django.http import HttpResponse
+from rest_framework import viewsets
+from rest_framework.decorators import action
+
+from .models import Prescription
+from .pdf import generate_prescription_pdf
+from .serializers import PrescriptionDetailSerializer, PrescriptionListSerializer
+
+
+class PrescriptionViewSet(viewsets.ModelViewSet):
+    queryset = (
+        Prescription.objects.select_related("consultation", "consultation__patient")
+        .prefetch_related("medications", "procedures")
+        .annotate(medication_count=Count("medications"))
+    )
+    filterset_fields = ["consultation__patient", "follow_up_date"]
+    search_fields = [
+        "consultation__patient__name",
+        "consultation__patient__record_id",
+    ]
+    ordering = ["-created_at"]
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return PrescriptionListSerializer
+        return PrescriptionDetailSerializer
+
+    @action(detail=True, methods=["get"])
+    def pdf(self, request, pk=None):
+        prescription = self.get_object()
+        pdf_bytes = generate_prescription_pdf(prescription)
+        filename = (
+            f"rx-{prescription.consultation.patient.record_id}"
+            f"-{prescription.consultation.consultation_date}.pdf"
+        )
+        response = HttpResponse(pdf_bytes, content_type="application/pdf")
+        response["Content-Disposition"] = f'inline; filename="{filename}"'
+        return response
