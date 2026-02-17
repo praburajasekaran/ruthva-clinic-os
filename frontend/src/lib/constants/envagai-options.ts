@@ -92,6 +92,13 @@ export const FREQUENCY_OPTIONS = [
   { value: "HS" as const, label: "HS \u2014 At bedtime", tamil: "\u0BAA\u0B9F\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAE\u0BCD \u0BAE\u0BC1\u0BA9\u0BCD" },
 ] as const;
 
+export const TIMING_OPTIONS = [
+  { value: "before_food" as const, label: "Before food", tamil: "\u0B89\u0BA3\u0BB5\u0BC1\u0B95\u0BCD\u0B95\u0BC1 \u0BAE\u0BC1\u0BA9\u0BCD" },
+  { value: "after_food" as const, label: "After food", tamil: "\u0B89\u0BA3\u0BB5\u0BC1\u0B95\u0BCD\u0B95\u0BC1\u0BAA\u0BCD \u0BAA\u0BBF\u0BA9\u0BCD" },
+  { value: "with_food" as const, label: "With food", tamil: "\u0B89\u0BA3\u0BB5\u0BC1\u0B9F\u0BA9\u0BCD" },
+  { value: "empty_stomach" as const, label: "Empty stomach", tamil: "\u0BB5\u0BC6\u0BB1\u0BC1\u0BAE\u0BCD \u0BB5\u0BAF\u0BBF\u0BB1\u0BCD\u0BB1\u0BBF\u0BB2\u0BCD" },
+] as const;
+
 export const DOSAGE_UNITS = [
   "ml",
   "g",
