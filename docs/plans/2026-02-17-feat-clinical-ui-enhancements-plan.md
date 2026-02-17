@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1: Create bilingual constants and BilingualLabel component
+### ✅ Task 1: Create bilingual constants and BilingualLabel component
 
 **Files:**
 - Create: `frontend/src/lib/constants/bilingual-labels.ts`
@@ -127,7 +127,7 @@ git commit -m "feat(ui): add BilingualLabel component and Tamil translation cons
 
 ---
 
-### Task 2: Create DoshaChip component
+### ✅ Task 2: Create DoshaChip component
 
 **Files:**
 - Create: `frontend/src/components/ui/DoshaChip.tsx`
@@ -200,7 +200,7 @@ git commit -m "feat(ui): add DoshaChip component with color-coded dosha indicato
 
 ---
 
-### Task 3: Add timing options to medication constants
+### ✅ Task 3: Add timing options to medication constants
 
 **Files:**
 - Modify: `frontend/src/lib/constants/envagai-options.ts`
@@ -227,7 +227,7 @@ git commit -m "feat(constants): add medication timing options with Tamil labels"
 
 ---
 
-### Task 4: Upgrade MedicationRow with timing dropdown and bilingual labels
+### ✅ Task 4: Upgrade MedicationRow with timing dropdown and bilingual labels
 
 **Files:**
 - Modify: `frontend/src/components/prescriptions/MedicationRow.tsx`
@@ -296,7 +296,7 @@ git commit -m "feat(prescription): add timing dropdown and bilingual labels to M
 
 ---
 
-### Task 5: Add bilingual labels to ConsultationForm sections
+### ✅ Task 5: Add bilingual labels to ConsultationForm sections
 
 **Files:**
 - Modify: `frontend/src/components/consultations/ConsultationForm.tsx`
@@ -349,7 +349,7 @@ git commit -m "feat(consultation): add bilingual Tamil labels to form sections a
 
 ---
 
-### Task 6: Add DoshaChip to EnvagaiThervu Nadi section
+### ✅ Task 6: Add DoshaChip to EnvagaiThervu Nadi section
 
 **Files:**
 - Modify: `frontend/src/components/consultations/EnvagaiThervu.tsx`
@@ -381,7 +381,7 @@ git commit -m "feat(envagai): show DoshaChip for Nadi pulse type selection"
 
 ---
 
-### Task 7: Add bilingual labels to PrescriptionBuilder sections
+### ✅ Task 7: Add bilingual labels to PrescriptionBuilder sections
 
 **Files:**
 - Modify: `frontend/src/components/prescriptions/PrescriptionBuilder.tsx`
@@ -401,7 +401,7 @@ git commit -m "feat(prescription): add bilingual section headers to Prescription
 
 ---
 
-### Task 8: Phone-priority search hint in PatientTable
+### ✅ Task 8: Phone-priority search hint in PatientTable
 
 **Files:**
 - Modify: `frontend/src/components/patients/PatientTable.tsx`
@@ -439,7 +439,7 @@ git commit -m "feat(search): add phone-priority search hint for digit-first quer
 
 ---
 
-### Task 9: Paper size toggle and bilingual print view
+### ✅ Task 9: Paper size toggle and bilingual print view
 
 **Files:**
 - Modify: `frontend/src/app/prescriptions/[id]/print/page.tsx`
@@ -509,7 +509,7 @@ git commit -m "feat(print): add A4/A5 toggle and bilingual headers to print view
 
 ---
 
-### Task 10: Global print stylesheet
+### ✅ Task 10: Global print stylesheet
 
 **Files:**
 - Modify: `frontend/src/app/globals.css`
@@ -574,7 +574,7 @@ git commit -m "feat(print): add global print stylesheet with medical layout rule
 
 ---
 
-### Task 11: Touch target and accessibility hardening
+### ✅ Task 11: Touch target and accessibility hardening
 
 **Files:**
 - Modify: `frontend/src/components/ui/Select.tsx`
@@ -628,7 +628,7 @@ git commit -m "feat(a11y): enforce 44px touch targets and add aria-live announce
 
 ---
 
-### Task 12: Verify and test
+### ✅ Task 12: Verify and test
 
 **Step 1: Run linter**
 
