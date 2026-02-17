@@ -124,3 +124,44 @@ class PrescriptionAPITests(TestCase):
         meds = list(rx.medications.all())
         self.assertEqual(meds[0].drug_name, "First")
         self.assertEqual(meds[1].drug_name, "Second")
+
+
+class DashboardStatsTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(
+            username="doctor", password="testpass123"
+        )
+        self.client.force_authenticate(user=self.user)
+
+    def test_dashboard_stats(self):
+        response = self.client.get("/api/v1/dashboard/stats/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertIn("today_patients", response.data)
+        self.assertIn("week_patients", response.data)
+        self.assertIn("pending_prescriptions", response.data)
+        self.assertIn("follow_ups_due", response.data)
+        self.assertIn("total_patients", response.data)
+
+    def test_dashboard_stats_unauthenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.get("/api/v1/dashboard/stats/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_dashboard_stats_accuracy(self):
+        patient = Patient.objects.create(
+            name="Stats Test", age=30, gender="male", phone="9876543210"
+        )
+        consultation = Consultation.objects.create(
+            patient=patient, consultation_date=date.today()
+        )
+        # No prescription yet => pending_prescriptions should be 1
+        response = self.client.get("/api/v1/dashboard/stats/")
+        self.assertEqual(response.data["today_patients"], 1)
+        self.assertEqual(response.data["pending_prescriptions"], 1)
+        self.assertEqual(response.data["total_patients"], 1)
+
+        # Add prescription => pending should drop to 0
+        Prescription.objects.create(consultation=consultation)
+        response = self.client.get("/api/v1/dashboard/stats/")
+        self.assertEqual(response.data["pending_prescriptions"], 0)
