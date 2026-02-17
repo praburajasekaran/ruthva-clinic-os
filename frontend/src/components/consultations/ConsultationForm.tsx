@@ -115,12 +115,28 @@ const SECTIONS = [
 
 type ConsultationFormProps = {
   patientId: number;
+  mode?: "create" | "edit";
+  consultationId?: number;
+  initialData?: Partial<ConsultationFormState>;
 };
 
-export function ConsultationForm({ patientId }: ConsultationFormProps) {
+export function ConsultationForm({
+  patientId,
+  mode = "create",
+  consultationId,
+  initialData,
+}: ConsultationFormProps) {
   const router = useRouter();
-  const draftKey = `consultation-draft-${patientId}`;
-  const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
+  const isEdit = mode === "edit";
+  const draftKey = isEdit
+    ? `consultation-edit-draft-${consultationId}`
+    : `consultation-draft-${patientId}`;
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => (initialData ? { ...getInitialState(), ...initialData } : getInitialState()),
+  );
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftLoadedRef = useRef(false);
 
@@ -129,8 +145,8 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
   );
 
   const { mutate, isLoading } = useMutation<unknown, Consultation>(
-    "post",
-    "/consultations/",
+    isEdit ? "patch" : "post",
+    isEdit ? `/consultations/${consultationId}/` : "/consultations/",
   );
 
   // Check for draft on mount
@@ -167,7 +183,7 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
     e.preventDefault();
 
     const payload = {
-      patient: patientId,
+      ...(isEdit ? {} : { patient: patientId }),
       ...state,
       weight: state.weight || null,
       height: state.height || null,
@@ -180,7 +196,9 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
     const result = await mutate(payload);
     if (result) {
       clearDraft(draftKey);
-      if (andWriteRx) {
+      if (isEdit) {
+        router.push(`/consultations/${consultationId}`);
+      } else if (andWriteRx) {
         router.push(`/consultations/${result.id}/prescriptions/new`);
       } else {
         router.push(`/patients/${patientId}`);
@@ -510,16 +528,24 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
           >
             Cancel
           </Button>
-          <Button type="submit" variant="secondary" isLoading={isLoading}>
-            Save Consultation
-          </Button>
-          <Button
-            type="button"
-            isLoading={isLoading}
-            onClick={(e) => handleSubmit(e, true)}
-          >
-            Save & Write Rx
-          </Button>
+          {isEdit ? (
+            <Button type="submit" isLoading={isLoading}>
+              Update Consultation
+            </Button>
+          ) : (
+            <>
+              <Button type="submit" variant="secondary" isLoading={isLoading}>
+                Save Consultation
+              </Button>
+              <Button
+                type="button"
+                isLoading={isLoading}
+                onClick={(e) => handleSubmit(e, true)}
+              >
+                Save & Write Rx
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </div>
