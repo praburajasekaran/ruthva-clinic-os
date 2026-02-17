@@ -9,14 +9,15 @@ from .serializers import PrescriptionDetailSerializer, PrescriptionListSerialize
 
 
 class PrescriptionViewSet(viewsets.ModelViewSet):
-    queryset = Prescription.objects.select_related(
-        "consultation", "consultation__patient"
-    ).annotate(
-        medication_count=Count("medications"),
+    queryset = (
+        Prescription.objects.select_related("consultation", "consultation__patient")
+        .prefetch_related("medications", "procedures")
+        .annotate(medication_count=Count("medications"))
     )
     filterset_fields = ["consultation__patient", "follow_up_date"]
     search_fields = [
-        "consultation__patient__name", "consultation__patient__record_id",
+        "consultation__patient__name",
+        "consultation__patient__record_id",
     ]
     ordering = ["-created_at"]
 
@@ -29,9 +30,10 @@ class PrescriptionViewSet(viewsets.ModelViewSet):
     def pdf(self, request, pk=None):
         prescription = self.get_object()
         pdf_bytes = generate_prescription_pdf(prescription)
-        patient = prescription.consultation.patient
-        date = prescription.consultation.consultation_date
-        filename = f"rx-{patient.record_id}-{date}.pdf"
+        filename = (
+            f"rx-{prescription.consultation.patient.record_id}"
+            f"-{prescription.consultation.consultation_date}.pdf"
+        )
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="{filename}"'
         return response

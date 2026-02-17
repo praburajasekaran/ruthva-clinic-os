@@ -5,8 +5,14 @@ from django.utils import timezone
 class Patient(models.Model):
     GENDER_CHOICES = [("male", "Male"), ("female", "Female"), ("other", "Other")]
     BLOOD_GROUP_CHOICES = [
-        ("A+", "A+"), ("A-", "A-"), ("B+", "B+"), ("B-", "B-"),
-        ("AB+", "AB+"), ("AB-", "AB-"), ("O+", "O+"), ("O-", "O-"),
+        ("A+", "A+"),
+        ("A-", "A-"),
+        ("B+", "B+"),
+        ("B-", "B-"),
+        ("AB+", "AB+"),
+        ("AB-", "AB-"),
+        ("O+", "O+"),
+        ("O-", "O-"),
     ]
     FOOD_HABITS_CHOICES = [
         ("vegetarian", "Vegetarian"),
@@ -19,8 +25,10 @@ class Patient(models.Model):
         ("active", "Active"),
     ]
     MARITAL_STATUS_CHOICES = [
-        ("single", "Single"), ("married", "Married"),
-        ("widowed", "Widowed"), ("divorced", "Divorced"),
+        ("single", "Single"),
+        ("married", "Married"),
+        ("widowed", "Widowed"),
+        ("divorced", "Divorced"),
     ]
 
     record_id = models.CharField(max_length=20, unique=True, editable=False)
@@ -85,7 +93,7 @@ class MedicalHistory(models.Model):
         verbose_name_plural = "Medical histories"
 
     def __str__(self):
-        return f"{self.disease} ({self.patient.name})"
+        return f"{self.disease} - {self.patient.name}"
 
 
 class FamilyHistory(models.Model):
@@ -101,4 +109,4 @@ class FamilyHistory(models.Model):
         verbose_name_plural = "Family histories"
 
     def __str__(self):
-        return f"{self.relation} - {self.disease} ({self.patient.name})"
+        return f"{self.relation}: {self.disease} - {self.patient.name}"

@@ -11,20 +11,59 @@ class ConsultationAdmin(admin.ModelAdmin):
     date_hierarchy = "consultation_date"
     fieldsets = [
         ("Patient", {"fields": ["patient", "consultation_date"]}),
-        ("Vitals", {"fields": [
-            "weight", "height", "pulse_rate", "temperature",
-            "bp_systolic", "bp_diastolic",
-        ]}),
-        ("General Assessment", {"fields": [
-            "appetite", "appetite_notes", "bowel", "bowel_notes",
-            "micturition", "micturition_notes", "sleep_quality", "sleep_notes",
-        ]}),
-        ("Envagai Thervu", {"fields": [
-            "naa", "niram", "mozhi", "vizhi", "nadi", "mei",
-            "muthiram", "varmam", "mental_state",
-        ]}),
-        ("Diagnosis", {"fields": [
-            "chief_complaints", "history_of_present_illness",
-            "diagnosis", "icd_code",
-        ]}),
+        (
+            "Vitals",
+            {
+                "fields": [
+                    "weight",
+                    "height",
+                    "pulse_rate",
+                    "temperature",
+                    "bp_systolic",
+                    "bp_diastolic",
+                ]
+            },
+        ),
+        (
+            "General Assessment",
+            {
+                "fields": [
+                    "appetite",
+                    "appetite_notes",
+                    "bowel",
+                    "bowel_notes",
+                    "micturition",
+                    "micturition_notes",
+                    "sleep_quality",
+                    "sleep_notes",
+                ]
+            },
+        ),
+        (
+            "Envagai Thervu",
+            {
+                "fields": [
+                    "naa",
+                    "niram",
+                    "mozhi",
+                    "vizhi",
+                    "nadi",
+                    "mei",
+                    "muthiram",
+                    "varmam",
+                    "mental_state",
+                ]
+            },
+        ),
+        (
+            "Diagnosis",
+            {
+                "fields": [
+                    "chief_complaints",
+                    "history_of_present_illness",
+                    "diagnosis",
+                    "icd_code",
+                ]
+            },
+        ),
     ]

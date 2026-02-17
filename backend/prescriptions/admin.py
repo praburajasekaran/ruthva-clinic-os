@@ -18,6 +18,7 @@ class PrescriptionAdmin(admin.ModelAdmin):
     list_display = ["consultation", "follow_up_date", "created_at"]
     list_filter = ["follow_up_date", "created_at"]
     search_fields = [
-        "consultation__patient__name", "consultation__patient__record_id",
+        "consultation__patient__name",
+        "consultation__patient__record_id",
     ]
     inlines = [MedicationInline, ProcedureEntryInline]

@@ -1,162 +1,152 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
+    <meta charset="UTF-8">
     <style>
         @page {
             size: A4;
-            margin: 15mm;
+            margin: 20mm;
         }
         body {
             font-family: 'Noto Sans', 'Noto Sans Tamil', sans-serif;
             font-size: 11pt;
-            color: #333;
-            line-height: 1.4;
+            color: #1a1a1a;
+            line-height: 1.5;
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #2c5f2d;
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            border-bottom: 2px solid #059669;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
         }
         .header h1 {
-            margin: 0;
-            color: #2c5f2d;
             font-size: 18pt;
+            color: #059669;
+            margin: 0 0 4px 0;
         }
         .header p {
-            margin: 2px 0;
             font-size: 9pt;
             color: #666;
+            margin: 2px 0;
         }
         .patient-info {
             display: flex;
-            flex-wrap: wrap;
-            border: 1px solid #ddd;
-            padding: 8px 12px;
-            margin-bottom: 15px;
-            background: #f9f9f9;
+            margin-bottom: 16px;
+            padding: 10px;
+            background: #f8faf8;
+            border-radius: 4px;
         }
-        .patient-info .field {
-            width: 33%;
-            margin-bottom: 4px;
+        .patient-info table {
+            width: 100%;
+            font-size: 10pt;
+        }
+        .patient-info td {
+            padding: 2px 8px;
         }
         .patient-info .label {
-            font-weight: bold;
-            font-size: 8pt;
-            color: #666;
-            text-transform: uppercase;
-        }
-        .patient-info .value {
-            font-size: 10pt;
+            font-weight: 600;
+            color: #555;
+            width: 120px;
         }
         .section-title {
             font-size: 12pt;
-            font-weight: bold;
-            color: #2c5f2d;
-            margin: 15px 0 8px 0;
-            padding-bottom: 3px;
-            border-bottom: 1px solid #2c5f2d;
+            font-weight: 700;
+            color: #059669;
+            margin: 16px 0 8px 0;
+            border-bottom: 1px solid #d1d5db;
+            padding-bottom: 4px;
         }
         .rx-symbol {
             font-size: 16pt;
-            font-weight: bold;
-            color: #2c5f2d;
+            font-weight: 700;
+            color: #059669;
         }
         table.medications {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         table.medications th {
-            background: #2c5f2d;
+            background: #059669;
             color: white;
             padding: 6px 8px;
             text-align: left;
             font-size: 9pt;
+            font-weight: 600;
         }
         table.medications td {
             padding: 6px 8px;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e5e7eb;
             font-size: 10pt;
         }
         table.medications tr:nth-child(even) {
-            background: #f9f9f9;
+            background: #f9fafb;
         }
         .procedures {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
         }
         .procedure-item {
             padding: 6px 0;
-            border-bottom: 1px solid #eee;
+            border-bottom: 1px solid #e5e7eb;
         }
         .procedure-name {
-            font-weight: bold;
+            font-weight: 600;
         }
         .advice-section {
-            margin-bottom: 10px;
+            margin-bottom: 12px;
         }
-        .advice-section .label {
-            font-weight: bold;
-            color: #2c5f2d;
+        .advice-label {
+            font-weight: 600;
+            color: #555;
         }
         .follow-up {
-            margin-top: 15px;
-            padding: 8px 12px;
-            background: #fff3cd;
-            border: 1px solid #ffc107;
+            margin-top: 16px;
+            padding: 10px;
+            background: #fef3c7;
             border-radius: 4px;
+            border-left: 4px solid #f59e0b;
         }
         .footer {
-            margin-top: 30px;
+            margin-top: 40px;
             text-align: right;
-            border-top: 1px solid #ddd;
-            padding-top: 10px;
         }
         .signature-line {
-            margin-top: 40px;
             border-top: 1px solid #333;
             width: 200px;
-            float: right;
+            display: inline-block;
+            padding-top: 4px;
             text-align: center;
-            padding-top: 5px;
-            font-size: 9pt;
+            font-size: 10pt;
         }
     </style>
 </head>
 <body>
     <div class="header">
-        <h1>Sivanethram Siddha Clinic</h1>
-        <p>Traditional Siddha Medicine &amp; Wellness</p>
+        <h1>Dwarakamai Siddha & Varma Clinic</h1>
+        <p>Siddha & Varmam Healthcare</p>
     </div>
 
     <div class="patient-info">
-        <div class="field">
-            <div class="label">Patient Name</div>
-            <div class="value">{{ patient.name }}</div>
-        </div>
-        <div class="field">
-            <div class="label">Record ID</div>
-            <div class="value">{{ patient.record_id }}</div>
-        </div>
-        <div class="field">
-            <div class="label">Date</div>
-            <div class="value">{{ consultation.consultation_date }}</div>
-        </div>
-        <div class="field">
-            <div class="label">Age / Gender</div>
-            <div class="value">{{ patient.age }} / {{ patient.get_gender_display }}</div>
-        </div>
-        <div class="field">
-            <div class="label">Phone</div>
-            <div class="value">{{ patient.phone }}</div>
-        </div>
-        {% if consultation.diagnosis %}
-        <div class="field">
-            <div class="label">Diagnosis</div>
-            <div class="value">{{ consultation.diagnosis }}</div>
-        </div>
-        {% endif %}
+        <table>
+            <tr>
+                <td class="label">Patient Name:</td>
+                <td>{{ patient.name }}</td>
+                <td class="label">Record ID:</td>
+                <td>{{ patient.record_id }}</td>
+            </tr>
+            <tr>
+                <td class="label">Age / Gender:</td>
+                <td>{{ patient.age }} / {{ patient.get_gender_display }}</td>
+                <td class="label">Date:</td>
+                <td>{{ consultation.consultation_date }}</td>
+            </tr>
+            <tr>
+                <td class="label">Phone:</td>
+                <td>{{ patient.phone }}</td>
+                <td class="label">Diagnosis:</td>
+                <td>{{ consultation.diagnosis }}</td>
+            </tr>
+        </table>
     </div>
 
     {% if medications %}
@@ -178,12 +168,7 @@
                 <td>{{ forloop.counter }}</td>
                 <td>{{ med.drug_name }}</td>
                 <td>{{ med.dosage }}</td>
-                <td>
-                    {{ med.get_frequency_display }}
-                    {% if med.frequency_tamil %}
-                    <br><small>{{ med.frequency_tamil }}</small>
-                    {% endif %}
-                </td>
+                <td>{{ med.get_frequency_display }}</td>
                 <td>{{ med.duration }}</td>
                 <td>{{ med.instructions }}</td>
             </tr>
@@ -193,13 +178,13 @@
     {% endif %}
 
     {% if procedures %}
-    <div class="section-title">Procedures / Therapies</div>
+    <div class="section-title">Procedures</div>
     <div class="procedures">
         {% for proc in procedures %}
         <div class="procedure-item">
             <span class="procedure-name">{{ proc.name }}</span>
-            {% if proc.duration %} &mdash; {{ proc.duration }}{% endif %}
-            {% if proc.details %}<br>{{ proc.details }}{% endif %}
+            {% if proc.details %} &mdash; {{ proc.details }}{% endif %}
+            {% if proc.duration %} ({{ proc.duration }}){% endif %}
         </div>
         {% endfor %}
     </div>
@@ -209,17 +194,17 @@
     <div class="section-title">Advice</div>
     {% if prescription.diet_advice %}
     <div class="advice-section">
-        <span class="label">Diet:</span> {{ prescription.diet_advice }}
+        <span class="advice-label">Diet:</span> {{ prescription.diet_advice }}
     </div>
     {% endif %}
     {% if prescription.lifestyle_advice %}
     <div class="advice-section">
-        <span class="label">Lifestyle:</span> {{ prescription.lifestyle_advice }}
+        <span class="advice-label">Lifestyle:</span> {{ prescription.lifestyle_advice }}
     </div>
     {% endif %}
     {% if prescription.exercise_advice %}
     <div class="advice-section">
-        <span class="label">Exercise:</span> {{ prescription.exercise_advice }}
+        <span class="advice-label">Exercise:</span> {{ prescription.exercise_advice }}
     </div>
     {% endif %}
     {% endif %}
@@ -227,16 +212,12 @@
     {% if prescription.follow_up_date %}
     <div class="follow-up">
         <strong>Follow-up Date:</strong> {{ prescription.follow_up_date }}
-        {% if prescription.follow_up_notes %}
-        <br>{{ prescription.follow_up_notes }}
-        {% endif %}
+        {% if prescription.follow_up_notes %}<br>{{ prescription.follow_up_notes }}{% endif %}
     </div>
     {% endif %}
 
     <div class="footer">
-        <div class="signature-line">
-            Doctor's Signature
-        </div>
+        <div class="signature-line">Doctor's Signature</div>
     </div>
 </body>
 </html>

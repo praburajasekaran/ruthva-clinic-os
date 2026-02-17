@@ -13,8 +13,14 @@ class ConsultationListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Consultation
         fields = [
-            "id", "patient", "patient_name", "patient_record_id",
-            "consultation_date", "diagnosis", "has_prescription", "created_at",
+            "id",
+            "patient",
+            "patient_name",
+            "patient_record_id",
+            "consultation_date",
+            "diagnosis",
+            "has_prescription",
+            "created_at",
         ]
 
 
