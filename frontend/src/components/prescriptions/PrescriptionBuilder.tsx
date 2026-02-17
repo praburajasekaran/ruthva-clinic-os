@@ -5,10 +5,15 @@ import { type FormEvent, useReducer } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { MedicationRow } from "./MedicationRow";
 import { useMutation } from "@/hooks/useMutation";
+import {
+  SECTION_LABELS,
+  ADVICE_LABELS,
+} from "@/lib/constants/bilingual-labels";
 import type { Prescription } from "@/lib/types";
 
 type MedicationData = {
@@ -17,6 +22,8 @@ type MedicationData = {
   dosage_unit: string;
   frequency: string;
   frequency_tamil: string;
+  timing: string;
+  timing_tamil: string;
   duration: string;
   instructions: string;
 };
@@ -62,6 +69,8 @@ const emptyMedication: MedicationData = {
   dosage_unit: "",
   frequency: "",
   frequency_tamil: "",
+  timing: "",
+  timing_tamil: "",
   duration: "",
   instructions: "",
 };
@@ -160,6 +169,8 @@ export function PrescriptionBuilder({
             : "",
           frequency: m.frequency,
           frequency_tamil: m.frequency_tamil,
+          timing: m.timing,
+          timing_tamil: m.timing_tamil,
           duration: m.duration,
           instructions: m.instructions,
           sort_order: i,
@@ -191,7 +202,7 @@ export function PrescriptionBuilder({
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
       {/* Medications */}
-      <FormSection title="Medications" id="medications">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.medications.en} tamil={SECTION_LABELS.medications.ta} as="span" />} id="medications">
         <div className="space-y-4">
           {state.medications.map((med, idx) => (
             <MedicationRow
@@ -224,7 +235,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Procedures */}
-      <FormSection title="Procedures" id="procedures" defaultOpen={false}>
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" />} id="procedures" defaultOpen={false}>
         <div className="space-y-3">
           {state.procedures.map((proc, idx) => (
             <div
@@ -285,10 +296,11 @@ export function PrescriptionBuilder({
                 </div>
                 <button
                   type="button"
+                  aria-label={`Remove procedure ${idx + 1}`}
                   onClick={() =>
                     dispatch({ type: "REMOVE_PROCEDURE", index: idx })
                   }
-                  className="mb-0.5 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="mb-0.5 flex h-11 w-11 items-center justify-center rounded-lg text-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
                 >
                   &times;
                 </button>
@@ -308,9 +320,9 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Advice */}
-      <FormSection title="Advice" id="advice">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.advice.en} tamil={SECTION_LABELS.advice.ta} as="span" />} id="advice">
         <div className="space-y-4">
-          <FormField label="Diet Advice">
+          <FormField label={`${ADVICE_LABELS.diet.en} — ${ADVICE_LABELS.diet.ta}`}>
             {(props) => (
               <textarea
                 {...props}
@@ -328,7 +340,7 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label="Lifestyle Advice">
+          <FormField label={`${ADVICE_LABELS.lifestyle.en} — ${ADVICE_LABELS.lifestyle.ta}`}>
             {(props) => (
               <textarea
                 {...props}
@@ -346,7 +358,7 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label="Exercise Advice">
+          <FormField label={`${ADVICE_LABELS.exercise.en} — ${ADVICE_LABELS.exercise.ta}`}>
             {(props) => (
               <textarea
                 {...props}
@@ -368,7 +380,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Follow-up */}
-      <FormSection title="Follow-up" id="follow-up">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.followUp.en} tamil={SECTION_LABELS.followUp.ta} as="span" />} id="follow-up">
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Follow-up Date">
             {(props) => (

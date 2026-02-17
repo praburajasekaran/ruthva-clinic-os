@@ -4,7 +4,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { type ReactNode, useState } from "react";
 
 type FormSectionProps = {
-  title: string;
+  title: ReactNode;
   defaultOpen?: boolean;
   children: ReactNode;
   id?: string;

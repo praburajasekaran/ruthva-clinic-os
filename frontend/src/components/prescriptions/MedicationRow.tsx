@@ -3,7 +3,13 @@
 import { GripVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
-import { FREQUENCY_OPTIONS, DOSAGE_UNITS } from "@/lib/constants/envagai-options";
+import { BilingualLabel } from "@/components/ui/BilingualLabel";
+import {
+  FREQUENCY_OPTIONS,
+  DOSAGE_UNITS,
+  TIMING_OPTIONS,
+} from "@/lib/constants/envagai-options";
+import { MEDICATION_LABELS } from "@/lib/constants/bilingual-labels";
 
 type MedicationData = {
   drug_name: string;
@@ -11,6 +17,8 @@ type MedicationData = {
   dosage_unit: string;
   frequency: string;
   frequency_tamil: string;
+  timing: string;
+  timing_tamil: string;
   duration: string;
   instructions: string;
 };
@@ -40,7 +48,7 @@ export function MedicationRow({
         <button
           type="button"
           onClick={onRemove}
-          className="rounded-lg p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+          className="min-h-[44px] min-w-[44px] rounded-lg p-2.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
           aria-label={`Remove medication ${index + 1}`}
         >
           <Trash2 className="h-4 w-4" />
@@ -49,9 +57,10 @@ export function MedicationRow({
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Drug Name
-          </label>
+          <BilingualLabel
+            english={MEDICATION_LABELS.drugName.en}
+            tamil={MEDICATION_LABELS.drugName.ta}
+          />
           <Input
             value={data.drug_name}
             onChange={(e) => onChange("drug_name", e.target.value)}
@@ -60,9 +69,10 @@ export function MedicationRow({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Dosage
-          </label>
+          <BilingualLabel
+            english={MEDICATION_LABELS.dosage.en}
+            tamil={MEDICATION_LABELS.dosage.ta}
+          />
           <div className="flex gap-2">
             <Input
               type="text"
@@ -88,14 +98,17 @@ export function MedicationRow({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Frequency
-          </label>
+          <BilingualLabel
+            english={MEDICATION_LABELS.frequency.en}
+            tamil={MEDICATION_LABELS.frequency.ta}
+          />
           <Select
             value={data.frequency}
             onChange={(e) => {
               onChange("frequency", e.target.value);
-              const opt = FREQUENCY_OPTIONS.find((f) => f.value === e.target.value);
+              const opt = FREQUENCY_OPTIONS.find(
+                (f) => f.value === e.target.value,
+              );
               if (opt) onChange("frequency_tamil", opt.tamil);
             }}
           >
@@ -114,9 +127,39 @@ export function MedicationRow({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Duration
-          </label>
+          <BilingualLabel
+            english={MEDICATION_LABELS.timing.en}
+            tamil={MEDICATION_LABELS.timing.ta}
+          />
+          <Select
+            value={data.timing}
+            onChange={(e) => {
+              onChange("timing", e.target.value);
+              const opt = TIMING_OPTIONS.find(
+                (t) => t.value === e.target.value,
+              );
+              if (opt) onChange("timing_tamil", opt.tamil);
+            }}
+          >
+            <option value="">Select timing</option>
+            {TIMING_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </Select>
+          {data.timing_tamil && (
+            <p className="mt-1 font-tamil text-xs text-gray-500">
+              {data.timing_tamil}
+            </p>
+          )}
+        </div>
+
+        <div>
+          <BilingualLabel
+            english={MEDICATION_LABELS.duration.en}
+            tamil={MEDICATION_LABELS.duration.ta}
+          />
           <Input
             value={data.duration}
             onChange={(e) => onChange("duration", e.target.value)}
@@ -125,13 +168,14 @@ export function MedicationRow({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
-            Instructions
-          </label>
+          <BilingualLabel
+            english={MEDICATION_LABELS.instructions.en}
+            tamil={MEDICATION_LABELS.instructions.ta}
+          />
           <Input
             value={data.instructions}
             onChange={(e) => onChange("instructions", e.target.value)}
-            placeholder="e.g., After food, with hot water"
+            placeholder="e.g., With warm water"
           />
         </div>
       </div>

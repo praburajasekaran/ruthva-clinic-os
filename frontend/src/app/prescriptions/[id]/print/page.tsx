@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
+import {
+  FREQUENCY_OPTIONS,
+  TIMING_OPTIONS,
+} from "@/lib/constants/envagai-options";
+import { PRINT_LABELS, ADVICE_LABELS } from "@/lib/constants/bilingual-labels";
 import { PrintTrigger } from "./PrintTrigger";
 
 type Props = {
@@ -50,11 +54,33 @@ export const metadata: Metadata = {
   title: "Print Prescription",
 };
 
+function BilingualPrintHeader({
+  en,
+  ta,
+}: {
+  en: string;
+  ta: string;
+}) {
+  return (
+    <span>
+      {en}{" "}
+      <span
+        className="text-[8pt] font-normal text-gray-500"
+        style={{ fontFamily: "var(--font-tamil)" }}
+      >
+        {ta}
+      </span>
+    </span>
+  );
+}
+
 export default async function PrintPrescriptionPage({ params }: Props) {
   const prescription = await getPrescription(params.id);
   if (!prescription) notFound();
 
-  const consultation = await getConsultation(String(prescription.consultation));
+  const consultation = await getConsultation(
+    String(prescription.consultation),
+  );
   const patient = consultation
     ? await getPatient(String(consultation.patient))
     : null;
@@ -63,12 +89,32 @@ export default async function PrintPrescriptionPage({ params }: Props) {
   const procedures = prescription.procedures ?? [];
 
   return (
-    <div className="print-prescription mx-auto max-w-[148mm] bg-white p-[10mm]">
+    <div className="print-prescription mx-auto bg-white p-[10mm]">
       <style>{`
+        /* A5 default */
+        .print-prescription {
+          max-width: 148mm;
+          font-size: 11pt;
+          line-height: 1.4;
+          color: black;
+        }
+
+        /* A4 when toggled */
+        html[data-paper-size="A4"] .print-prescription {
+          max-width: 210mm;
+          font-size: 12pt;
+        }
+
         @media print {
           @page {
             size: A5 portrait;
             margin: 15mm 10mm 20mm 10mm;
+          }
+          html[data-paper-size="A4"] {
+            @page {
+              size: A4 portrait;
+              margin: 20mm 15mm 25mm 15mm;
+            }
           }
           body {
             background: white;
@@ -83,11 +129,7 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             display: none !important;
           }
         }
-        .print-prescription {
-          font-size: 11pt;
-          line-height: 1.4;
-          color: black;
-        }
+
         .print-prescription table {
           border-collapse: collapse;
           width: 100%;
@@ -121,7 +163,13 @@ export default async function PrintPrescriptionPage({ params }: Props) {
       {patient && (
         <div className="mb-4 grid grid-cols-2 gap-1 text-[10pt]">
           <div>
-            <strong>Name:</strong> {patient.name}
+            <strong>
+              <BilingualPrintHeader
+                en="Name:"
+                ta={PRINT_LABELS.patientDetails.ta}
+              />
+            </strong>{" "}
+            {patient.name}
           </div>
           <div>
             <strong>Record ID:</strong> {patient.record_id}
@@ -140,7 +188,13 @@ export default async function PrintPrescriptionPage({ params }: Props) {
           </div>
           {consultation?.diagnosis && (
             <div className="col-span-2">
-              <strong>Diagnosis:</strong> {consultation.diagnosis}
+              <strong>
+                <BilingualPrintHeader
+                  en={PRINT_LABELS.diagnosis.en + ":"}
+                  ta={PRINT_LABELS.diagnosis.ta}
+                />
+              </strong>{" "}
+              {consultation.diagnosis}
             </div>
           )}
         </div>
@@ -158,6 +212,7 @@ export default async function PrintPrescriptionPage({ params }: Props) {
               <th>Medicine</th>
               <th>Dosage</th>
               <th>Frequency</th>
+              <th>Timing</th>
               <th>Duration</th>
             </tr>
           </thead>
@@ -170,6 +225,8 @@ export default async function PrintPrescriptionPage({ params }: Props) {
                   dosage: string;
                   frequency: string;
                   frequency_tamil: string;
+                  timing: string;
+                  timing_tamil: string;
                   duration: string;
                   instructions: string;
                 },
@@ -177,6 +234,9 @@ export default async function PrintPrescriptionPage({ params }: Props) {
               ) => {
                 const freqOpt = FREQUENCY_OPTIONS.find(
                   (f) => f.value === med.frequency,
+                );
+                const timingOpt = TIMING_OPTIONS.find(
+                  (t) => t.value === med.timing,
                 );
                 return (
                   <tr key={med.id} className="medication-item">
@@ -191,13 +251,26 @@ export default async function PrintPrescriptionPage({ params }: Props) {
                     </td>
                     <td>{med.dosage}</td>
                     <td>
-                      {freqOpt ? freqOpt.label.split(" \u2014 ")[0] : med.frequency}
+                      {freqOpt
+                        ? freqOpt.label.split(" \u2014 ")[0]
+                        : med.frequency}
                       {med.frequency_tamil && (
                         <div
                           className="text-[8pt]"
                           style={{ fontFamily: "var(--font-tamil)" }}
                         >
                           {med.frequency_tamil}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      {timingOpt ? timingOpt.label : med.timing}
+                      {med.timing_tamil && (
+                        <div
+                          className="text-[8pt]"
+                          style={{ fontFamily: "var(--font-tamil)" }}
+                        >
+                          {med.timing_tamil}
                         </div>
                       )}
                     </td>
@@ -213,10 +286,20 @@ export default async function PrintPrescriptionPage({ params }: Props) {
       {/* Procedures */}
       {procedures.length > 0 && (
         <div className="mb-4">
-          <p className="font-semibold">Procedures:</p>
+          <p className="font-semibold">
+            <BilingualPrintHeader
+              en={PRINT_LABELS.procedures.en + ":"}
+              ta={PRINT_LABELS.procedures.ta}
+            />
+          </p>
           <ul className="list-inside list-disc text-[10pt]">
             {procedures.map(
-              (proc: { id: number; name: string; details: string; duration: string }) => (
+              (proc: {
+                id: number;
+                name: string;
+                details: string;
+                duration: string;
+              }) => (
                 <li key={proc.id}>
                   {proc.name}
                   {proc.duration && ` (${proc.duration})`}
@@ -233,20 +316,28 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         prescription.lifestyle_advice ||
         prescription.exercise_advice) && (
         <div className="mb-4 text-[10pt]">
-          <p className="font-semibold">Advice:</p>
+          <p className="font-semibold">
+            <BilingualPrintHeader
+              en={PRINT_LABELS.advice.en + ":"}
+              ta={PRINT_LABELS.advice.ta}
+            />
+          </p>
           {prescription.diet_advice && (
             <p>
-              <strong>Diet:</strong> {prescription.diet_advice}
+              <strong>{ADVICE_LABELS.diet.en}:</strong>{" "}
+              {prescription.diet_advice}
             </p>
           )}
           {prescription.lifestyle_advice && (
             <p>
-              <strong>Lifestyle:</strong> {prescription.lifestyle_advice}
+              <strong>{ADVICE_LABELS.lifestyle.en}:</strong>{" "}
+              {prescription.lifestyle_advice}
             </p>
           )}
           {prescription.exercise_advice && (
             <p>
-              <strong>Exercise:</strong> {prescription.exercise_advice}
+              <strong>{ADVICE_LABELS.exercise.en}:</strong>{" "}
+              {prescription.exercise_advice}
             </p>
           )}
         </div>
@@ -255,7 +346,12 @@ export default async function PrintPrescriptionPage({ params }: Props) {
       {/* Follow-up */}
       {prescription.follow_up_date && (
         <div className="mb-4 text-[10pt]">
-          <strong>Follow-up Date:</strong>{" "}
+          <strong>
+            <BilingualPrintHeader
+              en={PRINT_LABELS.followUp.en + ":"}
+              ta={PRINT_LABELS.followUp.ta}
+            />
+          </strong>{" "}
           {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "long",
@@ -269,7 +365,10 @@ export default async function PrintPrescriptionPage({ params }: Props) {
 
       {/* Signature */}
       <div className="mt-12 text-right">
-        <div className="mb-1 inline-block border-b border-black" style={{ width: "150px" }} />
+        <div
+          className="mb-1 inline-block border-b border-black"
+          style={{ width: "150px" }}
+        />
         <p className="text-[10pt] font-semibold">Doctor&apos;s Signature</p>
       </div>
 

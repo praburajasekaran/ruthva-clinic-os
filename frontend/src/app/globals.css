@@ -18,5 +18,26 @@
 @media print {
   body {
     background: white;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Hide non-print elements globally */
+  .no-print,
+  nav,
+  header:not(.print-header) {
+    display: none !important;
+  }
+
+  /* Avoid breaking inside key elements */
+  .medication-item,
+  tr {
+    break-inside: avoid;
+  }
+
+  /* Ensure Tamil font renders in print */
+  .font-tamil,
+  [style*="font-tamil"] {
+    font-family: var(--font-tamil), "Noto Sans Tamil", sans-serif !important;
   }
 }
