@@ -1,0 +1,430 @@
+"use client";
+
+import { useRouter } from "next/navigation";
+import { type FormEvent, useReducer } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { FormField } from "@/components/forms/FormField";
+import { FormSection } from "@/components/forms/FormSection";
+import { MedicationRow } from "./MedicationRow";
+import { useMutation } from "@/hooks/useMutation";
+import type { Prescription } from "@/lib/types";
+
+type MedicationData = {
+  drug_name: string;
+  dosage_amount: string;
+  dosage_unit: string;
+  frequency: string;
+  frequency_tamil: string;
+  duration: string;
+  instructions: string;
+};
+
+type ProcedureData = {
+  name: string;
+  details: string;
+  duration: string;
+};
+
+type PrescriptionFormState = {
+  medications: MedicationData[];
+  procedures: ProcedureData[];
+  diet_advice: string;
+  lifestyle_advice: string;
+  exercise_advice: string;
+  follow_up_date: string;
+  follow_up_notes: string;
+};
+
+type Action =
+  | { type: "SET_FIELD"; field: keyof PrescriptionFormState; value: string }
+  | { type: "ADD_MEDICATION" }
+  | { type: "REMOVE_MEDICATION"; index: number }
+  | {
+      type: "UPDATE_MEDICATION";
+      index: number;
+      field: keyof MedicationData;
+      value: string;
+    }
+  | { type: "ADD_PROCEDURE" }
+  | { type: "REMOVE_PROCEDURE"; index: number }
+  | {
+      type: "UPDATE_PROCEDURE";
+      index: number;
+      field: keyof ProcedureData;
+      value: string;
+    };
+
+const emptyMedication: MedicationData = {
+  drug_name: "",
+  dosage_amount: "",
+  dosage_unit: "",
+  frequency: "",
+  frequency_tamil: "",
+  duration: "",
+  instructions: "",
+};
+
+const emptyProcedure: ProcedureData = {
+  name: "",
+  details: "",
+  duration: "",
+};
+
+function getInitialState(): PrescriptionFormState {
+  return {
+    medications: [{ ...emptyMedication }],
+    procedures: [],
+    diet_advice: "",
+    lifestyle_advice: "",
+    exercise_advice: "",
+    follow_up_date: "",
+    follow_up_notes: "",
+  };
+}
+
+function reducer(
+  state: PrescriptionFormState,
+  action: Action,
+): PrescriptionFormState {
+  switch (action.type) {
+    case "SET_FIELD":
+      return { ...state, [action.field]: action.value };
+    case "ADD_MEDICATION":
+      return {
+        ...state,
+        medications: [...state.medications, { ...emptyMedication }],
+      };
+    case "REMOVE_MEDICATION":
+      return {
+        ...state,
+        medications: state.medications.filter((_, i) => i !== action.index),
+      };
+    case "UPDATE_MEDICATION":
+      return {
+        ...state,
+        medications: state.medications.map((m, i) =>
+          i === action.index ? { ...m, [action.field]: action.value } : m,
+        ),
+      };
+    case "ADD_PROCEDURE":
+      return {
+        ...state,
+        procedures: [...state.procedures, { ...emptyProcedure }],
+      };
+    case "REMOVE_PROCEDURE":
+      return {
+        ...state,
+        procedures: state.procedures.filter((_, i) => i !== action.index),
+      };
+    case "UPDATE_PROCEDURE":
+      return {
+        ...state,
+        procedures: state.procedures.map((p, i) =>
+          i === action.index ? { ...p, [action.field]: action.value } : p,
+        ),
+      };
+    default:
+      return state;
+  }
+}
+
+type PrescriptionBuilderProps = {
+  consultationId: number;
+  patientId: number;
+};
+
+export function PrescriptionBuilder({
+  consultationId,
+  patientId,
+}: PrescriptionBuilderProps) {
+  const router = useRouter();
+  const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
+  const { mutate, isLoading } = useMutation<unknown, Prescription>(
+    "post",
+    "/prescriptions/",
+  );
+
+  async function handleSubmit(e: FormEvent, andPrint: boolean) {
+    e.preventDefault();
+
+    const payload = {
+      consultation: consultationId,
+      medications: state.medications
+        .filter((m) => m.drug_name.trim())
+        .map((m, i) => ({
+          drug_name: m.drug_name,
+          dosage: m.dosage_amount
+            ? `${m.dosage_amount} ${m.dosage_unit}`.trim()
+            : "",
+          frequency: m.frequency,
+          frequency_tamil: m.frequency_tamil,
+          duration: m.duration,
+          instructions: m.instructions,
+          sort_order: i,
+        })),
+      procedures: state.procedures
+        .filter((p) => p.name.trim())
+        .map((p) => ({
+          name: p.name,
+          details: p.details,
+          duration: p.duration,
+        })),
+      diet_advice: state.diet_advice,
+      lifestyle_advice: state.lifestyle_advice,
+      exercise_advice: state.exercise_advice,
+      follow_up_date: state.follow_up_date || null,
+      follow_up_notes: state.follow_up_notes,
+    };
+
+    const result = await mutate(payload);
+    if (result) {
+      if (andPrint) {
+        router.push(`/prescriptions/${result.id}/print`);
+      } else {
+        router.push(`/patients/${patientId}`);
+      }
+    }
+  }
+
+  return (
+    <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
+      {/* Medications */}
+      <FormSection title="Medications" id="medications">
+        <div className="space-y-4">
+          {state.medications.map((med, idx) => (
+            <MedicationRow
+              key={idx}
+              index={idx}
+              data={med}
+              onChange={(field, value) =>
+                dispatch({
+                  type: "UPDATE_MEDICATION",
+                  index: idx,
+                  field,
+                  value,
+                })
+              }
+              onRemove={() =>
+                dispatch({ type: "REMOVE_MEDICATION", index: idx })
+              }
+            />
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => dispatch({ type: "ADD_MEDICATION" })}
+            className="text-emerald-700"
+          >
+            <Plus className="h-4 w-4" />
+            Add Medication
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* Procedures */}
+      <FormSection title="Procedures" id="procedures" defaultOpen={false}>
+        <div className="space-y-3">
+          {state.procedures.map((proc, idx) => (
+            <div
+              key={idx}
+              className="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 sm:grid-cols-3"
+            >
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  Procedure Name
+                </label>
+                <Input
+                  value={proc.name}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PROCEDURE",
+                      index: idx,
+                      field: "name",
+                      value: e.target.value,
+                    })
+                  }
+                  placeholder="e.g., Varmam Therapy"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-medium text-gray-600">
+                  Details
+                </label>
+                <Input
+                  value={proc.details}
+                  onChange={(e) =>
+                    dispatch({
+                      type: "UPDATE_PROCEDURE",
+                      index: idx,
+                      field: "details",
+                      value: e.target.value,
+                    })
+                  }
+                  placeholder="Procedure details"
+                />
+              </div>
+              <div className="flex items-end gap-2">
+                <div className="flex-1">
+                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                    Duration
+                  </label>
+                  <Input
+                    value={proc.duration}
+                    onChange={(e) =>
+                      dispatch({
+                        type: "UPDATE_PROCEDURE",
+                        index: idx,
+                        field: "duration",
+                        value: e.target.value,
+                      })
+                    }
+                    placeholder="e.g., 30 mins"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    dispatch({ type: "REMOVE_PROCEDURE", index: idx })
+                  }
+                  className="mb-0.5 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                >
+                  &times;
+                </button>
+              </div>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => dispatch({ type: "ADD_PROCEDURE" })}
+            className="text-emerald-700"
+          >
+            <Plus className="h-4 w-4" />
+            Add Procedure
+          </Button>
+        </div>
+      </FormSection>
+
+      {/* Advice */}
+      <FormSection title="Advice" id="advice">
+        <div className="space-y-4">
+          <FormField label="Diet Advice">
+            {(props) => (
+              <textarea
+                {...props}
+                value={state.diet_advice}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "diet_advice",
+                    value: e.target.value,
+                  })
+                }
+                placeholder="Dietary recommendations..."
+                rows={2}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              />
+            )}
+          </FormField>
+          <FormField label="Lifestyle Advice">
+            {(props) => (
+              <textarea
+                {...props}
+                value={state.lifestyle_advice}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "lifestyle_advice",
+                    value: e.target.value,
+                  })
+                }
+                placeholder="Lifestyle modifications..."
+                rows={2}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              />
+            )}
+          </FormField>
+          <FormField label="Exercise Advice">
+            {(props) => (
+              <textarea
+                {...props}
+                value={state.exercise_advice}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "exercise_advice",
+                    value: e.target.value,
+                  })
+                }
+                placeholder="Exercise recommendations..."
+                rows={2}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              />
+            )}
+          </FormField>
+        </div>
+      </FormSection>
+
+      {/* Follow-up */}
+      <FormSection title="Follow-up" id="follow-up">
+        <div className="grid gap-4 sm:grid-cols-2">
+          <FormField label="Follow-up Date">
+            {(props) => (
+              <Input
+                {...props}
+                type="date"
+                value={state.follow_up_date}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "follow_up_date",
+                    value: e.target.value,
+                  })
+                }
+              />
+            )}
+          </FormField>
+          <FormField label="Follow-up Notes">
+            {(props) => (
+              <Input
+                {...props}
+                value={state.follow_up_notes}
+                onChange={(e) =>
+                  dispatch({
+                    type: "SET_FIELD",
+                    field: "follow_up_notes",
+                    value: e.target.value,
+                  })
+                }
+                placeholder="Any follow-up instructions"
+              />
+            )}
+          </FormField>
+        </div>
+      </FormSection>
+
+      {/* Submit */}
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-6">
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => router.back()}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" variant="secondary" isLoading={isLoading}>
+          Save Draft
+        </Button>
+        <Button
+          type="button"
+          isLoading={isLoading}
+          onClick={(e) => handleSubmit(e, true)}
+        >
+          Save & Print
+        </Button>
+      </div>
+    </form>
+  );
+}
