@@ -26,6 +26,7 @@ type MedicationData = {
   timing_tamil: string;
   duration: string;
   instructions: string;
+  instructions_ta: string;
 };
 
 type ProcedureData = {
@@ -38,10 +39,14 @@ type PrescriptionFormState = {
   medications: MedicationData[];
   procedures: ProcedureData[];
   diet_advice: string;
+  diet_advice_ta: string;
   lifestyle_advice: string;
+  lifestyle_advice_ta: string;
   exercise_advice: string;
+  exercise_advice_ta: string;
   follow_up_date: string;
   follow_up_notes: string;
+  follow_up_notes_ta: string;
 };
 
 type Action =
@@ -73,6 +78,7 @@ const emptyMedication: MedicationData = {
   timing_tamil: "",
   duration: "",
   instructions: "",
+  instructions_ta: "",
 };
 
 const emptyProcedure: ProcedureData = {
@@ -86,10 +92,14 @@ function getInitialState(): PrescriptionFormState {
     medications: [{ ...emptyMedication }],
     procedures: [],
     diet_advice: "",
+    diet_advice_ta: "",
     lifestyle_advice: "",
+    lifestyle_advice_ta: "",
     exercise_advice: "",
+    exercise_advice_ta: "",
     follow_up_date: "",
     follow_up_notes: "",
+    follow_up_notes_ta: "",
   };
 }
 
@@ -148,10 +158,14 @@ type PrescriptionBuilderProps = {
     medications?: MedicationData[];
     procedures?: ProcedureData[];
     diet_advice?: string;
+    diet_advice_ta?: string;
     lifestyle_advice?: string;
+    lifestyle_advice_ta?: string;
     exercise_advice?: string;
+    exercise_advice_ta?: string;
     follow_up_date?: string;
     follow_up_notes?: string;
+    follow_up_notes_ta?: string;
   };
 };
 
@@ -176,10 +190,14 @@ export function PrescriptionBuilder({
             : [{ ...emptyMedication }],
           procedures: initialData.procedures ?? [],
           diet_advice: initialData.diet_advice ?? "",
+          diet_advice_ta: initialData.diet_advice_ta ?? "",
           lifestyle_advice: initialData.lifestyle_advice ?? "",
+          lifestyle_advice_ta: initialData.lifestyle_advice_ta ?? "",
           exercise_advice: initialData.exercise_advice ?? "",
+          exercise_advice_ta: initialData.exercise_advice_ta ?? "",
           follow_up_date: initialData.follow_up_date ?? "",
           follow_up_notes: initialData.follow_up_notes ?? "",
+          follow_up_notes_ta: initialData.follow_up_notes_ta ?? "",
         };
       }
       return getInitialState();
@@ -209,6 +227,7 @@ export function PrescriptionBuilder({
           timing_tamil: m.timing_tamil,
           duration: m.duration,
           instructions: m.instructions,
+          instructions_ta: m.instructions_ta,
           sort_order: i,
         })),
       procedures: state.procedures
@@ -219,10 +238,14 @@ export function PrescriptionBuilder({
           duration: p.duration,
         })),
       diet_advice: state.diet_advice,
+      diet_advice_ta: state.diet_advice_ta,
       lifestyle_advice: state.lifestyle_advice,
+      lifestyle_advice_ta: state.lifestyle_advice_ta,
       exercise_advice: state.exercise_advice,
+      exercise_advice_ta: state.exercise_advice_ta,
       follow_up_date: state.follow_up_date || null,
       follow_up_notes: state.follow_up_notes,
+      follow_up_notes_ta: state.follow_up_notes_ta,
     };
 
     const result = await mutate(payload);
@@ -360,58 +383,79 @@ export function PrescriptionBuilder({
       {/* Advice */}
       <FormSection title={<BilingualLabel english={SECTION_LABELS.advice.en} tamil={SECTION_LABELS.advice.ta} as="span" />} id="advice">
         <div className="space-y-4">
-          <FormField label={`${ADVICE_LABELS.diet.en} — ${ADVICE_LABELS.diet.ta}`}>
+          <FormField label={`${ADVICE_LABELS.diet.ta} — ${ADVICE_LABELS.diet.en}`}>
             {(props) => (
-              <textarea
-                {...props}
-                value={state.diet_advice}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_FIELD",
-                    field: "diet_advice",
-                    value: e.target.value,
-                  })
-                }
-                placeholder="Dietary recommendations..."
-                rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-              />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <textarea
+                  {...props}
+                  value={state.diet_advice}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "diet_advice", value: e.target.value })
+                  }
+                  placeholder="Diet advice (English)"
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+                <textarea
+                  value={state.diet_advice_ta}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "diet_advice_ta", value: e.target.value })
+                  }
+                  placeholder="உணவுக் கட்டுப்பாடு (தமிழ்)"
+                  rows={2}
+                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+              </div>
             )}
           </FormField>
-          <FormField label={`${ADVICE_LABELS.lifestyle.en} — ${ADVICE_LABELS.lifestyle.ta}`}>
+          <FormField label={`${ADVICE_LABELS.lifestyle.ta} — ${ADVICE_LABELS.lifestyle.en}`}>
             {(props) => (
-              <textarea
-                {...props}
-                value={state.lifestyle_advice}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_FIELD",
-                    field: "lifestyle_advice",
-                    value: e.target.value,
-                  })
-                }
-                placeholder="Lifestyle modifications..."
-                rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-              />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <textarea
+                  {...props}
+                  value={state.lifestyle_advice}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "lifestyle_advice", value: e.target.value })
+                  }
+                  placeholder="Lifestyle advice (English)"
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+                <textarea
+                  value={state.lifestyle_advice_ta}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "lifestyle_advice_ta", value: e.target.value })
+                  }
+                  placeholder="வாழ்க்கைமுறை அறிவுரை (தமிழ்)"
+                  rows={2}
+                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+              </div>
             )}
           </FormField>
-          <FormField label={`${ADVICE_LABELS.exercise.en} — ${ADVICE_LABELS.exercise.ta}`}>
+          <FormField label={`${ADVICE_LABELS.exercise.ta} — ${ADVICE_LABELS.exercise.en}`}>
             {(props) => (
-              <textarea
-                {...props}
-                value={state.exercise_advice}
-                onChange={(e) =>
-                  dispatch({
-                    type: "SET_FIELD",
-                    field: "exercise_advice",
-                    value: e.target.value,
-                  })
-                }
-                placeholder="Exercise recommendations..."
-                rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-              />
+              <div className="grid gap-2 sm:grid-cols-2">
+                <textarea
+                  {...props}
+                  value={state.exercise_advice}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "exercise_advice", value: e.target.value })
+                  }
+                  placeholder="Exercise advice (English)"
+                  rows={2}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+                <textarea
+                  value={state.exercise_advice_ta}
+                  onChange={(e) =>
+                    dispatch({ type: "SET_FIELD", field: "exercise_advice_ta", value: e.target.value })
+                  }
+                  placeholder="உடற்பயிற்சி அறிவுரை (தமிழ்)"
+                  rows={2}
+                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                />
+              </div>
             )}
           </FormField>
         </div>
@@ -436,19 +480,28 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label="Follow-up Notes">
+          <FormField label="Follow-up Notes (English)">
             {(props) => (
               <Input
                 {...props}
                 value={state.follow_up_notes}
                 onChange={(e) =>
-                  dispatch({
-                    type: "SET_FIELD",
-                    field: "follow_up_notes",
-                    value: e.target.value,
-                  })
+                  dispatch({ type: "SET_FIELD", field: "follow_up_notes", value: e.target.value })
                 }
-                placeholder="Any follow-up instructions"
+                placeholder="Follow-up notes..."
+              />
+            )}
+          </FormField>
+          <FormField label="மறு ஆய்வு குறிப்புகள் (தமிழ்)">
+            {(props) => (
+              <Input
+                {...props}
+                value={state.follow_up_notes_ta}
+                onChange={(e) =>
+                  dispatch({ type: "SET_FIELD", field: "follow_up_notes_ta", value: e.target.value })
+                }
+                placeholder="மறு ஆய்வு குறிப்புகள்..."
+                className="border-emerald-200 bg-emerald-50/30"
               />
             )}
           </FormField>

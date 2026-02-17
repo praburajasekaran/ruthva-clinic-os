@@ -8,10 +8,14 @@ class Prescription(models.Model):
         related_name="prescription",
     )
     diet_advice = models.TextField(blank=True, default="")
+    diet_advice_ta = models.TextField(blank=True, default="")
     lifestyle_advice = models.TextField(blank=True, default="")
+    lifestyle_advice_ta = models.TextField(blank=True, default="")
     exercise_advice = models.TextField(blank=True, default="")
+    exercise_advice_ta = models.TextField(blank=True, default="")
     follow_up_date = models.DateField(null=True, blank=True)
     follow_up_notes = models.TextField(blank=True, default="")
+    follow_up_notes_ta = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -41,6 +45,7 @@ class Medication(models.Model):
     frequency_tamil = models.CharField(max_length=100, blank=True, default="")
     duration = models.CharField(max_length=100)
     instructions = models.TextField(blank=True, default="")
+    instructions_ta = models.TextField(blank=True, default="")
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:

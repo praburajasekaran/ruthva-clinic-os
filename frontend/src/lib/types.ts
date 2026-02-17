@@ -148,10 +148,14 @@ export type Prescription = {
   medications: Medication[];
   procedures: ProcedureEntry[];
   diet_advice: string;
+  diet_advice_ta: string;
   lifestyle_advice: string;
+  lifestyle_advice_ta: string;
   exercise_advice: string;
+  exercise_advice_ta: string;
   follow_up_date: string | null;
   follow_up_notes: string;
+  follow_up_notes_ta: string;
   readonly created_at: string;
   readonly updated_at: string;
 };
@@ -164,6 +168,7 @@ export type Medication = {
   frequency_tamil: string;
   duration: string;
   instructions: string;
+  instructions_ta: string;
   sort_order: number;
 };
 

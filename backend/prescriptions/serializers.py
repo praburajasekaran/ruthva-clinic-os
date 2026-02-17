@@ -14,6 +14,7 @@ class MedicationSerializer(serializers.ModelSerializer):
             "frequency_tamil",
             "duration",
             "instructions",
+            "instructions_ta",
             "sort_order",
         ]
 
