@@ -26,6 +26,9 @@ export function usePatientShortcuts({
   const router = useRouter();
 
   useEffect(() => {
+    // Don't register shortcuts if patientId is not a valid number
+    if (!patientId || typeof patientId !== "number") return;
+
     function handleKeyDown(e: KeyboardEvent) {
       if (isShortcutSuppressed(e)) return;
 
