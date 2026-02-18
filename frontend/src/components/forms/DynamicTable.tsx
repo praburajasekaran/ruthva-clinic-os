@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useCallback } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -27,6 +28,46 @@ export function DynamicTable({
   onChange,
   addLabel = "Add Row",
 }: DynamicTableProps) {
+  // 2D grid of input refs: cellRefs.current[rowIdx][colIdx]
+  const cellRefs = useRef<(HTMLInputElement | null)[][]>([]);
+
+  // Keep the ref grid sized to match rows × columns on every render
+  cellRefs.current = rows.map(
+    (_, rowIdx) =>
+      cellRefs.current[rowIdx] ?? new Array(columns.length).fill(null)
+  );
+
+  const handleKeyDown = useCallback(
+    (
+      e: React.KeyboardEvent<HTMLInputElement>,
+      rowIdx: number,
+      colIdx: number
+    ) => {
+      if (e.key === "ArrowDown") {
+        e.preventDefault();
+        const nextRow = rowIdx + 1;
+        if (nextRow < rows.length) {
+          // Move to same column in the next row
+          cellRefs.current[nextRow]?.[colIdx]?.focus();
+        } else {
+          // On last row: add a new row, then focus its cell after state update
+          onAdd();
+          setTimeout(() => {
+            cellRefs.current[nextRow]?.[colIdx]?.focus();
+          }, 0);
+        }
+      }
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        const prevRow = rowIdx - 1;
+        if (prevRow >= 0) {
+          cellRefs.current[prevRow]?.[colIdx]?.focus();
+        }
+      }
+    },
+    [rows.length, onAdd]
+  );
+
   return (
     <div className="space-y-3">
       {rows.length > 0 && (
@@ -63,11 +104,18 @@ export function DynamicTable({
                   gridTemplateColumns: `repeat(${columns.length}, 1fr)`,
                 }}
               >
-                {columns.map((col) => (
+                {columns.map((col, colIdx) => (
                   <Input
                     key={col.key}
+                    ref={(el) => {
+                      if (!cellRefs.current[idx]) {
+                        cellRefs.current[idx] = new Array(columns.length).fill(null);
+                      }
+                      cellRefs.current[idx][colIdx] = el;
+                    }}
                     value={row[col.key] ?? ""}
                     onChange={(e) => onChange(idx, col.key, e.target.value)}
+                    onKeyDown={(e) => handleKeyDown(e, idx, colIdx)}
                     placeholder={col.placeholder ?? col.label}
                   />
                 ))}
