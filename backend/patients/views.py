@@ -30,3 +30,15 @@ class PatientViewSet(viewsets.ModelViewSet):
 
         serializer = ConsultationListSerializer(consultations, many=True)
         return Response(serializer.data)
+
+    @action(detail=False, methods=["get"])
+    def check_phone(self, request):
+        phone = request.query_params.get("phone", "")
+        exclude = request.query_params.get("exclude", "")
+        if len(phone) < 10:
+            return Response([])
+        qs = Patient.objects.filter(phone=phone)
+        if exclude:
+            qs = qs.exclude(pk=exclude)
+        matches = qs.values("id", "name", "record_id")[:5]
+        return Response(list(matches))

@@ -5,6 +5,7 @@ import { PatientBanner } from "@/components/patients/PatientBanner";
 import {
   Calendar,
   FileText,
+  Pencil,
   Plus,
   Stethoscope,
   User,
@@ -70,6 +71,13 @@ export default async function PatientDetailPage({ params }: Props) {
           <Plus className="h-4 w-4" />
           New Consultation
         </Link>
+        <Link
+          href={`/patients/${params.id}/edit`}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit
+        </Link>
       </div>
 
       {/* Patient Details */}
@@ -87,7 +95,14 @@ export default async function PatientDetailPage({ params }: Props) {
             </div>
             <div>
               <dt className="text-gray-500">Age</dt>
-              <dd className="font-medium text-gray-900">{patient.age} years</dd>
+              <dd className="font-medium text-gray-900">
+                {patient.calculated_age ?? patient.age} years
+                {patient.date_of_birth && (
+                  <span className="ml-1 text-xs text-gray-500">
+                    (DOB: {new Date(patient.date_of_birth).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })})
+                  </span>
+                )}
+              </dd>
             </div>
             <div>
               <dt className="text-gray-500">Phone</dt>

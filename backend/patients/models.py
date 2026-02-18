@@ -34,6 +34,7 @@ class Patient(models.Model):
     record_id = models.CharField(max_length=20, unique=True, editable=False)
     name = models.CharField(max_length=255)
     age = models.PositiveSmallIntegerField()
+    date_of_birth = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
     phone = models.CharField(max_length=15, db_index=True)
     email = models.EmailField(blank=True, default="")
@@ -61,6 +62,14 @@ class Patient(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+    @property
+    def calculated_age(self):
+        if self.date_of_birth:
+            today = timezone.now().date()
+            dob = self.date_of_birth
+            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        return self.age
 
     def save(self, *args, **kwargs):
         if not self.record_id:
