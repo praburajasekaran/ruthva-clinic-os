@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, useCallback } from "react";
+import { flushSync } from "react-dom";
 import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -51,10 +52,10 @@ export function DynamicTable({
           cellRefs.current[nextRow]?.[colIdx]?.focus();
         } else {
           // On last row: add a new row, then focus its cell after state update
-          onAdd();
-          setTimeout(() => {
-            cellRefs.current[nextRow]?.[colIdx]?.focus();
-          }, 0);
+          // flushSync forces React to synchronously commit onAdd()'s state update
+          // so the new row's DOM node is present and ref is populated before focus()
+          flushSync(() => onAdd());
+          cellRefs.current[nextRow]?.[colIdx]?.focus();
         }
       }
       if (e.key === "ArrowUp") {
