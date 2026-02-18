@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
+import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 
@@ -66,6 +68,7 @@ export default async function PrescriptionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      {patient && <PatientShortcutsInit patientId={patient.id} />}
       {patient && <PatientBanner patient={patient} />}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -85,6 +88,15 @@ export default async function PrescriptionDetailPage({ params }: Props) {
           )}
         </div>
         <div className="flex gap-3">
+          {patient && (
+            <Link
+              href={`/patients/${patient.id}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Patient
+              <KbdBadge keys={["H"]} aria-label="Press H to go to patient detail" />
+            </Link>
+          )}
           <Link
             href={`/prescriptions/${params.id}/edit`}
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
@@ -118,6 +130,7 @@ export default async function PrescriptionDetailPage({ params }: Props) {
                 frequency_tamil: string;
                 duration: string;
                 instructions: string;
+                instructions_ta: string;
               }) => {
                 const freqOpt = FREQUENCY_OPTIONS.find(
                   (f) => f.value === med.frequency,
@@ -147,6 +160,11 @@ export default async function PrescriptionDetailPage({ params }: Props) {
                     {med.instructions && (
                       <p className="mt-1 text-sm text-gray-500">
                         {med.instructions}
+                      </p>
+                    )}
+                    {med.instructions_ta && (
+                      <p className="mt-0.5 font-tamil text-sm text-emerald-700">
+                        {med.instructions_ta}
                       </p>
                     )}
                   </div>
@@ -193,26 +211,37 @@ export default async function PrescriptionDetailPage({ params }: Props) {
         <div className="rounded-lg border border-gray-200 bg-white p-6">
           <h2 className="mb-4 text-base font-semibold text-gray-900">Advice</h2>
           <dl className="space-y-3 text-sm">
-            {prescription.diet_advice && (
+            {(prescription.diet_advice || prescription.diet_advice_ta) && (
               <div>
                 <dt className="font-medium text-gray-700">Diet</dt>
-                <dd className="text-gray-600">{prescription.diet_advice}</dd>
+                {prescription.diet_advice && (
+                  <dd className="text-gray-600">{prescription.diet_advice}</dd>
+                )}
+                {prescription.diet_advice_ta && (
+                  <dd className="font-tamil text-emerald-700">{prescription.diet_advice_ta}</dd>
+                )}
               </div>
             )}
-            {prescription.lifestyle_advice && (
+            {(prescription.lifestyle_advice || prescription.lifestyle_advice_ta) && (
               <div>
                 <dt className="font-medium text-gray-700">Lifestyle</dt>
-                <dd className="text-gray-600">
-                  {prescription.lifestyle_advice}
-                </dd>
+                {prescription.lifestyle_advice && (
+                  <dd className="text-gray-600">{prescription.lifestyle_advice}</dd>
+                )}
+                {prescription.lifestyle_advice_ta && (
+                  <dd className="font-tamil text-emerald-700">{prescription.lifestyle_advice_ta}</dd>
+                )}
               </div>
             )}
-            {prescription.exercise_advice && (
+            {(prescription.exercise_advice || prescription.exercise_advice_ta) && (
               <div>
                 <dt className="font-medium text-gray-700">Exercise</dt>
-                <dd className="text-gray-600">
-                  {prescription.exercise_advice}
-                </dd>
+                {prescription.exercise_advice && (
+                  <dd className="text-gray-600">{prescription.exercise_advice}</dd>
+                )}
+                {prescription.exercise_advice_ta && (
+                  <dd className="font-tamil text-emerald-700">{prescription.exercise_advice_ta}</dd>
+                )}
               </div>
             )}
           </dl>
@@ -233,6 +262,11 @@ export default async function PrescriptionDetailPage({ params }: Props) {
           {prescription.follow_up_notes && (
             <p className="mt-1 text-sm text-amber-700">
               {prescription.follow_up_notes}
+            </p>
+          )}
+          {prescription.follow_up_notes_ta && (
+            <p className="mt-0.5 font-tamil text-sm text-amber-700">
+              {prescription.follow_up_notes_ta}
             </p>
           )}
         </div>

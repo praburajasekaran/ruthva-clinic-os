@@ -1,9 +1,11 @@
 "use client";
 
-import { LayoutDashboard, Users, Stethoscope, FileText, Menu, X } from "lucide-react";
+import { LayoutDashboard, Users, Stethoscope, FileText, Menu, X, Search } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { KbdBadge } from "@/components/ui/KbdBadge";
+import { useShortcuts } from "@/components/layout/KeyboardProvider";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -15,6 +17,7 @@ const navItems = [
 export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { openSearch } = useShortcuts();
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -34,6 +37,22 @@ export function Sidebar() {
           <X className="h-5 w-5" />
         </button>
       </div>
+
+      {/* Search button */}
+      <button
+        type="button"
+        onClick={() => {
+          setMobileOpen(false);
+          openSearch();
+        }}
+        className="no-print mb-4 flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+        aria-label="Search patients (Ctrl+K)"
+      >
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="flex-1 text-left">Search patients…</span>
+        <KbdBadge keys={["Ctrl", "K"]} />
+      </button>
+
       <nav className="space-y-1">
         {navItems.map((item) => {
           const active = isActive(item.href);
@@ -49,7 +68,13 @@ export function Sidebar() {
               }`}
             >
               <item.icon className="h-5 w-5" />
-              {item.label}
+              <span className="flex-1">{item.label}</span>
+              {item.href === "/patients" && (
+                <KbdBadge
+                  keys={["N"]}
+                  aria-label="Press N to register a new patient"
+                />
+              )}
             </Link>
           );
         })}

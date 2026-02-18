@@ -22,11 +22,22 @@
     print-color-adjust: exact;
   }
 
-  /* Hide non-print elements globally */
+  /* Hide ALL non-print UI elements: sidebar, nav, hamburger, buttons */
   .no-print,
   nav,
-  header:not(.print-header) {
+  aside,
+  header:not(.print-header),
+  button[aria-label="Open menu"] {
     display: none !important;
+  }
+
+  /* Reset layout — remove sidebar flex wrapper constraints */
+  body > div {
+    display: block !important;
+  }
+  main {
+    padding: 0 !important;
+    margin: 0 !important;
   }
 
   /* Avoid breaking inside key elements */

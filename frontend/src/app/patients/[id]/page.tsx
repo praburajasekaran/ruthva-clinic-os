@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
+import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { KbdBadge } from "@/components/ui/KbdBadge";
 import {
   Calendar,
   FileText,
@@ -59,6 +61,7 @@ export default async function PatientDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      <PatientShortcutsInit patientId={patient.id} />
       <PatientBanner patient={patient} />
 
       {/* Quick Actions */}
@@ -69,6 +72,7 @@ export default async function PatientDetailPage({ params }: Props) {
         >
           <Plus className="h-4 w-4" />
           New Consultation
+          <KbdBadge keys={["C"]} aria-label="Press C to start a new consultation" />
         </Link>
       </div>
 

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { inter, notoSansTamil } from "@/lib/fonts";
 import { Sidebar } from "@/components/layout/Sidebar";
+import { KeyboardProvider } from "@/components/layout/KeyboardProvider";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -19,12 +20,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${notoSansTamil.variable}`}>
       <body className="font-sans antialiased">
-        <div className="flex h-screen">
-          <Sidebar />
-          <main className="flex-1 overflow-auto bg-gray-50 p-6 pt-16 md:p-8 md:pt-8">
-            {children}
-          </main>
-        </div>
+        <KeyboardProvider>
+          <div className="flex h-screen">
+            <Sidebar />
+            <main className="flex-1 overflow-auto bg-gray-50 p-6 pt-16 md:p-8 md:pt-8">
+              {children}
+            </main>
+          </div>
+        </KeyboardProvider>
       </body>
     </html>
   );

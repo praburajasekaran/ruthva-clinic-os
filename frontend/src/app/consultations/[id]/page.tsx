@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
+import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, FileText, Pencil, Plus } from "lucide-react";
 import { ENVAGAI_OPTIONS, type EnvagaiTool } from "@/lib/constants/envagai-options";
 
@@ -57,6 +59,13 @@ export default async function ConsultationDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      {patient && (
+        <PatientShortcutsInit
+          patientId={patient.id}
+          consultationId={consultation.id}
+          prescriptionId={consultation.prescription?.id}
+        />
+      )}
       {patient && <PatientBanner patient={patient} />}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -79,6 +88,15 @@ export default async function ConsultationDetailPage({ params }: Props) {
             <Pencil className="h-4 w-4" />
             Edit
           </Link>
+          {patient && (
+            <Link
+              href={`/patients/${patient.id}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Patient
+              <KbdBadge keys={["H"]} aria-label="Press H to go to patient detail" />
+            </Link>
+          )}
           {consultation.prescription ? (
             <Link
               href={`/prescriptions/${consultation.prescription.id}`}
@@ -86,6 +104,7 @@ export default async function ConsultationDetailPage({ params }: Props) {
             >
               <FileText className="h-4 w-4" />
               View Prescription
+              <KbdBadge keys={["P"]} aria-label="Press P to view prescription" />
             </Link>
           ) : (
             <Link

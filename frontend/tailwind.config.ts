@@ -12,6 +12,9 @@ const config: Config = {
         sans: ["var(--font-inter)"],
         tamil: ["var(--font-tamil)"],
       },
+      zIndex: {
+        60: "60",
+      },
     },
   },
   plugins: [],

@@ -21,6 +21,7 @@ type MedicationData = {
   timing_tamil: string;
   duration: string;
   instructions: string;
+  instructions_ta: string;
 };
 
 type MedicationRowProps = {
@@ -167,16 +168,24 @@ export function MedicationRow({
           />
         </div>
 
-        <div>
+        <div className="sm:col-span-2">
           <BilingualLabel
             english={MEDICATION_LABELS.instructions.en}
             tamil={MEDICATION_LABELS.instructions.ta}
           />
-          <Input
-            value={data.instructions}
-            onChange={(e) => onChange("instructions", e.target.value)}
-            placeholder="e.g., With warm water"
-          />
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Input
+              value={data.instructions}
+              onChange={(e) => onChange("instructions", e.target.value)}
+              placeholder="e.g., Mix with warm water, take before food"
+            />
+            <Input
+              value={data.instructions_ta}
+              onChange={(e) => onChange("instructions_ta", e.target.value)}
+              placeholder="e.g., வெந்நீரில் கலந்து சாப்பிடவும்"
+              className="border-emerald-200 bg-emerald-50/30"
+            />
+          </div>
         </div>
       </div>
     </div>
