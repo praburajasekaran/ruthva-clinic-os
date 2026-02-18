@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
+import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 
@@ -66,6 +68,7 @@ export default async function PrescriptionDetailPage({ params }: Props) {
 
   return (
     <div className="space-y-6">
+      {patient && <PatientShortcutsInit patientId={patient.id} />}
       {patient && <PatientBanner patient={patient} />}
 
       <div className="flex flex-wrap items-center justify-between gap-4">
@@ -85,6 +88,15 @@ export default async function PrescriptionDetailPage({ params }: Props) {
           )}
         </div>
         <div className="flex gap-3">
+          {patient && (
+            <Link
+              href={`/patients/${patient.id}`}
+              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            >
+              Patient
+              <KbdBadge keys={["H"]} aria-label="Press H to go to patient detail" />
+            </Link>
+          )}
           <Link
             href={`/prescriptions/${params.id}/edit`}
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"

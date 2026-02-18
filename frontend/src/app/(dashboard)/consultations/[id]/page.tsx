@@ -4,7 +4,10 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+<<<<<<< HEAD:frontend/src/app/(dashboard)/consultations/[id]/page.tsx
 import { DiagnosticDataDisplay } from "@/components/consultations/DiagnosticDataDisplay";
+=======
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search):frontend/src/app/consultations/[id]/page.tsx
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, FileText, Pencil, Plus } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -79,10 +82,14 @@ export default function ConsultationDetailPage() {
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Patient
+<<<<<<< HEAD:frontend/src/app/(dashboard)/consultations/[id]/page.tsx
               <KbdBadge
                 keys={["H"]}
                 aria-label="Press H to go to patient detail"
               />
+=======
+              <KbdBadge keys={["H"]} aria-label="Press H to go to patient detail" />
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search):frontend/src/app/consultations/[id]/page.tsx
             </Link>
           )}
           {consultation.prescription ? (
@@ -92,10 +99,14 @@ export default function ConsultationDetailPage() {
             >
               <FileText className="h-4 w-4" />
               View Prescription
+<<<<<<< HEAD:frontend/src/app/(dashboard)/consultations/[id]/page.tsx
               <KbdBadge
                 keys={["P"]}
                 aria-label="Press P to view prescription"
               />
+=======
+              <KbdBadge keys={["P"]} aria-label="Press P to view prescription" />
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search):frontend/src/app/consultations/[id]/page.tsx
             </Link>
           ) : (
             <Link

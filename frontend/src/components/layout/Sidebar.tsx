@@ -1,5 +1,6 @@
 "use client";
 
+<<<<<<< HEAD
 import {
   LayoutDashboard,
   Users,
@@ -22,6 +23,14 @@ import { useShortcuts } from "@/components/layout/KeyboardProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import type { FollowUpsResponse, Medicine } from "@/lib/types";
+=======
+import { LayoutDashboard, Users, Stethoscope, FileText, Menu, X, Search } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+import { KbdBadge } from "@/components/ui/KbdBadge";
+import { useShortcuts } from "@/components/layout/KeyboardProvider";
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search)
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -38,6 +47,7 @@ export function Sidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useShortcuts();
+<<<<<<< HEAD
   const { user, logout } = useAuth();
   const [logoError, setLogoError] = useState(false);
   const { data: followUpsData } = useApi<FollowUpsResponse>("/dashboard/follow-ups/?tab=all");
@@ -50,6 +60,8 @@ export function Sidebar() {
   useEffect(() => {
     setLogoError(false);
   }, [clinicLogoUrl]);
+=======
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search)
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -158,7 +170,53 @@ export function Sidebar() {
           <span>Sign out</span>
         </button>
       </div>
+<<<<<<< HEAD
     </div>
+=======
+
+      {/* Search button */}
+      <button
+        type="button"
+        onClick={() => {
+          setMobileOpen(false);
+          openSearch();
+        }}
+        className="no-print mb-4 flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+        aria-label="Search patients (Ctrl+K)"
+      >
+        <Search className="h-4 w-4 shrink-0" />
+        <span className="flex-1 text-left">Search patients…</span>
+        <KbdBadge keys={["Ctrl", "K"]} />
+      </button>
+
+      <nav className="space-y-1">
+        {navItems.map((item) => {
+          const active = isActive(item.href);
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={() => setMobileOpen(false)}
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                active
+                  ? "bg-emerald-50 font-medium text-emerald-700"
+                  : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-700"
+              }`}
+            >
+              <item.icon className="h-5 w-5" />
+              <span className="flex-1">{item.label}</span>
+              {item.href === "/patients" && (
+                <KbdBadge
+                  keys={["N"]}
+                  aria-label="Press N to register a new patient"
+                />
+              )}
+            </Link>
+          );
+        })}
+      </nav>
+    </>
+>>>>>>> 0006a9e (feat(ux): keyboard-first navigation with global shortcuts and fuzzy search)
   );
 
   return (
