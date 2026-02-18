@@ -81,6 +81,8 @@ export type Patient = {
   readonly record_id: string;
   name: string;
   age: number;
+  date_of_birth: string | null;
+  readonly calculated_age: number;
   gender: Gender;
   phone: string;
   whatsapp_number: string;
@@ -108,6 +110,8 @@ export type PatientListItem = {
   readonly record_id: string;
   name: string;
   age: number;
+  date_of_birth: string | null;
+  readonly calculated_age: number;
   gender: Gender;
   phone: string;
   is_active: boolean;
@@ -134,6 +138,7 @@ export type FamilyHistory = {
 export type PatientFormState = {
   name: string;
   age: string;
+  date_of_birth: string;
   gender: Gender | "";
   phone: string;
   whatsapp_number: string;
@@ -278,12 +283,23 @@ export type InviteDetails = {
 };
 
 // ── Dashboard ──
+export type RecentPatient = {
+  id: number;
+  name: string;
+  record_id: string;
+  age: number;
+  date_of_birth: string | null;
+  last_visit: string;
+  latest_complaint: string | null;
+};
+
 export type DashboardStats = {
   today_patients: number;
   week_patients: number;
   pending_prescriptions: number;
   follow_ups_due: number;
   total_patients: number;
+  recent_patients: RecentPatient[];
 };
 
 export type LegacyFollowUpItem = {
