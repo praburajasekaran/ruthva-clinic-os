@@ -201,7 +201,7 @@ export function ConsultationForm({
       } else if (andWriteRx) {
         router.push(`/consultations/${result.id}/prescriptions/new`);
       } else {
-        router.push(`/patients/${patientId}`);
+        router.push(`/consultations/${result.id}`);
       }
     }
   }

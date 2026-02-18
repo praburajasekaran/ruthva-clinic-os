@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
@@ -9,6 +11,7 @@ import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { DynamicTable } from "@/components/forms/DynamicTable";
 import { useMutation } from "@/hooks/useMutation";
+import api from "@/lib/api";
 import type { Patient, PatientFormState } from "@/lib/types";
 import {
   GENDER_OPTIONS,
@@ -23,6 +26,7 @@ const INDIAN_PHONE_REGEX = /^[6-9]\d{9}$/;
 const emptyForm: PatientFormState = {
   name: "",
   age: "",
+  date_of_birth: "",
   gender: "",
   phone: "",
   email: "",
@@ -41,11 +45,41 @@ const emptyForm: PatientFormState = {
   family_history: [],
 };
 
-export function PatientForm() {
+type PhoneMatch = { id: number; name: string; record_id: string };
+
+type PatientFormProps = {
+  mode?: "create" | "edit";
+  patientId?: number;
+  initialData?: Partial<PatientFormState>;
+};
+
+function calculateAge(dob: string): number {
+  const birthDate = new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+export function PatientForm({ mode = "create", patientId, initialData }: PatientFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState<PatientFormState>(emptyForm);
+  const isEdit = mode === "edit";
+  const [form, setForm] = useState<PatientFormState>(() =>
+    initialData ? { ...emptyForm, ...initialData } : emptyForm,
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { mutate, isLoading } = useMutation<unknown, Patient>("post", "/patients/");
+  const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+  const [phoneMatches, setPhoneMatches] = useState<PhoneMatch[]>([]);
+  const phoneCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const dobControlsAge = !!form.date_of_birth;
+
+  const { mutate, isLoading, error: mutationError } = useMutation<unknown, Patient>(
+    isEdit ? "patch" : "post",
+    isEdit ? `/patients/${patientId}/` : "/patients/",
+  );
 
   function updateField<K extends keyof PatientFormState>(
     field: K,
@@ -59,18 +93,73 @@ export function PatientForm() {
         return next;
       });
     }
+    if (serverErrors[field]) {
+      setServerErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
   }
+
+  function handleDobChange(value: string) {
+    updateField("date_of_birth", value);
+    if (value) {
+      const age = calculateAge(value);
+      if (age >= 0 && age <= 150) {
+        setForm((prev) => ({ ...prev, date_of_birth: value, age: String(age) }));
+      }
+    }
+  }
+
+  // Debounced phone duplicate check
+  useEffect(() => {
+    if (phoneCheckTimer.current) clearTimeout(phoneCheckTimer.current);
+    if (form.phone.length !== 10 || !INDIAN_PHONE_REGEX.test(form.phone)) {
+      setPhoneMatches([]);
+      return;
+    }
+    phoneCheckTimer.current = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ phone: form.phone });
+        if (isEdit && patientId) params.set("exclude", String(patientId));
+        const res = await api.get<PhoneMatch[]>(`/patients/check_phone/?${params}`);
+        setPhoneMatches(res.data);
+      } catch {
+        // Silently ignore — warning is informational
+      }
+    }, 500);
+    return () => {
+      if (phoneCheckTimer.current) clearTimeout(phoneCheckTimer.current);
+    };
+  }, [form.phone, isEdit, patientId]);
+
+  // Parse server errors when mutation fails
+  useEffect(() => {
+    if (!mutationError) return;
+    const fieldErrors: Record<string, string> = {};
+    for (const [key, val] of Object.entries(mutationError)) {
+      if (key === "detail" || key === "non_field_errors") continue;
+      if (Array.isArray(val)) fieldErrors[key] = val[0];
+      else if (typeof val === "string") fieldErrors[key] = val;
+    }
+    setServerErrors(fieldErrors);
+  }, [mutationError]);
 
   function validate(): boolean {
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = "Name is required";
     if (!form.age.trim()) errs.age = "Age is required";
     else if (isNaN(Number(form.age)) || Number(form.age) < 0 || Number(form.age) > 150)
-      errs.age = "Enter a valid age";
+      errs.age = "Enter a valid age (0-150)";
     if (!form.gender) errs.gender = "Gender is required";
     if (!form.phone.trim()) errs.phone = "Phone number is required";
     else if (!INDIAN_PHONE_REGEX.test(form.phone))
       errs.phone = "Enter a valid 10-digit Indian mobile number";
+    if (form.date_of_birth) {
+      const dobDate = new Date(form.date_of_birth);
+      if (dobDate > new Date()) errs.date_of_birth = "Date of birth cannot be in the future";
+    }
 
     setErrors(errs);
     if (Object.keys(errs).length > 0) {
@@ -84,10 +173,12 @@ export function PatientForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     if (!validate()) return;
+    setServerErrors({});
 
     const payload = {
       ...form,
       age: Number(form.age),
+      date_of_birth: form.date_of_birth || null,
       number_of_children: form.number_of_children
         ? Number(form.number_of_children)
         : null,
@@ -95,27 +186,56 @@ export function PatientForm() {
 
     const result = await mutate(payload);
     if (result) {
-      router.push(`/patients/${result.id}`);
+      router.push(`/patients/${isEdit ? patientId : result.id}`);
     }
   }
 
+  // Merge client + server errors for display
+  const allErrors = { ...serverErrors, ...errors };
+  const nonFieldError =
+    mutationError?.detail ||
+    (mutationError?.non_field_errors
+      ? (Array.isArray(mutationError.non_field_errors)
+          ? mutationError.non_field_errors[0]
+          : mutationError.non_field_errors)
+      : null);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Non-field server errors */}
+      {nonFieldError && (
+        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+          {nonFieldError}
+        </div>
+      )}
+
       {/* Basic Information */}
       <FormSection title="Basic Information" id="basic-info">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Full Name" required error={errors.name}>
+          <FormField label="Full Name" required error={allErrors.name}>
             {(props) => (
               <Input
                 {...props}
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Patient full name"
-                hasError={!!errors.name}
+                hasError={!!allErrors.name}
               />
             )}
           </FormField>
-          <FormField label="Age" required error={errors.age}>
+          <FormField label="Date of Birth" error={allErrors.date_of_birth}>
+            {(props) => (
+              <Input
+                {...props}
+                type="date"
+                value={form.date_of_birth}
+                onChange={(e) => handleDobChange(e.target.value)}
+                max={new Date().toISOString().split("T")[0]}
+                hasError={!!allErrors.date_of_birth}
+              />
+            )}
+          </FormField>
+          <FormField label="Age" required error={allErrors.age}>
             {(props) => (
               <Input
                 {...props}
@@ -123,19 +243,23 @@ export function PatientForm() {
                 inputMode="numeric"
                 pattern="[0-9]*"
                 value={form.age}
-                onChange={(e) => updateField("age", e.target.value)}
-                placeholder="Age in years"
-                hasError={!!errors.age}
+                onChange={(e) => {
+                  if (!dobControlsAge) updateField("age", e.target.value);
+                }}
+                placeholder={dobControlsAge ? "Calculated from DOB" : "Age in years"}
+                readOnly={dobControlsAge}
+                hasError={!!allErrors.age}
+                className={dobControlsAge ? "bg-gray-50 text-gray-500" : ""}
               />
             )}
           </FormField>
-          <FormField label="Gender" required error={errors.gender}>
+          <FormField label="Gender" required error={allErrors.gender}>
             {(props) => (
               <Select
                 {...props}
                 value={form.gender}
                 onChange={(e) => updateField("gender", e.target.value as PatientFormState["gender"])}
-                hasError={!!errors.gender}
+                hasError={!!allErrors.gender}
               >
                 <option value="">Select gender</option>
                 {GENDER_OPTIONS.map((opt) => (
@@ -146,21 +270,52 @@ export function PatientForm() {
               </Select>
             )}
           </FormField>
-          <FormField label="Phone" required error={errors.phone}>
-            {(props) => (
-              <Input
-                {...props}
-                type="tel"
-                inputMode="tel"
-                maxLength={10}
-                value={form.phone}
-                onChange={(e) => updateField("phone", e.target.value)}
-                placeholder="10-digit mobile number"
-                hasError={!!errors.phone}
-              />
+          <div>
+            <FormField label="Phone" required error={allErrors.phone}>
+              {(props) => (
+                <Input
+                  {...props}
+                  type="tel"
+                  inputMode="tel"
+                  maxLength={10}
+                  value={form.phone}
+                  onChange={(e) => updateField("phone", e.target.value)}
+                  placeholder="10-digit mobile number"
+                  hasError={!!allErrors.phone}
+                />
+              )}
+            </FormField>
+            {phoneMatches.length > 0 && (
+              <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                <div className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                  <div className="text-sm text-amber-800">
+                    <p className="font-medium">
+                      This phone number is already registered for:
+                    </p>
+                    <ul className="mt-1 space-y-1">
+                      {phoneMatches.map((match) => (
+                        <li key={match.id}>
+                          <Link
+                            href={`/patients/${match.id}`}
+                            className="font-medium text-amber-900 underline hover:text-amber-700"
+                            target="_blank"
+                          >
+                            {match.name}
+                          </Link>{" "}
+                          ({match.record_id})
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="mt-1 text-xs text-amber-600">
+                      If this is a different person (e.g., family member), you can continue.
+                    </p>
+                  </div>
+                </div>
+              </div>
             )}
-          </FormField>
-          <FormField label="Email" error={errors.email}>
+          </div>
+          <FormField label="Email" error={allErrors.email}>
             {(props) => (
               <Input
                 {...props}
@@ -318,7 +473,7 @@ export function PatientForm() {
       )}
 
       {/* Medical History */}
-      <FormSection title="Medical History" id="medical-history" defaultOpen={false}>
+      <FormSection title="Medical History" id="medical-history" defaultOpen={isEdit}>
         <DynamicTable
           columns={[
             { key: "disease", label: "Disease/Condition", placeholder: "e.g., Diabetes" },
@@ -351,7 +506,7 @@ export function PatientForm() {
       </FormSection>
 
       {/* Family History */}
-      <FormSection title="Family History" id="family-history" defaultOpen={false}>
+      <FormSection title="Family History" id="family-history" defaultOpen={isEdit}>
         <DynamicTable
           columns={[
             { key: "relation", label: "Relation", placeholder: "e.g., Father" },
@@ -394,7 +549,7 @@ export function PatientForm() {
           Cancel
         </Button>
         <Button type="submit" isLoading={isLoading}>
-          Register Patient
+          {isEdit ? "Save Changes" : "Register Patient"}
         </Button>
       </div>
     </form>

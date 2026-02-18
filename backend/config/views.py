@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from django.db.models import Max, Subquery, OuterRef
 from django.utils import timezone
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
@@ -43,5 +44,21 @@ def dashboard_stats(request):
                 follow_up_date=today
             ).count(),
             "total_patients": Patient.objects.count(),
+            "recent_patients": list(
+                Patient.objects.annotate(
+                    last_visit=Max("consultations__consultation_date"),
+                    latest_complaint=Subquery(
+                        Consultation.objects.filter(patient=OuterRef("pk"))
+                        .order_by("-consultation_date", "-created_at")
+                        .values("chief_complaints")[:1]
+                    ),
+                )
+                .filter(last_visit__isnull=False)
+                .order_by("-last_visit")
+                .values(
+                    "id", "name", "record_id", "age", "date_of_birth",
+                    "last_visit", "latest_complaint",
+                )[:10]
+            ),
         }
     )
