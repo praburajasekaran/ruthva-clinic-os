@@ -216,6 +216,7 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
             {(props) => (
               <Input
                 {...props}
+                autoFocus
                 value={form.name}
                 onChange={(e) => updateField("name", e.target.value)}
                 placeholder="Patient full name"
