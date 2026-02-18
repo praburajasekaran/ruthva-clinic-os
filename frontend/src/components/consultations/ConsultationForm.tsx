@@ -4,12 +4,17 @@ import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { EnvagaiThervu } from "./EnvagaiThervu";
 import { useAutoSave, loadDraft, clearDraft } from "@/hooks/useAutoSave";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useMutation } from "@/hooks/useMutation";
+import {
+  SECTION_LABELS,
+  ASSESSMENT_LABELS,
+} from "@/lib/constants/bilingual-labels";
 import type { Consultation } from "@/lib/types";
 import type { EnvagaiTool } from "@/lib/constants/envagai-options";
 
@@ -102,20 +107,36 @@ function reducer(
 }
 
 const SECTIONS = [
-  { id: "vitals", label: "Vitals" },
-  { id: "general-assessment", label: "General Assessment" },
-  { id: "envagai-thervu", label: "Envagai Thervu" },
-  { id: "diagnosis-section", label: "Diagnosis" },
+  { id: "vitals", label: SECTION_LABELS.vitals.en, labelTamil: SECTION_LABELS.vitals.ta },
+  { id: "general-assessment", label: SECTION_LABELS.generalAssessment.en, labelTamil: SECTION_LABELS.generalAssessment.ta },
+  { id: "envagai-thervu", label: SECTION_LABELS.envagaiThervu.en, labelTamil: SECTION_LABELS.envagaiThervu.ta },
+  { id: "diagnosis-section", label: SECTION_LABELS.diagnosis.en, labelTamil: SECTION_LABELS.diagnosis.ta },
 ];
 
 type ConsultationFormProps = {
   patientId: number;
+  mode?: "create" | "edit";
+  consultationId?: number;
+  initialData?: Partial<ConsultationFormState>;
 };
 
-export function ConsultationForm({ patientId }: ConsultationFormProps) {
+export function ConsultationForm({
+  patientId,
+  mode = "create",
+  consultationId,
+  initialData,
+}: ConsultationFormProps) {
   const router = useRouter();
-  const draftKey = `consultation-draft-${patientId}`;
-  const [state, dispatch] = useReducer(reducer, undefined, getInitialState);
+  const isEdit = mode === "edit";
+  const draftKey = isEdit
+    ? `consultation-edit-draft-${consultationId}`
+    : `consultation-draft-${patientId}`;
+
+  const [state, dispatch] = useReducer(
+    reducer,
+    undefined,
+    () => (initialData ? { ...getInitialState(), ...initialData } : getInitialState()),
+  );
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftLoadedRef = useRef(false);
 
@@ -124,8 +145,8 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
   );
 
   const { mutate, isLoading } = useMutation<unknown, Consultation>(
-    "post",
-    "/consultations/",
+    isEdit ? "patch" : "post",
+    isEdit ? `/consultations/${consultationId}/` : "/consultations/",
   );
 
   // Check for draft on mount
@@ -162,7 +183,7 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
     e.preventDefault();
 
     const payload = {
-      patient: patientId,
+      ...(isEdit ? {} : { patient: patientId }),
       ...state,
       weight: state.weight || null,
       height: state.height || null,
@@ -175,7 +196,9 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
     const result = await mutate(payload);
     if (result) {
       clearDraft(draftKey);
-      if (andWriteRx) {
+      if (isEdit) {
+        router.push(`/consultations/${consultationId}`);
+      } else if (andWriteRx) {
         router.push(`/consultations/${result.id}/prescriptions/new`);
       } else {
         router.push(`/patients/${patientId}`);
@@ -200,6 +223,9 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
               }`}
             >
               {section.label}
+              <span className="block font-tamil text-xs opacity-60">
+                {section.labelTamil}
+              </span>
             </button>
           ))}
         </div>
@@ -212,6 +238,7 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
             <button
               key={section.id}
               type="button"
+              title={section.labelTamil}
               onClick={() => scrollToSection(section.id)}
               className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${
                 activeSection === section.id
@@ -253,7 +280,7 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
         )}
 
         {/* Vitals */}
-        <FormSection title="Vitals" id="vitals">
+        <FormSection title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" />} id="vitals">
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <FormField label="Weight (kg)">
               {(props) => (
@@ -337,25 +364,24 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
         </FormSection>
 
         {/* General Assessment */}
-        <FormSection title="General Assessment" id="general-assessment">
+        <FormSection title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" />} id="general-assessment">
           <div className="space-y-4">
             {(
               [
-                { field: "appetite" as const, notesField: "appetite_notes" as const, label: "Appetite" },
-                { field: "bowel" as const, notesField: "bowel_notes" as const, label: "Bowel" },
-                { field: "micturition" as const, notesField: "micturition_notes" as const, label: "Micturition" },
-                { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: "Sleep" },
+                { field: "appetite" as const, notesField: "appetite_notes" as const, label: ASSESSMENT_LABELS.appetite.en, labelTamil: ASSESSMENT_LABELS.appetite.ta },
+                { field: "bowel" as const, notesField: "bowel_notes" as const, label: ASSESSMENT_LABELS.bowel.en, labelTamil: ASSESSMENT_LABELS.bowel.ta },
+                { field: "micturition" as const, notesField: "micturition_notes" as const, label: ASSESSMENT_LABELS.micturition.en, labelTamil: ASSESSMENT_LABELS.micturition.ta },
+                { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: ASSESSMENT_LABELS.sleep.en, labelTamil: ASSESSMENT_LABELS.sleep.ta },
               ] as const
-            ).map(({ field, notesField, label }) => (
+            ).map(({ field, notesField, label, labelTamil }) => (
               <div key={field}>
-                <label className="mb-2 block text-sm font-medium text-gray-700">
-                  {label}
-                </label>
-                <div className="flex gap-2">
+                <BilingualLabel english={label} tamil={labelTamil} as="label" className="mb-2" />
+                <div className="flex gap-2" role="group" aria-label={`${label} status`}>
                   <button
                     type="button"
+                    aria-pressed={state[field] === "normal"}
                     onClick={() => setField(field, state[field] === "normal" ? "" : "normal")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       state[field] === "normal"
                         ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -365,8 +391,9 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
                   </button>
                   <button
                     type="button"
+                    aria-pressed={state[field] === "abnormal"}
                     onClick={() => setField(field, state[field] === "abnormal" ? "" : "abnormal")}
-                    className={`rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                       state[field] === "abnormal"
                         ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500"
                         : "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -375,22 +402,25 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
                     Abnormal
                   </button>
                 </div>
-                {state[field] === "abnormal" && (
-                  <textarea
-                    value={state[notesField]}
-                    onChange={(e) => setField(notesField, e.target.value)}
-                    placeholder={`Describe ${label.toLowerCase()} abnormality...`}
-                    rows={2}
-                    className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                  />
-                )}
+                <div aria-live="polite">
+                  {state[field] === "abnormal" && (
+                    <textarea
+                      aria-label={`${label} abnormality notes`}
+                      value={state[notesField]}
+                      onChange={(e) => setField(notesField, e.target.value)}
+                      placeholder={`Describe ${label.toLowerCase()} abnormality...`}
+                      rows={2}
+                      className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                    />
+                  )}
+                </div>
               </div>
             ))}
           </div>
         </FormSection>
 
         {/* Envagai Thervu */}
-        <FormSection title="Envagai Thervu (8 Diagnostic Tools)" id="envagai-thervu">
+        <FormSection title={<BilingualLabel english={SECTION_LABELS.envagaiThervu.en} tamil={SECTION_LABELS.envagaiThervu.ta} as="span" />} id="envagai-thervu">
           <EnvagaiThervu
             values={{
               naa: state.naa,
@@ -424,7 +454,7 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
         </FormSection>
 
         {/* Diagnosis */}
-        <FormSection title="Diagnosis" id="diagnosis-section">
+        <FormSection title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" />} id="diagnosis-section">
           <div className="space-y-4">
             <FormField label="Chief Complaints">
               {(props) => (
@@ -498,16 +528,24 @@ export function ConsultationForm({ patientId }: ConsultationFormProps) {
           >
             Cancel
           </Button>
-          <Button type="submit" variant="secondary" isLoading={isLoading}>
-            Save Consultation
-          </Button>
-          <Button
-            type="button"
-            isLoading={isLoading}
-            onClick={(e) => handleSubmit(e, true)}
-          >
-            Save & Write Rx
-          </Button>
+          {isEdit ? (
+            <Button type="submit" isLoading={isLoading}>
+              Update Consultation
+            </Button>
+          ) : (
+            <>
+              <Button type="submit" variant="secondary" isLoading={isLoading}>
+                Save Consultation
+              </Button>
+              <Button
+                type="button"
+                isLoading={isLoading}
+                onClick={(e) => handleSubmit(e, true)}
+              >
+                Save & Write Rx
+              </Button>
+            </>
+          )}
         </div>
       </form>
     </div>

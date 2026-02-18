@@ -1,6 +1,7 @@
 "use client";
 
 import { Select } from "@/components/ui/Select";
+import { DoshaChip, isDoshaType } from "@/components/ui/DoshaChip";
 import { ENVAGAI_OPTIONS, type EnvagaiTool } from "@/lib/constants/envagai-options";
 
 type EnvagaiThervuProps = {
@@ -27,6 +28,12 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
               ({tool.labelTamil})
             </span>
             <span className="text-xs text-gray-400">{tool.translation}</span>
+            {key === "nadi" && (() => {
+              const nadiType = getFieldValue(values[key] ?? "", "type").toLowerCase();
+              return isDoshaType(nadiType) ? (
+                <DoshaChip dosha={nadiType as "vatham" | "pitham" | "kapham"} />
+              ) : null;
+            })()}
           </div>
 
           <div className="space-y-2">

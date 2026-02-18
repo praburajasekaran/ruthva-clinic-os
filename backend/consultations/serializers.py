@@ -34,3 +34,10 @@ class ConsultationDetailSerializer(serializers.ModelSerializer):
         model = Consultation
         fields = "__all__"
         read_only_fields = ["created_at", "updated_at"]
+
+    def validate_patient(self, value):
+        if self.instance and self.instance.patient != value:
+            raise serializers.ValidationError(
+                "Cannot reassign consultation to a different patient."
+            )
+        return value

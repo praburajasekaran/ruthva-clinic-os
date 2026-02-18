@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -50,14 +50,20 @@ export function PatientTable({ initialData }: PatientTableProps) {
     <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="relative flex-1 sm:max-w-sm">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
-          <Input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name, phone, or ID..."
-            className="pl-10"
-          />
+        <div className="flex-1 sm:max-w-sm">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name, phone, or ID..."
+              className="pl-10"
+            />
+          </div>
+          <p className="mt-1 flex items-center gap-1 text-xs text-gray-400">
+            <Phone className="h-3 w-3" />
+            <span>Tip: Enter phone number for fastest lookup</span>
+          </p>
         </div>
         <Link href="/patients/new">
           <Button>

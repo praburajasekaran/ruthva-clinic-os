@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
-import { Calendar, Printer } from "lucide-react";
+import { Calendar, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 
 type Props = {
@@ -84,13 +84,22 @@ export default async function PrescriptionDetailPage({ params }: Props) {
             </div>
           )}
         </div>
-        <Link
-          href={`/prescriptions/${params.id}/print`}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
-        >
-          <Printer className="h-4 w-4" />
-          Print
-        </Link>
+        <div className="flex gap-3">
+          <Link
+            href={`/prescriptions/${params.id}/edit`}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </Link>
+          <Link
+            href={`/prescriptions/${params.id}/print`}
+            className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+          >
+            <Printer className="h-4 w-4" />
+            Print
+          </Link>
+        </div>
       </div>
 
       {/* Medications */}

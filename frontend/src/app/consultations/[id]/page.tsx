@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
-import { Calendar, FileText, Plus } from "lucide-react";
+import { Calendar, FileText, Pencil, Plus } from "lucide-react";
 import { ENVAGAI_OPTIONS, type EnvagaiTool } from "@/lib/constants/envagai-options";
 
 type Props = {
@@ -72,6 +72,13 @@ export default async function ConsultationDetailPage({ params }: Props) {
           </div>
         </div>
         <div className="flex gap-3">
+          <Link
+            href={`/consultations/${params.id}/edit`}
+            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <Pencil className="h-4 w-4" />
+            Edit
+          </Link>
           {consultation.prescription ? (
             <Link
               href={`/prescriptions/${consultation.prescription.id}`}
