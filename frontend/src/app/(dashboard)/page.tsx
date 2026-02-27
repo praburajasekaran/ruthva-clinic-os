@@ -1,3 +1,5 @@
+"use client";
+
 import {
   Calendar,
   ClipboardList,
@@ -7,22 +9,15 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/components/auth/AuthProvider";
+import type { DashboardStats } from "@/lib/types";
 
-async function getDashboardStats() {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/dashboard/stats/`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
+export default function DashboardPage() {
+  const { user } = useAuth();
+  const { data: stats } = useApi<DashboardStats>("/dashboard/stats/");
 
-export default async function DashboardPage() {
-  const stats = await getDashboardStats();
+  const clinicName = user?.clinic?.name ?? "Your Clinic";
 
   const statCards = [
     {
@@ -56,7 +51,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
         <p className="mt-1 text-gray-600">
-          Welcome to Sivanethram — Siddha Clinic Management System
+          Welcome to {clinicName}
         </p>
       </div>
 
@@ -130,7 +125,10 @@ export default async function DashboardPage() {
       {/* Total Patients */}
       {stats?.total_patients != null && (
         <div className="text-sm text-gray-500">
-          Total registered patients: <span className="font-medium text-gray-700">{stats.total_patients}</span>
+          Total registered patients:{" "}
+          <span className="font-medium text-gray-700">
+            {stats.total_patients}
+          </span>
         </div>
       )}
     </div>

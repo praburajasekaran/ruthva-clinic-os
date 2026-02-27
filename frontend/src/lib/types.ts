@@ -1,3 +1,57 @@
+// ── Auth ──
+export type UserRole = "doctor" | "therapist" | "admin";
+
+export type User = {
+  readonly id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  is_clinic_owner: boolean;
+  clinic: ClinicInfo | null;
+};
+
+export type ClinicInfo = {
+  readonly id: number;
+  name: string;
+  subdomain: string;
+  discipline: string;
+  address: string;
+  phone: string;
+  email: string;
+  logo_url: string;
+  paper_size: string;
+  primary_color: string;
+  tagline: string;
+  is_active: boolean;
+};
+
+export type AuthTokens = {
+  access: string;
+  refresh: string;
+};
+
+export type LoginRequest = {
+  username: string;
+  password: string;
+};
+
+export type SignupRequest = {
+  clinic_name: string;
+  subdomain: string;
+  discipline: string;
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+};
+
+export type SignupResponse = AuthTokens & {
+  user: User;
+};
+
 // ── Domain unions ──
 export type Gender = "male" | "female" | "other";
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -29,6 +83,7 @@ export type Patient = {
   age: number;
   gender: Gender;
   phone: string;
+  whatsapp_number: string;
   email: string;
   address: string;
   blood_group: BloodGroup | "";
@@ -79,6 +134,7 @@ export type PatientFormState = {
   age: string;
   gender: Gender | "";
   phone: string;
+  whatsapp_number: string;
   email: string;
   address: string;
   blood_group: BloodGroup | "";

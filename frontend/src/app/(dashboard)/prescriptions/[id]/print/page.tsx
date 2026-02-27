@@ -1,65 +1,19 @@
-import type { Metadata } from "next";
-import { notFound } from "next/navigation";
-import {
-  FREQUENCY_OPTIONS,
-} from "@/lib/constants/envagai-options";
+"use client";
+
+import { useParams } from "next/navigation";
+import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 import {
   PRINT_LABELS,
   ADVICE_LABELS,
   MEDICATION_LABELS,
 } from "@/lib/constants/bilingual-labels";
 import { PrintTrigger } from "./PrintTrigger";
-
-type Props = {
-  params: { id: string };
-};
-
-async function getPrescription(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/prescriptions/${id}/`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function getConsultation(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/consultations/${id}/`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-async function getPatient(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/patients/${id}/`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-export const metadata: Metadata = {
-  title: "Print Prescription",
-};
+import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/components/auth/AuthProvider";
+import type { Prescription, Consultation, Patient } from "@/lib/types";
 
 const tamil = { style: { fontFamily: "var(--font-tamil)" } };
 
-/** Tamil-primary label with small English underneath */
 function TamilHeader({ ta, en }: { ta: string; en: string }) {
   return (
     <span>
@@ -71,7 +25,6 @@ function TamilHeader({ ta, en }: { ta: string; en: string }) {
   );
 }
 
-/** Small English-only label (used in table headers) */
 function BilingualTh({ ta, en }: { ta: string; en: string }) {
   return (
     <>
@@ -82,31 +35,40 @@ function BilingualTh({ ta, en }: { ta: string; en: string }) {
   );
 }
 
-export default async function PrintPrescriptionPage({ params }: Props) {
-  const prescription = await getPrescription(params.id);
-  if (!prescription) notFound();
-
-  const consultation = await getConsultation(
-    String(prescription.consultation),
+export default function PrintPrescriptionPage() {
+  const params = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const { data: prescription, isLoading } = useApi<Prescription>(
+    `/prescriptions/${params.id}/`,
   );
-  const patient = consultation
-    ? await getPatient(String(consultation.patient))
-    : null;
+  const { data: consultation } = useApi<Consultation>(
+    prescription ? `/consultations/${prescription.consultation}/` : null,
+  );
+  const { data: patient } = useApi<Patient>(
+    consultation ? `/patients/${consultation.patient}/` : null,
+  );
 
+  if (isLoading || !prescription) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+      </div>
+    );
+  }
+
+  const clinicName = user?.clinic?.name ?? "AYUSH Clinic";
   const medications = prescription.medications ?? [];
   const procedures = prescription.procedures ?? [];
 
   return (
     <div className="print-prescription mx-auto bg-white p-[10mm]">
       <style>{`
-        /* A4 layout to match pre-printed letterhead */
         .print-prescription {
           max-width: 210mm;
           font-size: 11pt;
           line-height: 1.4;
           color: black;
         }
-
         @media print {
           @page {
             size: A4 portrait;
@@ -125,7 +87,6 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             display: none !important;
           }
         }
-
         .print-prescription table {
           border-collapse: collapse;
           width: 100%;
@@ -147,17 +108,18 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         }
       `}</style>
 
-      {/* Clinic header is NOT rendered — doctor prints on pre-printed letterhead */}
-      {/* Screen-only header for reference */}
+      {/* Screen-only header */}
       <div className="no-print mb-4 border-b-2 border-gray-300 pb-3 text-center">
-        <h1 className="text-lg font-bold">SIVANETHRA SIDDHA CLINIC</h1>
-        <p className="text-xs">Dr. M. Subashini, BSMS, MD (Siddha)</p>
+        <h1 className="text-lg font-bold">{clinicName}</h1>
+        <p className="text-xs">
+          {user?.first_name} {user?.last_name}
+        </p>
         <p className="text-[8pt] italic text-gray-400">
           This header is hidden when printing — pre-printed letterhead is used
         </p>
       </div>
 
-      {/* Patient Info — matches letterhead "Name • Age • Sex" and "Date" layout */}
+      {/* Patient Info */}
       {patient && (
         <div className="mb-3 text-[10pt]">
           <div className="flex items-baseline justify-between">
@@ -191,7 +153,7 @@ export default async function PrintPrescriptionPage({ params }: Props) {
       {/* Rx Symbol */}
       <div className="mb-3 text-xl font-bold">&#8478;</div>
 
-      {/* Medications Table — Tamil-primary headers */}
+      {/* Medications Table */}
       {medications.length > 0 && (
         <table className="mb-4">
           <thead>
@@ -221,65 +183,51 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             </tr>
           </thead>
           <tbody>
-            {medications.map(
-              (
-                med: {
-                  id: number;
-                  drug_name: string;
-                  dosage: string;
-                  frequency: string;
-                  frequency_tamil: string;
-                  duration: string;
-                  instructions: string;
-                  instructions_ta: string;
-                },
-                idx: number,
-              ) => {
-                const freqOpt = FREQUENCY_OPTIONS.find(
-                  (f) => f.value === med.frequency,
-                );
-                const instrText = med.instructions_ta || med.instructions;
-                return (
-                  <tr key={med.id} className="medication-item">
-                    <td>{idx + 1}</td>
-                    <td>
-                      {med.drug_name}
-                      {instrText && (
-                        <div
-                          className="text-[8pt] text-gray-500"
-                          {...(med.instructions_ta ? tamil : {})}
-                        >
-                          ({instrText})
+            {medications.map((med, idx) => {
+              const freqOpt = FREQUENCY_OPTIONS.find(
+                (f) => f.value === med.frequency,
+              );
+              const instrText = med.instructions_ta || med.instructions;
+              return (
+                <tr key={med.id} className="medication-item">
+                  <td>{idx + 1}</td>
+                  <td>
+                    {med.drug_name}
+                    {instrText && (
+                      <div
+                        className="text-[8pt] text-gray-500"
+                        {...(med.instructions_ta ? tamil : {})}
+                      >
+                        ({instrText})
+                      </div>
+                    )}
+                  </td>
+                  <td>{med.dosage}</td>
+                  <td>
+                    {med.frequency_tamil ? (
+                      <>
+                        <span {...tamil}>{med.frequency_tamil}</span>
+                        <div className="text-[7pt] text-gray-400">
+                          {freqOpt
+                            ? freqOpt.label.split(" \u2014 ")[0]
+                            : med.frequency}
                         </div>
-                      )}
-                    </td>
-                    <td>{med.dosage}</td>
-                    <td>
-                      {med.frequency_tamil ? (
-                        <>
-                          <span {...tamil}>{med.frequency_tamil}</span>
-                          <div className="text-[7pt] text-gray-400">
-                            {freqOpt
-                              ? freqOpt.label.split(" \u2014 ")[0]
-                              : med.frequency}
-                          </div>
-                        </>
-                      ) : (
-                        freqOpt
-                          ? freqOpt.label.split(" \u2014 ")[0]
-                          : med.frequency
-                      )}
-                    </td>
-                    <td>{med.duration}</td>
-                  </tr>
-                );
-              },
-            )}
+                      </>
+                    ) : freqOpt ? (
+                      freqOpt.label.split(" \u2014 ")[0]
+                    ) : (
+                      med.frequency
+                    )}
+                  </td>
+                  <td>{med.duration}</td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       )}
 
-      {/* Procedures — Tamil-primary header */}
+      {/* Procedures */}
       {procedures.length > 0 && (
         <div className="mb-4">
           <p className="font-semibold">
@@ -289,28 +237,24 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             />
           </p>
           <ul className="list-inside list-disc text-[10pt]">
-            {procedures.map(
-              (proc: {
-                id: number;
-                name: string;
-                details: string;
-                duration: string;
-              }) => (
-                <li key={proc.id}>
-                  {proc.name}
-                  {proc.duration && ` (${proc.duration})`}
-                  {proc.details && ` — ${proc.details}`}
-                </li>
-              ),
-            )}
+            {procedures.map((proc) => (
+              <li key={proc.id}>
+                {proc.name}
+                {proc.duration && ` (${proc.duration})`}
+                {proc.details && ` — ${proc.details}`}
+              </li>
+            ))}
           </ul>
         </div>
       )}
 
-      {/* Advice — Tamil-primary labels, prefer Tamil content */}
-      {(prescription.diet_advice || prescription.diet_advice_ta ||
-        prescription.lifestyle_advice || prescription.lifestyle_advice_ta ||
-        prescription.exercise_advice || prescription.exercise_advice_ta) && (
+      {/* Advice */}
+      {(prescription.diet_advice ||
+        prescription.diet_advice_ta ||
+        prescription.lifestyle_advice ||
+        prescription.lifestyle_advice_ta ||
+        prescription.exercise_advice ||
+        prescription.exercise_advice_ta) && (
         <div className="mb-4 text-[10pt]">
           <p className="font-semibold">
             <TamilHeader
@@ -324,13 +268,16 @@ export default async function PrintPrescriptionPage({ params }: Props) {
               {prescription.diet_advice_ta || prescription.diet_advice}
             </p>
           )}
-          {(prescription.lifestyle_advice_ta || prescription.lifestyle_advice) && (
+          {(prescription.lifestyle_advice_ta ||
+            prescription.lifestyle_advice) && (
             <p {...(prescription.lifestyle_advice_ta ? tamil : {})}>
               <strong {...tamil}>{ADVICE_LABELS.lifestyle.ta}:</strong>{" "}
-              {prescription.lifestyle_advice_ta || prescription.lifestyle_advice}
+              {prescription.lifestyle_advice_ta ||
+                prescription.lifestyle_advice}
             </p>
           )}
-          {(prescription.exercise_advice_ta || prescription.exercise_advice) && (
+          {(prescription.exercise_advice_ta ||
+            prescription.exercise_advice) && (
             <p {...(prescription.exercise_advice_ta ? tamil : {})}>
               <strong {...tamil}>{ADVICE_LABELS.exercise.ta}:</strong>{" "}
               {prescription.exercise_advice_ta || prescription.exercise_advice}
@@ -339,7 +286,7 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         </div>
       )}
 
-      {/* Follow-up — Tamil-primary */}
+      {/* Follow-up */}
       {prescription.follow_up_date && (
         <div className="mb-4 text-[10pt]">
           <strong>
@@ -353,7 +300,8 @@ export default async function PrintPrescriptionPage({ params }: Props) {
             month: "long",
             year: "numeric",
           })}
-          {(prescription.follow_up_notes_ta || prescription.follow_up_notes) && (
+          {(prescription.follow_up_notes_ta ||
+            prescription.follow_up_notes) && (
             <span {...(prescription.follow_up_notes_ta ? tamil : {})}>
               {" — "}
               {prescription.follow_up_notes_ta || prescription.follow_up_notes}
@@ -362,9 +310,6 @@ export default async function PrintPrescriptionPage({ params }: Props) {
         </div>
       )}
 
-      {/* Signature area — not rendered, pre-printed on letterhead */}
-
-      {/* Print trigger */}
       <PrintTrigger />
     </div>
   );

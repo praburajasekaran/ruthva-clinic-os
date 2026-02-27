@@ -1,67 +1,42 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
+import { useApi } from "@/hooks/useApi";
+import type { Prescription, Consultation, Patient } from "@/lib/types";
 
-type Props = {
-  params: { id: string };
-};
+export default function PrescriptionDetailPage() {
+  const params = useParams<{ id: string }>();
+  const { data: prescription, isLoading } = useApi<Prescription>(
+    `/prescriptions/${params.id}/`,
+  );
+  const { data: consultation } = useApi<Consultation>(
+    prescription ? `/consultations/${prescription.consultation}/` : null,
+  );
+  const { data: patient } = useApi<Patient>(
+    consultation ? `/patients/${consultation.patient}/` : null,
+  );
 
-async function getPrescription(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/prescriptions/${id}/`,
-      { cache: "no-store" },
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+      </div>
     );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
   }
-}
 
-async function getConsultation(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/consultations/${id}/`,
-      { cache: "no-store" },
+  if (!prescription) {
+    return (
+      <div className="py-20 text-center text-gray-500">
+        Prescription not found.
+      </div>
     );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
   }
-}
-
-async function getPatient(id: string) {
-  try {
-    const res = await fetch(
-      `${process.env.API_INTERNAL_URL ?? "http://localhost:8000"}/api/v1/patients/${id}/`,
-      { cache: "no-store" },
-    );
-    if (!res.ok) return null;
-    return res.json();
-  } catch {
-    return null;
-  }
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  return { title: `Prescription #${params.id}` };
-}
-
-export default async function PrescriptionDetailPage({ params }: Props) {
-  const prescription = await getPrescription(params.id);
-  if (!prescription) notFound();
-
-  const consultation = await getConsultation(String(prescription.consultation));
-  const patient = consultation
-    ? await getPatient(String(consultation.patient))
-    : null;
 
   const medications = prescription.medications ?? [];
   const procedures = prescription.procedures ?? [];
@@ -94,7 +69,10 @@ export default async function PrescriptionDetailPage({ params }: Props) {
               className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Patient
-              <KbdBadge keys={["H"]} aria-label="Press H to go to patient detail" />
+              <KbdBadge
+                keys={["H"]}
+                aria-label="Press H to go to patient detail"
+              />
             </Link>
           )}
           <Link
@@ -121,56 +99,45 @@ export default async function PrescriptionDetailPage({ params }: Props) {
             Medications
           </h2>
           <div className="space-y-3">
-            {medications.map(
-              (med: {
-                id: number;
-                drug_name: string;
-                dosage: string;
-                frequency: string;
-                frequency_tamil: string;
-                duration: string;
-                instructions: string;
-                instructions_ta: string;
-              }) => {
-                const freqOpt = FREQUENCY_OPTIONS.find(
-                  (f) => f.value === med.frequency,
-                );
-                return (
-                  <div
-                    key={med.id}
-                    className="rounded-lg border border-gray-100 p-4"
-                  >
-                    <div className="flex items-start justify-between">
-                      <h3 className="font-medium text-gray-900">
-                        {med.drug_name}
-                      </h3>
-                      <span className="text-sm text-gray-500">
-                        {med.duration}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-sm text-gray-600">
-                      {med.dosage} &mdash;{" "}
-                      {freqOpt ? freqOpt.label : med.frequency}
-                    </p>
-                    {med.frequency_tamil && (
-                      <p className="font-tamil text-xs text-gray-500">
-                        {med.frequency_tamil}
-                      </p>
-                    )}
-                    {med.instructions && (
-                      <p className="mt-1 text-sm text-gray-500">
-                        {med.instructions}
-                      </p>
-                    )}
-                    {med.instructions_ta && (
-                      <p className="mt-0.5 font-tamil text-sm text-emerald-700">
-                        {med.instructions_ta}
-                      </p>
-                    )}
+            {medications.map((med) => {
+              const freqOpt = FREQUENCY_OPTIONS.find(
+                (f) => f.value === med.frequency,
+              );
+              return (
+                <div
+                  key={med.id}
+                  className="rounded-lg border border-gray-100 p-4"
+                >
+                  <div className="flex items-start justify-between">
+                    <h3 className="font-medium text-gray-900">
+                      {med.drug_name}
+                    </h3>
+                    <span className="text-sm text-gray-500">
+                      {med.duration}
+                    </span>
                   </div>
-                );
-              },
-            )}
+                  <p className="mt-1 text-sm text-gray-600">
+                    {med.dosage} &mdash;{" "}
+                    {freqOpt ? freqOpt.label : med.frequency}
+                  </p>
+                  {med.frequency_tamil && (
+                    <p className="font-tamil text-xs text-gray-500">
+                      {med.frequency_tamil}
+                    </p>
+                  )}
+                  {med.instructions && (
+                    <p className="mt-1 text-sm text-gray-500">
+                      {med.instructions}
+                    </p>
+                  )}
+                  {med.instructions_ta && (
+                    <p className="mt-0.5 font-tamil text-sm text-emerald-700">
+                      {med.instructions_ta}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
@@ -182,24 +149,17 @@ export default async function PrescriptionDetailPage({ params }: Props) {
             Procedures
           </h2>
           <div className="space-y-2">
-            {procedures.map(
-              (proc: {
-                id: number;
-                name: string;
-                details: string;
-                duration: string;
-              }) => (
-                <div key={proc.id} className="text-sm">
-                  <span className="font-medium text-gray-900">{proc.name}</span>
-                  {proc.duration && (
-                    <span className="ml-2 text-gray-500">({proc.duration})</span>
-                  )}
-                  {proc.details && (
-                    <p className="text-gray-600">{proc.details}</p>
-                  )}
-                </div>
-              ),
-            )}
+            {procedures.map((proc) => (
+              <div key={proc.id} className="text-sm">
+                <span className="font-medium text-gray-900">{proc.name}</span>
+                {proc.duration && (
+                  <span className="ml-2 text-gray-500">({proc.duration})</span>
+                )}
+                {proc.details && (
+                  <p className="text-gray-600">{proc.details}</p>
+                )}
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -209,7 +169,9 @@ export default async function PrescriptionDetailPage({ params }: Props) {
         prescription.lifestyle_advice ||
         prescription.exercise_advice) && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">Advice</h2>
+          <h2 className="mb-4 text-base font-semibold text-gray-900">
+            Advice
+          </h2>
           <dl className="space-y-3 text-sm">
             {(prescription.diet_advice || prescription.diet_advice_ta) && (
               <div>
@@ -218,29 +180,41 @@ export default async function PrescriptionDetailPage({ params }: Props) {
                   <dd className="text-gray-600">{prescription.diet_advice}</dd>
                 )}
                 {prescription.diet_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">{prescription.diet_advice_ta}</dd>
+                  <dd className="font-tamil text-emerald-700">
+                    {prescription.diet_advice_ta}
+                  </dd>
                 )}
               </div>
             )}
-            {(prescription.lifestyle_advice || prescription.lifestyle_advice_ta) && (
+            {(prescription.lifestyle_advice ||
+              prescription.lifestyle_advice_ta) && (
               <div>
                 <dt className="font-medium text-gray-700">Lifestyle</dt>
                 {prescription.lifestyle_advice && (
-                  <dd className="text-gray-600">{prescription.lifestyle_advice}</dd>
+                  <dd className="text-gray-600">
+                    {prescription.lifestyle_advice}
+                  </dd>
                 )}
                 {prescription.lifestyle_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">{prescription.lifestyle_advice_ta}</dd>
+                  <dd className="font-tamil text-emerald-700">
+                    {prescription.lifestyle_advice_ta}
+                  </dd>
                 )}
               </div>
             )}
-            {(prescription.exercise_advice || prescription.exercise_advice_ta) && (
+            {(prescription.exercise_advice ||
+              prescription.exercise_advice_ta) && (
               <div>
                 <dt className="font-medium text-gray-700">Exercise</dt>
                 {prescription.exercise_advice && (
-                  <dd className="text-gray-600">{prescription.exercise_advice}</dd>
+                  <dd className="text-gray-600">
+                    {prescription.exercise_advice}
+                  </dd>
                 )}
                 {prescription.exercise_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">{prescription.exercise_advice_ta}</dd>
+                  <dd className="font-tamil text-emerald-700">
+                    {prescription.exercise_advice_ta}
+                  </dd>
                 )}
               </div>
             )}
