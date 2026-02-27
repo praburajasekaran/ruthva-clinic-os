@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "patients",
     "consultations",
     "prescriptions",
+    "reminders",
 ]
 
 MIDDLEWARE = [
@@ -105,3 +106,12 @@ SPECTACULAR_SETTINGS = {
         "AssessmentEnum": "consultations.models.Consultation.ASSESSMENT_CHOICES",
     },
 }
+
+# Resend (email)
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
+RESEND_FROM_EMAIL = config(
+    "RESEND_FROM_EMAIL",
+    default="Sivanethram Siddha Clinic <onboarding@resend.dev>",
+)
+CLINIC_NAME = "Sivanethram Siddha Clinic"
+CLINIC_DOCTOR_NAME = config("CLINIC_DOCTOR_NAME", default="Dr. Subashini")
