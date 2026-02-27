@@ -1,4 +1,5 @@
-from django.db import models
+from django.conf import settings
+from django.db import models, transaction
 from django.utils import timezone
 
 
@@ -23,11 +24,17 @@ class Patient(models.Model):
         ("widowed", "Widowed"), ("divorced", "Divorced"),
     ]
 
-    record_id = models.CharField(max_length=20, unique=True, editable=False)
+    clinic = models.ForeignKey(
+        "clinics.Clinic",
+        on_delete=models.CASCADE,
+        related_name="patients",
+    )
+    record_id = models.CharField(max_length=20, editable=False)
     name = models.CharField(max_length=255)
     age = models.PositiveSmallIntegerField()
     gender = models.CharField(max_length=10, choices=GENDER_CHOICES)
-    phone = models.CharField(max_length=15, db_index=True)
+    phone = models.CharField(max_length=15)
+    whatsapp_number = models.CharField(max_length=15, blank=True, default="")
     email = models.EmailField(blank=True, default="")
     address = models.TextField(blank=True, default="")
     blood_group = models.CharField(
@@ -48,25 +55,51 @@ class Patient(models.Model):
     menstrual_history = models.TextField(blank=True, default="")
     number_of_children = models.PositiveSmallIntegerField(null=True, blank=True)
     vaccination_records = models.TextField(blank=True, default="")
+    date_of_birth = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["clinic", "-created_at"], name="patient_clinic_created"),
+            models.Index(fields=["clinic", "phone"], name="patient_clinic_phone"),
+        ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["clinic", "record_id"],
+                name="unique_record_id_per_clinic",
+            ),
+        ]
+
+    @property
+    def calculated_age(self):
+        if self.date_of_birth:
+            today = timezone.now().date()
+            dob = self.date_of_birth
+            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
+        return self.age
 
     def save(self, *args, **kwargs):
         if not self.record_id:
-            year = timezone.now().year
-            last = (
-                Patient.objects.filter(record_id__startswith=f"PAT-{year}-")
-                .order_by("-record_id")
-                .first()
-            )
-            if last:
-                last_num = int(last.record_id.split("-")[-1])
-                self.record_id = f"PAT-{year}-{last_num + 1:03d}"
-            else:
-                self.record_id = f"PAT-{year}-001"
+            with transaction.atomic():
+                year = timezone.now().year
+                from clinics.models import Clinic
+                Clinic.objects.select_for_update().get(pk=self.clinic_id)
+
+                last = (
+                    Patient.objects.filter(
+                        clinic=self.clinic,
+                        record_id__startswith=f"PAT-{year}-",
+                    )
+                    .order_by("-record_id")
+                    .first()
+                )
+                if last:
+                    last_num = int(last.record_id.split("-")[-1])
+                    self.record_id = f"PAT-{year}-{last_num + 1:04d}"
+                else:
+                    self.record_id = f"PAT-{year}-0001"
         super().save(*args, **kwargs)
 
     def __str__(self):

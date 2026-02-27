@@ -3,10 +3,13 @@ from weasyprint import HTML
 
 
 def generate_prescription_pdf(prescription):
+    clinic = prescription.clinic
     context = {
         "prescription": prescription,
         "patient": prescription.consultation.patient,
         "consultation": prescription.consultation,
+        "clinic": clinic,
+        "conducted_by": prescription.consultation.conducted_by,
         "medications": prescription.medications.all(),
         "procedures": prescription.procedures.all(),
     }
