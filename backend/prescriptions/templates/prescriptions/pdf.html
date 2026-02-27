@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <style>
         @page {
-            size: A4;
+            size: {{ clinic.paper_size|default:"A4" }};
             margin: 15mm;
         }
         body {
@@ -15,13 +15,13 @@
         }
         .header {
             text-align: center;
-            border-bottom: 2px solid #2c5f2d;
+            border-bottom: 2px solid {{ clinic.primary_color|default:"#2c5f2d" }};
             padding-bottom: 10px;
             margin-bottom: 15px;
         }
         .header h1 {
             margin: 0;
-            color: #2c5f2d;
+            color: {{ clinic.primary_color|default:"#2c5f2d" }};
             font-size: 18pt;
         }
         .header p {
@@ -53,15 +53,15 @@
         .section-title {
             font-size: 12pt;
             font-weight: bold;
-            color: #2c5f2d;
+            color: {{ clinic.primary_color|default:"#2c5f2d" }};
             margin: 15px 0 8px 0;
             padding-bottom: 3px;
-            border-bottom: 1px solid #2c5f2d;
+            border-bottom: 1px solid {{ clinic.primary_color|default:"#2c5f2d" }};
         }
         .rx-symbol {
             font-size: 16pt;
             font-weight: bold;
-            color: #2c5f2d;
+            color: {{ clinic.primary_color|default:"#2c5f2d" }};
         }
         table.medications {
             width: 100%;
@@ -69,7 +69,7 @@
             margin-bottom: 15px;
         }
         table.medications th {
-            background: #2c5f2d;
+            background: {{ clinic.primary_color|default:"#2c5f2d" }};
             color: white;
             padding: 6px 8px;
             text-align: left;
@@ -98,7 +98,7 @@
         }
         .advice-section .label {
             font-weight: bold;
-            color: #2c5f2d;
+            color: {{ clinic.primary_color|default:"#2c5f2d" }};
         }
         .follow-up {
             margin-top: 15px;
@@ -126,8 +126,10 @@
 </head>
 <body>
     <div class="header">
-        <h1>Sivanethram Siddha Clinic</h1>
-        <p>Traditional Siddha Medicine &amp; Wellness</p>
+        <h1>{{ clinic.name }}</h1>
+        {% if clinic.tagline %}<p>{{ clinic.tagline }}</p>{% endif %}
+        {% if clinic.address %}<p>{{ clinic.address }}</p>{% endif %}
+        {% if clinic.phone %}<p>{{ clinic.phone }}{% if clinic.email %} | {{ clinic.email }}{% endif %}</p>{% endif %}
     </div>
 
     <div class="patient-info">
@@ -235,7 +237,7 @@
 
     <div class="footer">
         <div class="signature-line">
-            Doctor's Signature
+            {% if conducted_by %}{{ conducted_by.get_full_name }}{% else %}Doctor's Signature{% endif %}
         </div>
     </div>
 </body>
