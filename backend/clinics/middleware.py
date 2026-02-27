@@ -8,7 +8,7 @@ class TenantMiddleware:
     """Resolves clinic from subdomain or X-Clinic-Slug header. CACHED."""
 
     EXEMPT_SUBDOMAINS = {"www", "api", "admin", ""}
-    EXEMPT_PATHS = {"/api/health/", "/api/schema/", "/api/docs/"}
+    EXEMPT_PATH_PREFIXES = ("/api/health/", "/api/schema/", "/api/docs/", "/api/v1/auth/")
     CACHE_TTL = 300  # 5 minutes
 
     def __init__(self, get_response):
@@ -23,7 +23,7 @@ class TenantMiddleware:
             parts = host.split(".")
             slug = parts[0] if len(parts) >= 3 else ""
 
-        if slug in self.EXEMPT_SUBDOMAINS or request.path in self.EXEMPT_PATHS:
+        if slug in self.EXEMPT_SUBDOMAINS or request.path.startswith(self.EXEMPT_PATH_PREFIXES):
             request.clinic = None
             return self.get_response(request)
 

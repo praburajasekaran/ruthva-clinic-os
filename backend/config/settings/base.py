@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -82,6 +83,9 @@ MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# CORS
+CORS_ALLOW_HEADERS = (*default_headers, "x-clinic-slug")
 
 # DRF
 REST_FRAMEWORK = {

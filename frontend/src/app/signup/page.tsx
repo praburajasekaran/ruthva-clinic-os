@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
-import { Leaf } from "lucide-react";
+import axios from "axios";
+import { Leaf, Loader2, CircleCheck, CircleX } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 
 const DISCIPLINES = [
@@ -12,6 +13,10 @@ const DISCIPLINES = [
   { value: "unani", label: "Unani" },
   { value: "homeopathy", label: "Homeopathy" },
 ];
+
+const AVAILABILITY_FIELDS = ["username", "email", "subdomain"] as const;
+type AvailabilityField = (typeof AVAILABILITY_FIELDS)[number];
+type AvailabilityStatus = "idle" | "checking" | "available" | "taken";
 
 export default function SignupPage() {
   const { signup } = useAuth();
@@ -25,8 +30,61 @@ export default function SignupPage() {
     email: "",
     password: "",
   });
-  const [error, setError] = useState("");
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [availability, setAvailability] = useState<
+    Record<AvailabilityField, AvailabilityStatus>
+  >({
+    username: "idle",
+    email: "idle",
+    subdomain: "idle",
+  });
+  const debounceTimers = useRef<Record<string, NodeJS.Timeout>>({});
+
+  const checkAvailability = useCallback(
+    async (field: AvailabilityField, value: string) => {
+      if (!value.trim()) {
+        setAvailability((prev) => ({ ...prev, [field]: "idle" }));
+        return;
+      }
+      setAvailability((prev) => ({ ...prev, [field]: "checking" }));
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+      try {
+        const { data } = await axios.post(
+          `${process.env.NEXT_PUBLIC_API_URL}/auth/check-availability/`,
+          { field, value: value.trim() },
+        );
+        setAvailability((prev) => ({
+          ...prev,
+          [field]: data.available ? "available" : "taken",
+        }));
+        if (!data.available) {
+          const messages: Record<AvailabilityField, string> = {
+            username: "This username is already taken.",
+            email: "This email is already registered.",
+            subdomain: "This subdomain is already taken.",
+          };
+          setErrors((prev) => ({ ...prev, [field]: messages[field] }));
+        }
+      } catch {
+        setAvailability((prev) => ({ ...prev, [field]: "idle" }));
+      }
+    },
+    [],
+  );
+
+  function debouncedCheck(field: AvailabilityField, value: string) {
+    if (debounceTimers.current[field]) {
+      clearTimeout(debounceTimers.current[field]);
+    }
+    debounceTimers.current[field] = setTimeout(() => {
+      checkAvailability(field, value);
+    }, 500);
+  }
 
   function update(field: string, value: string) {
     setForm((prev) => {
@@ -38,35 +96,56 @@ export default function SignupPage() {
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "")
           .slice(0, 63);
+        debouncedCheck("subdomain", next.subdomain);
       }
       return next;
     });
+    // Clear error and trigger availability check on typing
+    if (AVAILABILITY_FIELDS.includes(field as AvailabilityField)) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+      debouncedCheck(field as AvailabilityField, value);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setErrors({});
     setLoading(true);
 
     try {
       await signup(form);
     } catch (err: unknown) {
-      const data =
-        err && typeof err === "object" && "response" in err
-          ? (err as { response?: { data?: Record<string, unknown> } }).response
-              ?.data
-          : null;
-      if (data) {
-        const messages = Object.entries(data)
-          .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
-          .join(". ");
-        setError(messages);
+      if (axios.isAxiosError(err) && err.response?.data) {
+        const data = err.response.data;
+        if (typeof data === "object" && data !== null && !Array.isArray(data)) {
+          const fieldErrors: Record<string, string> = {};
+          for (const [k, v] of Object.entries(data)) {
+            fieldErrors[k] = Array.isArray(v) ? v.join(", ") : String(v);
+          }
+          setErrors(fieldErrors);
+        } else {
+          setErrors({ _general: "Something went wrong. Please try again." });
+        }
       } else {
-        setError("Something went wrong. Please try again.");
+        setErrors({ _general: "Something went wrong. Please try again." });
       }
     } finally {
       setLoading(false);
     }
+  }
+
+  function AvailabilityIndicator({ field }: { field: AvailabilityField }) {
+    const s = availability[field];
+    if (s === "idle") return null;
+    if (s === "checking")
+      return <Loader2 className="h-4 w-4 animate-spin text-gray-400" />;
+    if (s === "available")
+      return <CircleCheck className="h-4 w-4 text-emerald-500" />;
+    return <CircleX className="h-4 w-4 text-red-500" />;
   }
 
   return (
@@ -85,9 +164,9 @@ export default function SignupPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
+          {errors._general && (
             <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-              {error}
+              {errors._general}
             </div>
           )}
 
@@ -111,8 +190,9 @@ export default function SignupPage() {
                 required
                 autoFocus
                 placeholder="e.g. Sivanethram Siddha Clinic"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.clinic_name ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
               />
+              {errors.clinic_name && <p className="mt-1 text-xs text-red-600">{errors.clinic_name}</p>}
             </div>
 
             <div>
@@ -123,19 +203,25 @@ export default function SignupPage() {
                 Subdomain
               </label>
               <div className="flex items-center">
-                <input
-                  id="subdomain"
-                  type="text"
-                  value={form.subdomain}
-                  onChange={(e) => update("subdomain", e.target.value)}
-                  required
-                  pattern="[a-z0-9-]+"
-                  className="w-full rounded-l-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
+                <div className="relative w-full">
+                  <input
+                    id="subdomain"
+                    type="text"
+                    value={form.subdomain}
+                    onChange={(e) => update("subdomain", e.target.value)}
+                    required
+                    pattern="[a-z0-9\-]+"
+                    className={`w-full rounded-l-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.subdomain ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.subdomain === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                  />
+                  <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                    <AvailabilityIndicator field="subdomain" />
+                  </span>
+                </div>
                 <span className="rounded-r-lg border border-l-0 border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-500">
                   .ayushclinic.com
                 </span>
               </div>
+              {errors.subdomain && <p className="mt-1 text-xs text-red-600">{errors.subdomain}</p>}
             </div>
 
             <div>
@@ -207,14 +293,29 @@ export default function SignupPage() {
               >
                 Username
               </label>
-              <input
-                id="username"
-                type="text"
-                value={form.username}
-                onChange={(e) => update("username", e.target.value)}
-                required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
+              <div className="relative">
+                <input
+                  id="username"
+                  type="text"
+                  value={form.username}
+                  onChange={(e) => update("username", e.target.value)}
+                  required
+                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.username ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.username === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                  <AvailabilityIndicator field="username" />
+                </span>
+              </div>
+              {errors.username && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.username}{" "}
+                  {availability.username === "taken" && (
+                    <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700 underline">
+                      Sign in instead?
+                    </Link>
+                  )}
+                </p>
+              )}
             </div>
 
             <div>
@@ -224,14 +325,29 @@ export default function SignupPage() {
               >
                 Email
               </label>
-              <input
-                id="email"
-                type="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                required
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
-              />
+              <div className="relative">
+                <input
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => update("email", e.target.value)}
+                  required
+                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.email === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                />
+                <span className="absolute right-2 top-1/2 -translate-y-1/2">
+                  <AvailabilityIndicator field="email" />
+                </span>
+              </div>
+              {errors.email && (
+                <p className="mt-1 text-xs text-red-600">
+                  {errors.email}{" "}
+                  {availability.email === "taken" && (
+                    <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700 underline">
+                      Sign in instead?
+                    </Link>
+                  )}
+                </p>
+              )}
             </div>
 
             <div>
@@ -248,8 +364,9 @@ export default function SignupPage() {
                 onChange={(e) => update("password", e.target.value)}
                 required
                 minLength={8}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
               />
+              {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
           </fieldset>
 

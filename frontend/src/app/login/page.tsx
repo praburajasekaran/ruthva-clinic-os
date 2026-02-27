@@ -56,7 +56,7 @@ export default function LoginPage() {
               htmlFor="username"
               className="mb-1 block text-sm font-medium text-gray-700"
             >
-              Username
+              Username or Email
             </label>
             <input
               id="username"
@@ -65,6 +65,7 @@ export default function LoginPage() {
               onChange={(e) => setUsername(e.target.value)}
               required
               autoFocus
+              placeholder="Enter username or email"
               className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>

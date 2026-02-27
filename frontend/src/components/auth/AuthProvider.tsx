@@ -42,6 +42,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const res = await api.get<User>("/auth/me/");
+      if (res.data.clinic?.subdomain) {
+        localStorage.setItem("clinic_slug", res.data.clinic.subdomain);
+      }
       setState({ user: res.data, isLoading: false, isAuthenticated: true });
     } catch {
       localStorage.removeItem("access_token");
@@ -74,8 +77,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const res = await api.post("/auth/signup/", data);
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
-      if (res.data.user?.clinic?.subdomain) {
-        localStorage.setItem("clinic_slug", res.data.user.clinic.subdomain);
+      if (res.data.clinic?.subdomain) {
+        localStorage.setItem("clinic_slug", res.data.clinic.subdomain);
       }
       await fetchUser();
       router.push("/");

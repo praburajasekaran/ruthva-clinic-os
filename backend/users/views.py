@@ -1,8 +1,11 @@
+from django.contrib.auth import get_user_model
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.views import TokenObtainPairView
+
+from clinics.models import Clinic
 
 from .serializers import (
     ClinicSerializer,
@@ -10,6 +13,8 @@ from .serializers import (
     CustomTokenObtainPairSerializer,
     UserSerializer,
 )
+
+User = get_user_model()
 
 
 class CustomTokenObtainPairView(TokenObtainPairView):
@@ -36,14 +41,31 @@ def signup(request):
     )
 
 
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def check_availability(request):
+    field = request.data.get("field")
+    value = request.data.get("value", "").strip()
+
+    if field not in ("username", "email", "subdomain") or not value:
+        return Response(
+            {"error": "Invalid request"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if field == "subdomain":
+        taken = Clinic.objects.filter(subdomain=value).exists()
+    else:
+        taken = User.objects.filter(**{field: value}).exists()
+
+    return Response({"available": not taken})
+
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def me(request):
-    return Response(
-        {
-            "user": UserSerializer(request.user).data,
-            "clinic": ClinicSerializer(request.user.clinic).data
-            if request.user.clinic
-            else None,
-        }
+    data = UserSerializer(request.user).data
+    data["clinic"] = (
+        ClinicSerializer(request.user.clinic).data if request.user.clinic else None
     )
+    return Response(data)

@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -15,6 +16,21 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token["clinic_slug"] = user.clinic.subdomain if user.clinic else None
         token["role"] = user.role
         return token
+
+    def validate(self, attrs):
+        # Allow login with email by resolving it to username
+        username = attrs.get("username", "")
+        if "@" in username:
+            try:
+                user = User.objects.get(email=username)
+                attrs["username"] = user.username
+            except User.DoesNotExist:
+                pass  # Let super().validate() handle the auth failure
+        data = super().validate(attrs)
+        data["clinic_slug"] = (
+            self.user.clinic.subdomain if self.user.clinic else None
+        )
+        return data
 
 
 class ClinicSignupSerializer(serializers.Serializer):
@@ -45,35 +61,31 @@ class ClinicSignupSerializer(serializers.Serializer):
         return value
 
     def create(self, validated_data):
-        clinic = Clinic.objects.create(
-            name=validated_data["clinic_name"],
-            subdomain=validated_data["subdomain"],
-            discipline=validated_data["discipline"],
-        )
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"],
-            first_name=validated_data["first_name"],
-            last_name=validated_data.get("last_name", ""),
-            clinic=clinic,
-            role="doctor",
-            is_clinic_owner=True,
-        )
+        with transaction.atomic():
+            clinic = Clinic.objects.create(
+                name=validated_data["clinic_name"],
+                subdomain=validated_data["subdomain"],
+                discipline=validated_data["discipline"],
+            )
+            user = User.objects.create_user(
+                username=validated_data["username"],
+                email=validated_data["email"],
+                password=validated_data["password"],
+                first_name=validated_data["first_name"],
+                last_name=validated_data.get("last_name", ""),
+                clinic=clinic,
+                role="doctor",
+                is_clinic_owner=True,
+            )
         return {"clinic": clinic, "user": user}
 
 
 class UserSerializer(serializers.ModelSerializer):
-    clinic_name = serializers.CharField(source="clinic.name", read_only=True)
-    clinic_subdomain = serializers.CharField(source="clinic.subdomain", read_only=True)
-    clinic_discipline = serializers.CharField(source="clinic.discipline", read_only=True)
-
     class Meta:
         model = User
         fields = [
             "id", "username", "email", "first_name", "last_name",
             "role", "is_clinic_owner",
-            "clinic_name", "clinic_subdomain", "clinic_discipline",
         ]
 
 
