@@ -1,11 +1,24 @@
+from django.conf import settings
 from django.db import models
 
 
 class Consultation(models.Model):
     ASSESSMENT_CHOICES = [("normal", "Normal"), ("abnormal", "Abnormal")]
 
+    clinic = models.ForeignKey(
+        "clinics.Clinic",
+        on_delete=models.CASCADE,
+        related_name="consultations",
+    )
     patient = models.ForeignKey(
         "patients.Patient", on_delete=models.CASCADE, related_name="consultations"
+    )
+    conducted_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="consultations",
     )
 
     # Vitals
@@ -71,12 +84,16 @@ class Consultation(models.Model):
     diagnosis = models.TextField(blank=True, default="")
     icd_code = models.CharField(max_length=20, blank=True, default="")
 
-    consultation_date = models.DateField(db_index=True)
+    consultation_date = models.DateField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ["-consultation_date", "-created_at"]
+        indexes = [
+            models.Index(fields=["clinic", "-consultation_date"], name="consult_clinic_date"),
+            models.Index(fields=["clinic", "patient", "-consultation_date"], name="consult_clinic_pat_date"),
+        ]
 
     def __str__(self):
         return f"Consultation for {self.patient.name} on {self.consultation_date}"

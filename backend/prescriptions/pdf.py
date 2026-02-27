@@ -4,10 +4,13 @@ from weasyprint import HTML
 
 def generate_prescription_pdf(prescription):
     """Render prescription as bilingual PDF (Tamil + English)."""
+    clinic = prescription.clinic
     context = {
         "prescription": prescription,
         "patient": prescription.consultation.patient,
         "consultation": prescription.consultation,
+        "clinic": clinic,
+        "conducted_by": prescription.consultation.conducted_by,
         "medications": prescription.medications.all(),
         "procedures": prescription.procedures.all(),
     }

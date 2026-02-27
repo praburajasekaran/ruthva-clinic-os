@@ -22,7 +22,7 @@ class MedicationSerializer(serializers.ModelSerializer):
 class ProcedureEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ProcedureEntry
-        fields = ["id", "name", "details", "duration"]
+        fields = ["id", "name", "details", "duration", "follow_up_date"]
 
 
 class PrescriptionListSerializer(serializers.ModelSerializer):
@@ -63,7 +63,15 @@ class PrescriptionDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Prescription
-        fields = "__all__"
+        fields = [
+            "id", "consultation", "patient_name", "patient_record_id",
+            "diet_advice", "diet_advice_ta",
+            "lifestyle_advice", "lifestyle_advice_ta",
+            "exercise_advice", "exercise_advice_ta",
+            "follow_up_date", "follow_up_notes", "follow_up_notes_ta",
+            "medications", "procedures",
+            "created_at", "updated_at",
+        ]
         read_only_fields = ["created_at", "updated_at"]
 
     def validate_consultation(self, value):
@@ -71,6 +79,11 @@ class PrescriptionDetailSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Cannot reassign prescription to a different consultation."
             )
+        # Tenant FK validation: consultation must belong to same clinic
+        request = self.context.get("request")
+        if request and hasattr(request, "clinic") and request.clinic:
+            if value.clinic_id != request.clinic.id:
+                raise serializers.ValidationError("Consultation not found.")
         return value
 
     def create(self, validated_data):

@@ -29,6 +29,7 @@ const emptyForm: PatientFormState = {
   date_of_birth: "",
   gender: "",
   phone: "",
+  whatsapp_number: "",
   email: "",
   address: "",
   blood_group: "",
@@ -316,6 +317,19 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
               </div>
             )}
           </div>
+          <FormField label="WhatsApp Number">
+            {(props) => (
+              <Input
+                {...props}
+                type="tel"
+                inputMode="tel"
+                maxLength={10}
+                value={form.whatsapp_number}
+                onChange={(e) => updateField("whatsapp_number", e.target.value)}
+                placeholder="WhatsApp number (if different)"
+              />
+            )}
+          </FormField>
           <FormField label="Email" error={allErrors.email}>
             {(props) => (
               <Input
