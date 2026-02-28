@@ -57,11 +57,8 @@ export default function DashboardPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((card) => (
-          <div
-            key={card.label}
-            className="rounded-lg border border-gray-200 bg-white p-5"
-          >
+        {statCards.map((card) => {
+          const content = (
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">{card.label}</p>
@@ -73,8 +70,26 @@ export default function DashboardPage() {
                 <card.icon className="h-5 w-5" />
               </div>
             </div>
-          </div>
-        ))}
+          );
+
+          if (card.label === "Follow-ups Due") {
+            return (
+              <Link
+                key={card.label}
+                href="/follow-ups"
+                className="rounded-lg border border-gray-200 bg-white p-5 transition-colors hover:border-purple-200 hover:bg-purple-50"
+              >
+                {content}
+              </Link>
+            );
+          }
+
+          return (
+            <div key={card.label} className="rounded-lg border border-gray-200 bg-white p-5">
+              {content}
+            </div>
+          );
+        })}
       </div>
 
       {/* Quick Actions */}
