@@ -230,6 +230,51 @@ export type ProcedureEntry = {
   duration: string;
 };
 
+// ── Team ──
+export type TeamMember = {
+  readonly id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  is_clinic_owner: boolean;
+  date_joined: string;
+};
+
+export type Invitation = {
+  readonly id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+  invited_by_name: string;
+};
+
+export type InviteMemberRequest = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+};
+
+export type InviteDetails = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  clinic_name: string;
+};
+
+export type AcceptInviteRequest = {
+  token: string;
+  username: string;
+  password: string;
+};
+
 // ── Dashboard ──
 export type DashboardStats = {
   today_patients: number;
