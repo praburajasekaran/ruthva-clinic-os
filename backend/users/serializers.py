@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
@@ -102,6 +103,10 @@ class UserUpdateSerializer(serializers.ModelSerializer):
         user = self.instance
         if User.objects.filter(email=value).exclude(pk=user.pk).exists():
             raise serializers.ValidationError("This email is already in use.")
+        return value
+
+    def validate_new_password(self, value):
+        validate_password(value, self.instance)
         return value
 
     def validate(self, data):
