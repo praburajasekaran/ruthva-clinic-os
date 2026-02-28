@@ -277,3 +277,26 @@ export type DashboardStats = {
   follow_ups_due: number;
   total_patients: number;
 };
+
+// ── Data Portability ──
+export type ImportPreviewRow = {
+  line: number;
+  errors: string[];
+  raw?: Record<string, string>;
+  [key: string]: unknown;
+};
+
+export type ImportPreviewResult = {
+  valid: boolean;
+  total_rows?: number;
+  error_count?: number;
+  preview?: ImportPreviewRow[];
+  errors?: ImportPreviewRow[];
+  error?: string;
+};
+
+export type ImportConfirmResult = {
+  created: number;
+  skipped: number;
+  errors: ImportPreviewRow[];
+};

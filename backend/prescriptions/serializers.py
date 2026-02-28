@@ -3,6 +3,31 @@ from rest_framework import serializers
 from .models import Medication, Prescription, ProcedureEntry
 
 
+class PrescriptionImportRowSerializer(serializers.Serializer):
+    patient_phone = serializers.CharField(max_length=15)
+    consultation_date = serializers.DateField(input_formats=["%Y-%m-%d"])
+    diet_advice = serializers.CharField(required=False, allow_blank=True)
+    lifestyle_advice = serializers.CharField(required=False, allow_blank=True)
+    exercise_advice = serializers.CharField(required=False, allow_blank=True)
+    follow_up_date = serializers.DateField(
+        required=False, allow_null=True, input_formats=["%Y-%m-%d"]
+    )
+    follow_up_notes = serializers.CharField(required=False, allow_blank=True)
+    row_type = serializers.ChoiceField(choices=["medication", "procedure"])
+    drug_name = serializers.CharField(required=False, allow_blank=True)
+    dosage = serializers.CharField(required=False, allow_blank=True)
+    frequency = serializers.CharField(required=False, allow_blank=True)
+    duration = serializers.CharField(required=False, allow_blank=True)
+    instructions = serializers.CharField(required=False, allow_blank=True)
+    sort_order = serializers.IntegerField(required=False, allow_null=True)
+    procedure_name = serializers.CharField(required=False, allow_blank=True)
+    procedure_details = serializers.CharField(required=False, allow_blank=True)
+    procedure_duration = serializers.CharField(required=False, allow_blank=True)
+    procedure_follow_up_date = serializers.DateField(
+        required=False, allow_null=True, input_formats=["%Y-%m-%d"]
+    )
+
+
 class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication

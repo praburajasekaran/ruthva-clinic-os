@@ -3,6 +3,7 @@ from django.db import transaction
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+from clinics.logo_security import is_logo_url_allowed
 from clinics.models import Clinic
 
 User = get_user_model()
@@ -89,6 +90,44 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+class UserUpdateSerializer(serializers.ModelSerializer):
+    current_password = serializers.CharField(write_only=True, required=False)
+    new_password = serializers.CharField(write_only=True, required=False, min_length=8)
+
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "email", "current_password", "new_password"]
+
+    def validate_email(self, value):
+        user = self.instance
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("This email is already in use.")
+        return value
+
+    def validate(self, data):
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
+        if new_password and not current_password:
+            raise serializers.ValidationError(
+                {"current_password": "Current password is required to set a new one."}
+            )
+        if current_password and not self.instance.check_password(current_password):
+            raise serializers.ValidationError(
+                {"current_password": "Current password is incorrect."}
+            )
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data.pop("current_password", None)
+        new_password = validated_data.pop("new_password", None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        if new_password:
+            instance.set_password(new_password)
+        instance.save()
+        return instance
+
+
 class ClinicSerializer(serializers.ModelSerializer):
     class Meta:
         model = Clinic
@@ -96,4 +135,20 @@ class ClinicSerializer(serializers.ModelSerializer):
             "id", "name", "subdomain", "discipline", "address", "phone",
             "email", "logo_url", "paper_size", "primary_color", "tagline",
             "active_patient_limit", "is_active", "created_at",
+        ]
+
+
+class ClinicUpdateSerializer(serializers.ModelSerializer):
+    def validate_logo_url(self, value):
+        if not is_logo_url_allowed(value):
+            raise serializers.ValidationError(
+                "Logo URL must use HTTPS and a host from CLINIC_LOGO_ALLOWED_HOSTS."
+            )
+        return value
+
+    class Meta:
+        model = Clinic
+        fields = [
+            "name", "address", "phone", "email", "tagline",
+            "paper_size", "logo_url", "primary_color",
         ]

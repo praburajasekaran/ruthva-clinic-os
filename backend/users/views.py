@@ -10,8 +10,10 @@ from clinics.models import Clinic
 from .serializers import (
     ClinicSerializer,
     ClinicSignupSerializer,
+    ClinicUpdateSerializer,
     CustomTokenObtainPairSerializer,
     UserSerializer,
+    UserUpdateSerializer,
 )
 
 User = get_user_model()
@@ -69,3 +71,31 @@ def me(request):
         ClinicSerializer(request.user.clinic).data if request.user.clinic else None
     )
     return Response(data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_me(request):
+    serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    user = serializer.save()
+    data = UserSerializer(user).data
+    data["clinic"] = (
+        ClinicSerializer(user.clinic).data if user.clinic else None
+    )
+    return Response(data)
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated])
+def update_clinic(request):
+    clinic = request.user.clinic
+    if not clinic or not request.user.is_clinic_owner:
+        return Response(
+            {"detail": "Only clinic owners can update clinic settings."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    serializer = ClinicUpdateSerializer(clinic, data=request.data, partial=True)
+    serializer.is_valid(raise_exception=True)
+    serializer.save()
+    return Response(ClinicSerializer(clinic).data)
