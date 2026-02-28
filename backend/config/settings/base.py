@@ -128,3 +128,8 @@ RESEND_FROM_EMAIL = config(
 )
 CLINIC_NAME = "Sivanethram Siddha Clinic"
 CLINIC_DOCTOR_NAME = config("CLINIC_DOCTOR_NAME", default="Dr. Subashini")
+CLINIC_LOGO_ALLOWED_HOSTS = [
+    host.strip().lower()
+    for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
+    if host.strip()
+]

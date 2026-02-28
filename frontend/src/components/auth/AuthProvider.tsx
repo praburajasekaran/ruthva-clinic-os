@@ -21,6 +21,7 @@ type AuthContextValue = AuthState & {
   login: (data: LoginRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   setTokens: (tokens: {
     access: string;
     refresh: string;
@@ -115,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, signup, logout, setTokens }}
+      value={{ ...state, login, signup, logout, refreshUser: fetchUser, setTokens }}
     >
       {children}
     </AuthContext.Provider>
