@@ -359,3 +359,39 @@ class PrescriptionImportAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["created"], 0)
         self.assertEqual(response.data["skipped"], 1)
+
+
+class PdfSafeUrlFetcherTest(TestCase):
+    """Ensure WeasyPrint url_fetcher blocks non-data URIs (SSRF defense-in-depth)."""
+
+    def test_safe_url_fetcher_allows_data_uri(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        data_uri = "data:image/png;base64,iVBORw0KGgo="
+        result = _safe_url_fetcher(data_uri)
+        # WeasyPrint returns a URLFetcherResponse; just verify it doesn't raise
+        self.assertIsNotNone(result)
+
+    def test_safe_url_fetcher_blocks_http(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("http://169.254.169.254/latest/meta-data/")
+
+    def test_safe_url_fetcher_blocks_https(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("https://evil.com/logo.png")
+
+    def test_safe_url_fetcher_blocks_file_scheme(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("file:///etc/passwd")
+
+    def test_safe_url_fetcher_blocks_ftp_scheme(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("ftp://internal-server/data")
