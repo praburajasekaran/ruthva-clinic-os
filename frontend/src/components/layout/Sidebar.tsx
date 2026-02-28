@@ -3,6 +3,7 @@
 import {
   LayoutDashboard,
   Users,
+  Users2,
   Stethoscope,
   FileText,
   Menu,
@@ -22,6 +23,7 @@ const navItems = [
   { href: "/patients", label: "Patients", icon: Users },
   { href: "/consultations", label: "Consultations", icon: Stethoscope },
   { href: "/prescriptions", label: "Prescriptions", icon: FileText },
+  { href: "/team", label: "Team", icon: Users2 },
 ];
 
 export function Sidebar() {
@@ -38,7 +40,7 @@ export function Sidebar() {
   };
 
   const nav = (
-    <div className="flex h-full flex-col">
+    <div className="flex flex-1 flex-col">
       <div>
         <div className="mb-8 flex items-center justify-between">
           <h1 className="truncate text-xl font-bold text-emerald-700">
@@ -147,7 +149,7 @@ export function Sidebar() {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r bg-white p-4 md:block">
+      <aside className="hidden w-64 shrink-0 border-r bg-white p-4 md:flex md:flex-col">
         {nav}
       </aside>
     </>

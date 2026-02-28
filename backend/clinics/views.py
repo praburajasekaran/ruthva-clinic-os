@@ -1,3 +1,213 @@
-from django.shortcuts import render
+from django.contrib.auth import get_user_model
+from django.db import transaction
+from django.utils import timezone
+from rest_framework import status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 
-# Create your views here.
+from users.serializers import CustomTokenObtainPairSerializer
+
+from .email import send_invite_email
+from .models import ClinicInvitation
+from .permissions import IsClinicMember, IsClinicOwner
+from .serializers import (
+    AcceptInviteSerializer,
+    InvitationSerializer,
+    InviteMemberSerializer,
+    TeamMemberSerializer,
+    UpdateMemberRoleSerializer,
+)
+
+User = get_user_model()
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicMember])
+def team_list(request):
+    """List all members of the current clinic."""
+    members = User.objects.filter(clinic=request.clinic).order_by(
+        "-is_clinic_owner", "first_name", "last_name"
+    )
+    return Response(TeamMemberSerializer(members, many=True).data)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def team_invite(request):
+    """Invite a new member to the clinic by email."""
+    serializer = InviteMemberSerializer(
+        data=request.data, context={"clinic": request.clinic}
+    )
+    serializer.is_valid(raise_exception=True)
+
+    invitation = ClinicInvitation.objects.create(
+        clinic=request.clinic,
+        email=serializer.validated_data["email"],
+        first_name=serializer.validated_data["first_name"],
+        last_name=serializer.validated_data.get("last_name", ""),
+        role=serializer.validated_data["role"],
+        invited_by=request.user,
+    )
+
+    send_invite_email(invitation=invitation)
+
+    return Response(
+        InvitationSerializer(invitation).data,
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["PATCH"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def team_update_role(request, member_id):
+    """Update a clinic member's role. Owners cannot change their own role."""
+    try:
+        member = User.objects.get(id=member_id, clinic=request.clinic)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "Member not found."}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    if member.is_clinic_owner:
+        return Response(
+            {"detail": "Cannot change the clinic owner's role."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = UpdateMemberRoleSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    member.role = serializer.validated_data["role"]
+    member.save(update_fields=["role"])
+
+    return Response(TeamMemberSerializer(member).data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def team_remove(request, member_id):
+    """Remove a member from the clinic. Owners cannot remove themselves."""
+    try:
+        member = User.objects.get(id=member_id, clinic=request.clinic)
+    except User.DoesNotExist:
+        return Response(
+            {"detail": "Member not found."}, status=status.HTTP_404_NOT_FOUND
+        )
+
+    if member.is_clinic_owner:
+        return Response(
+            {"detail": "Cannot remove the clinic owner."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    member.clinic = None
+    member.save(update_fields=["clinic"])
+
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def invitation_list(request):
+    """List pending invitations for the current clinic."""
+    invitations = ClinicInvitation.objects.filter(
+        clinic=request.clinic, accepted_at__isnull=True
+    )
+    return Response(InvitationSerializer(invitations, many=True).data)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def invitation_cancel(request, invitation_id):
+    """Cancel a pending invitation."""
+    try:
+        invitation = ClinicInvitation.objects.get(
+            id=invitation_id, clinic=request.clinic, accepted_at__isnull=True
+        )
+    except ClinicInvitation.DoesNotExist:
+        return Response(
+            {"detail": "Invitation not found."}, status=status.HTTP_404_NOT_FOUND
+        )
+    invitation.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def invite_details(request):
+    """Get invite details by token (for the accept page to display info)."""
+    token = request.query_params.get("token")
+    if not token:
+        return Response(
+            {"detail": "Token is required."}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    try:
+        invitation = ClinicInvitation.objects.select_related("clinic").get(
+            token=token, accepted_at__isnull=True
+        )
+    except ClinicInvitation.DoesNotExist:
+        return Response(
+            {"detail": "Invalid or already used invitation."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    if invitation.is_expired:
+        return Response(
+            {"detail": "This invitation has expired."},
+            status=status.HTTP_410_GONE,
+        )
+
+    return Response({
+        "email": invitation.email,
+        "first_name": invitation.first_name,
+        "last_name": invitation.last_name,
+        "role": invitation.role,
+        "clinic_name": invitation.clinic.name,
+    })
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def accept_invite(request):
+    """Accept an invitation: create user account and join the clinic."""
+    serializer = AcceptInviteSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+
+    invitation = serializer.invitation
+
+    with transaction.atomic():
+        user = User.objects.create_user(
+            username=serializer.validated_data["username"],
+            email=invitation.email,
+            password=serializer.validated_data["password"],
+            first_name=invitation.first_name,
+            last_name=invitation.last_name,
+            clinic=invitation.clinic,
+            role=invitation.role,
+            is_clinic_owner=False,
+        )
+        invitation.accepted_at = timezone.now()
+        invitation.save(update_fields=["accepted_at"])
+
+    # Generate tokens so the new user is logged in immediately
+    token_serializer = CustomTokenObtainPairSerializer()
+    token = token_serializer.get_token(user)
+
+    return Response(
+        {
+            "user": {
+                "id": user.id,
+                "username": user.username,
+                "email": user.email,
+                "first_name": user.first_name,
+                "last_name": user.last_name,
+                "role": user.role,
+                "is_clinic_owner": user.is_clinic_owner,
+            },
+            "clinic_slug": invitation.clinic.subdomain,
+            "access": str(token.access_token),
+            "refresh": str(token),
+        },
+        status=status.HTTP_201_CREATED,
+    )

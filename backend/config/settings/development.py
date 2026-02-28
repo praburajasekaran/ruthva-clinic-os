@@ -24,3 +24,6 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3001",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+# Frontend URL for invite links
+FRONTEND_URL = "http://localhost:3000"
