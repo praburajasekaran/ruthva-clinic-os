@@ -4,6 +4,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 
 from clinics.mixins import TenantQuerySetMixin
+from clinics.permissions import IsClinicMember
 
 from .import_service import PatientImportService
 from .models import Patient
@@ -11,6 +12,7 @@ from .serializers import PatientDetailSerializer, PatientListSerializer
 
 
 class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    permission_classes = [IsClinicMember]
     queryset = Patient.objects.annotate(
         consultation_count=Count("consultations"),
         last_visit=Max("consultations__consultation_date"),
