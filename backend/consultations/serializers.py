@@ -68,6 +68,36 @@ class ConsultationImportRowSerializer(serializers.Serializer):
         return attrs
 
 
+class ConsultationImportRowSerializer(serializers.Serializer):
+    patient_phone = serializers.CharField(max_length=15)
+    consultation_date = serializers.DateField(input_formats=["%Y-%m-%d"])
+    chief_complaints = serializers.CharField(required=False, allow_blank=True)
+    history_of_present_illness = serializers.CharField(required=False, allow_blank=True)
+    diagnosis = serializers.CharField(required=False, allow_blank=True)
+    assessment = serializers.CharField(required=False, allow_blank=True)
+    weight = serializers.DecimalField(
+        max_digits=5, decimal_places=2, required=False, allow_null=True
+    )
+    height = serializers.DecimalField(
+        max_digits=5, decimal_places=2, required=False, allow_null=True
+    )
+    bp_systolic = serializers.IntegerField(required=False, allow_null=True)
+    bp_diastolic = serializers.IntegerField(required=False, allow_null=True)
+    pulse_rate = serializers.IntegerField(required=False, allow_null=True)
+    temperature = serializers.DecimalField(
+        max_digits=4, decimal_places=1, required=False, allow_null=True
+    )
+
+    def validate(self, attrs):
+        if not attrs.get("chief_complaints", "").strip():
+            raise serializers.ValidationError(
+                {"chief_complaints": "This field is required."}
+            )
+        if not attrs.get("diagnosis", "").strip():
+            raise serializers.ValidationError({"diagnosis": "This field is required."})
+        return attrs
+
+
 class ConsultationListSerializer(serializers.ModelSerializer):
     patient_name = serializers.CharField(source="patient.name", read_only=True)
     patient_record_id = serializers.CharField(
