@@ -62,6 +62,10 @@ class ClinicSignupSerializer(serializers.Serializer):
             raise serializers.ValidationError("This email is already registered.")
         return value
 
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
     def create(self, validated_data):
         with transaction.atomic():
             clinic = Clinic.objects.create(

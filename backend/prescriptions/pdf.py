@@ -1,17 +1,42 @@
+from __future__ import annotations
+
 import base64
 import logging
+import ssl
+import urllib.request
+from typing import TYPE_CHECKING, Any
+from urllib.error import URLError
 from urllib.parse import urlparse
-from urllib.request import Request, urlopen
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
+from weasyprint.urls import default_url_fetcher
 
 from clinics.logo_security import is_logo_url_allowed
+
+if TYPE_CHECKING:
+    from prescriptions.models import Prescription
 
 logger = logging.getLogger(__name__)
 
 LOGO_FETCH_TIMEOUT = 5  # seconds
 LOGO_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+_ALLOWED_LOGO_CONTENT_TYPES = frozenset({
+    "image/png",
+    "image/jpeg",
+    "image/gif",
+    "image/webp",
+})
+
+
+class _NoRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Block HTTP redirects during logo fetch to prevent SSRF via open redirects."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        raise ValueError(f"Redirect blocked during logo fetch: {newurl}")
+
+
+_logo_opener = urllib.request.build_opener(_NoRedirectHandler)
 
 
 def _fetch_logo_as_data_uri(url: str) -> str:
@@ -21,8 +46,7 @@ def _fetch_logo_as_data_uri(url: str) -> str:
     without a logo instead of breaking.
     """
     try:
-        req = Request(url)
-        resp = urlopen(req, timeout=LOGO_FETCH_TIMEOUT)  # noqa: S310
+        resp = _logo_opener.open(url, timeout=LOGO_FETCH_TIMEOUT)  # noqa: S310
         content_length = resp.headers.get("Content-Length")
         if content_length and int(content_length) > LOGO_MAX_BYTES:
             logger.warning("Logo too large (%s bytes): %s", content_length, url)
@@ -31,15 +55,22 @@ def _fetch_logo_as_data_uri(url: str) -> str:
         if len(data) > LOGO_MAX_BYTES:
             logger.warning("Logo body exceeded max bytes: %s", url)
             return ""
-        content_type = resp.headers.get("Content-Type", "image/png").split(";")[0]
+        content_type = resp.headers.get("Content-Type", "").split(";")[0].strip().lower()
+        if content_type not in _ALLOWED_LOGO_CONTENT_TYPES:
+            logger.warning("Unexpected logo content type %r from %s", content_type, url)
+            return ""
         encoded = base64.b64encode(data).decode("ascii")
         return f"data:{content_type};base64,{encoded}"
-    except Exception:
-        logger.exception("Failed to fetch logo: %s", url)
+    except (URLError, OSError, ValueError):
+        logger.warning("Failed to fetch logo: %s", url)
         return ""
 
 
-def _safe_url_fetcher(url, timeout=10, ssl_context=None):
+def _safe_url_fetcher(
+    url: str,
+    timeout: int = 10,
+    ssl_context: ssl.SSLContext | None = None,
+) -> dict[str, Any]:
     """WeasyPrint url_fetcher that blocks all external network requests.
 
     Only ``data:`` URIs are allowed so the renderer can never be tricked
@@ -47,12 +78,11 @@ def _safe_url_fetcher(url, timeout=10, ssl_context=None):
     """
     parsed = urlparse(url)
     if parsed.scheme == "data":
-        from weasyprint.urls import default_url_fetcher
         return default_url_fetcher(url, timeout=timeout, ssl_context=ssl_context)
     raise ValueError(f"Blocked non-data URI in PDF render: {url}")
 
 
-def generate_prescription_pdf(prescription):
+def generate_prescription_pdf(prescription: Prescription) -> bytes:
     clinic = prescription.clinic
 
     # Pre-fetch the logo at the application layer so WeasyPrint never
