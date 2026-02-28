@@ -376,3 +376,128 @@ class PrescriptionImportAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(response.data["created"], 0)
         self.assertEqual(response.data["skipped"], 1)
+
+
+class PdfSafeUrlFetcherTest(TestCase):
+    """Ensure WeasyPrint url_fetcher blocks non-data URIs (SSRF defense-in-depth)."""
+
+    def test_safe_url_fetcher_allows_data_uri(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        data_uri = "data:image/png;base64,iVBORw0KGgo="
+        result = _safe_url_fetcher(data_uri)
+        # WeasyPrint returns a URLFetcherResponse; just verify it doesn't raise
+        self.assertIsNotNone(result)
+
+    def test_safe_url_fetcher_blocks_http(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("http://169.254.169.254/latest/meta-data/")
+
+    def test_safe_url_fetcher_blocks_https(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("https://evil.com/logo.png")
+
+    def test_safe_url_fetcher_blocks_file_scheme(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("file:///etc/passwd")
+
+    def test_safe_url_fetcher_blocks_ftp_scheme(self):
+        from prescriptions.pdf import _safe_url_fetcher
+
+        with self.assertRaises(ValueError):
+            _safe_url_fetcher("ftp://internal-server/data")
+
+
+class FetchLogoAsDataUriTest(TestCase):
+    """Unit tests for _fetch_logo_as_data_uri covering error paths and limits."""
+
+    def test_returns_data_uri_for_valid_png(self):
+        from unittest.mock import MagicMock, patch
+
+        from prescriptions.pdf import _fetch_logo_as_data_uri
+
+        fake_resp = MagicMock()
+        fake_resp.headers = {"Content-Type": "image/png", "Content-Length": "4"}
+        fake_resp.read.return_value = b"\x89PNG"
+
+        with patch("prescriptions.pdf._logo_opener.open", return_value=fake_resp):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/logo.png")
+
+        self.assertTrue(result.startswith("data:image/png;base64,"))
+
+    def test_returns_empty_on_disallowed_content_type(self):
+        from unittest.mock import MagicMock, patch
+
+        from prescriptions.pdf import _fetch_logo_as_data_uri
+
+        fake_resp = MagicMock()
+        fake_resp.headers = {"Content-Type": "text/html", "Content-Length": "100"}
+        fake_resp.read.return_value = b"<html>not an image</html>"
+
+        with patch("prescriptions.pdf._logo_opener.open", return_value=fake_resp):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/page.html")
+
+        self.assertEqual(result, "")
+
+    def test_returns_empty_when_body_exceeds_max_bytes(self):
+        from unittest.mock import MagicMock, patch
+
+        from prescriptions.pdf import LOGO_MAX_BYTES, _fetch_logo_as_data_uri
+
+        fake_resp = MagicMock()
+        fake_resp.headers = {"Content-Type": "image/png"}
+        fake_resp.read.return_value = b"x" * (LOGO_MAX_BYTES + 1)
+
+        with patch("prescriptions.pdf._logo_opener.open", return_value=fake_resp):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/huge.png")
+
+        self.assertEqual(result, "")
+
+    def test_returns_empty_when_content_length_exceeds_max(self):
+        from unittest.mock import MagicMock, patch
+
+        from prescriptions.pdf import LOGO_MAX_BYTES, _fetch_logo_as_data_uri
+
+        fake_resp = MagicMock()
+        fake_resp.headers = {
+            "Content-Type": "image/png",
+            "Content-Length": str(LOGO_MAX_BYTES + 1),
+        }
+
+        with patch("prescriptions.pdf._logo_opener.open", return_value=fake_resp):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/big.png")
+
+        self.assertEqual(result, "")
+
+    def test_returns_empty_on_network_error(self):
+        from unittest.mock import patch
+        from urllib.error import URLError
+
+        from prescriptions.pdf import _fetch_logo_as_data_uri
+
+        with patch(
+            "prescriptions.pdf._logo_opener.open",
+            side_effect=URLError("connection refused"),
+        ):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/logo.png")
+
+        self.assertEqual(result, "")
+
+    def test_returns_empty_on_redirect_blocked(self):
+        from unittest.mock import patch
+
+        from prescriptions.pdf import _fetch_logo_as_data_uri
+
+        with patch(
+            "prescriptions.pdf._logo_opener.open",
+            side_effect=ValueError("Redirect blocked"),
+        ):
+            result = _fetch_logo_as_data_uri("https://cdn.example.com/redir.png")
+
+        self.assertEqual(result, "")
