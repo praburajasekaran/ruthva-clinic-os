@@ -19,6 +19,7 @@ urlpatterns = [
     path("api/v1/patients/", include("patients.urls")),
     path("api/v1/consultations/", include("consultations.urls")),
     path("api/v1/prescriptions/", include("prescriptions.urls")),
+    path("api/v1/treatments/", include("treatments.urls")),
     path("api/v1/team/", include("clinics.urls")),
     # Dashboard
     path("api/v1/dashboard/stats/", dashboard_stats, name="dashboard-stats"),

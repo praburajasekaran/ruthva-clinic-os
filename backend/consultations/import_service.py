@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 from datetime import datetime
 
 from django.db import IntegrityError, transaction
@@ -8,6 +9,10 @@ from patients.models import Patient
 
 from .models import Consultation
 from .serializers import ConsultationImportRowSerializer
+
+MAX_IMPORT_FILE_SIZE = 2 * 1024 * 1024  # 2MB
+MAX_IMPORT_ROW_COUNT = 5000
+MAX_JSON_CELL_SIZE = 32_768  # 32KB per diagnostic_data cell
 
 
 class ConsultationImportService:
@@ -23,6 +28,9 @@ class ConsultationImportService:
         self.user = user
 
     def validate_and_preview(self, file_content):
+        if len(file_content.encode("utf-8") if isinstance(file_content, str) else file_content) > MAX_IMPORT_FILE_SIZE:
+            return {"valid": False, "error": "File too large (max 2MB)."}
+
         reader = csv.DictReader(io.StringIO(file_content))
         columns = set(reader.fieldnames or [])
 
@@ -33,6 +41,11 @@ class ConsultationImportService:
 
         rows = []
         for i, row in enumerate(reader, start=2):
+            if i - 1 > MAX_IMPORT_ROW_COUNT:
+                return {
+                    "valid": False,
+                    "error": f"Too many rows (max {MAX_IMPORT_ROW_COUNT}).",
+                }
             rows.append(self._validate_row(row, i))
 
         errors = [self._serialize_row(row) for row in rows if row.get("errors")]
@@ -112,6 +125,27 @@ class ConsultationImportService:
 
     def _validate_row(self, row, line_number):
         raw = dict(row)
+
+        # Parse diagnostic_data JSON string before passing to serializer
+        diag_raw = row.get("diagnostic_data", "").strip()
+        if diag_raw:
+            if len(diag_raw) > MAX_JSON_CELL_SIZE:
+                return {
+                    "line": line_number,
+                    "errors": ["diagnostic_data too large (max 32KB)."],
+                    "raw": raw,
+                }
+            try:
+                row["diagnostic_data"] = json.loads(diag_raw)
+            except (json.JSONDecodeError, TypeError):
+                return {
+                    "line": line_number,
+                    "errors": ["Invalid JSON in diagnostic_data."],
+                    "raw": raw,
+                }
+        else:
+            row.pop("diagnostic_data", None)
+
         serializer = ConsultationImportRowSerializer(data=row)
         if not serializer.is_valid():
             return {

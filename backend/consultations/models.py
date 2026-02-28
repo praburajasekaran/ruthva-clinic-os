@@ -52,30 +52,12 @@ class Consultation(models.Model):
         max_length=10, blank=True, default="", choices=ASSESSMENT_CHOICES
     )
     sleep_notes = models.TextField(blank=True, default="")
-
-    # Envagai Thervu (8 Diagnostic Tools)
-    naa = models.TextField(blank=True, default="", help_text="Tongue examination")
-    niram = models.TextField(blank=True, default="", help_text="Complexion")
-    mozhi = models.TextField(blank=True, default="", help_text="Speech")
-    vizhi = models.TextField(blank=True, default="", help_text="Eyes")
-    nadi = models.TextField(
-        blank=True, default="",
-        help_text="Pulse - Prakruti, Vikruti, Upadosham",
-    )
-    mei = models.TextField(
-        blank=True, default="",
-        help_text="Touch/Body - heat, cold, normal",
-    )
-    muthiram = models.TextField(
-        blank=True, default="",
-        help_text="Urine - Neerkuri, Neikuri",
-    )
-    varmam = models.TextField(
-        blank=True, default="", help_text="Varmam points assessment"
-    )
     mental_state = models.TextField(
         blank=True, default="", help_text="Attitude/mental state observations"
     )
+
+    # Discipline-specific diagnostics (replaces legacy Envagai Thervu columns)
+    diagnostic_data = models.JSONField(default=dict, blank=True)
 
     # Diagnosis
     chief_complaints = models.TextField(blank=True, default="")

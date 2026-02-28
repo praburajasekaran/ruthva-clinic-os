@@ -25,22 +25,83 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Auto-redirect to login on 401
+// Token refresh state — shared across concurrent requests
+let isRefreshing = false;
+let refreshQueue: Array<{
+  resolve: (token: string) => void;
+  reject: (error: unknown) => void;
+}> = [];
+
+function processQueue(error: unknown, token: string | null) {
+  refreshQueue.forEach(({ resolve, reject }) => {
+    if (token) resolve(token);
+    else reject(error);
+  });
+  refreshQueue = [];
+}
+
+function forceLogout() {
+  localStorage.removeItem("access_token");
+  localStorage.removeItem("refresh_token");
+  localStorage.removeItem("clinic_slug");
+  window.location.href = "/login";
+}
+
+// Attempt token refresh on 401, fall back to logout
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     if (
-      error.response?.status === 401 &&
-      typeof window !== "undefined" &&
-      !window.location.pathname.startsWith("/login") &&
-      !window.location.pathname.startsWith("/signup")
+      error.response?.status !== 401 ||
+      typeof window === "undefined" ||
+      window.location.pathname.startsWith("/login") ||
+      window.location.pathname.startsWith("/signup") ||
+      originalRequest._retry
     ) {
-      localStorage.removeItem("access_token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("clinic_slug");
-      window.location.href = "/login";
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    const refreshToken = localStorage.getItem("refresh_token");
+    if (!refreshToken) {
+      forceLogout();
+      return Promise.reject(error);
+    }
+
+    // If already refreshing, queue this request
+    if (isRefreshing) {
+      return new Promise<string>((resolve, reject) => {
+        refreshQueue.push({ resolve, reject });
+      }).then((token) => {
+        originalRequest.headers.Authorization = `Bearer ${token}`;
+        return api(originalRequest);
+      });
+    }
+
+    originalRequest._retry = true;
+    isRefreshing = true;
+
+    try {
+      const res = await axios.post(
+        `${process.env.NEXT_PUBLIC_API_URL}/auth/token/refresh/`,
+        { refresh: refreshToken },
+      );
+      const newAccess: string = res.data.access;
+      localStorage.setItem("access_token", newAccess);
+      if (res.data.refresh) {
+        localStorage.setItem("refresh_token", res.data.refresh);
+      }
+      processQueue(null, newAccess);
+      originalRequest.headers.Authorization = `Bearer ${newAccess}`;
+      return api(originalRequest);
+    } catch (refreshError) {
+      processQueue(refreshError, null);
+      forceLogout();
+      return Promise.reject(refreshError);
+    } finally {
+      isRefreshing = false;
+    }
   },
 );
 

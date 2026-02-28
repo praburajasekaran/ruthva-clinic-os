@@ -151,7 +151,17 @@ export type PatientFormState = {
   family_history: Omit<FamilyHistory, "id">[];
 };
 
+// ── Discipline ──
+export type Discipline =
+  | "siddha"
+  | "ayurveda"
+  | "yoga_naturopathy"
+  | "unani"
+  | "homeopathy";
+
 // ── Consultation ──
+export type DiagnosticData = Record<string, unknown>;
+
 export type Consultation = {
   readonly id: number;
   patient: number;
@@ -172,16 +182,9 @@ export type Consultation = {
   micturition_notes: string;
   sleep_quality: AssessmentValue;
   sleep_notes: string;
-  // Envagai Thervu
-  naa: string;
-  niram: string;
-  mozhi: string;
-  vizhi: string;
-  nadi: string;
-  mei: string;
-  muthiram: string;
-  varmam: string;
   mental_state: string;
+  // Discipline-specific diagnostics
+  diagnostic_data: DiagnosticData;
   // Diagnosis
   chief_complaints: string;
   history_of_present_illness: string;
@@ -276,6 +279,75 @@ export type DashboardStats = {
   pending_prescriptions: number;
   follow_ups_due: number;
   total_patients: number;
+};
+
+export type LegacyFollowUpItem = {
+  queue_type: "legacy";
+  legacy_type: "prescription" | "procedure";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  notes: string;
+};
+
+export type TherapistWorklistItem = {
+  queue_type: "therapist";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  treatment_session_id: number;
+  treatment_plan_id: number;
+  treatment_block_id: number;
+  block_number: number;
+  block_start_day: number;
+  block_end_day: number;
+  day_number: number;
+  completed_days: number;
+  pending_days: number;
+  procedure_name: string;
+  medium_type: "oil" | "powder" | "other";
+  medium_name: string;
+  instructions: string;
+};
+
+export type DoctorActionItem = {
+  queue_type: "doctor";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  doctor_action_task_id: number;
+  treatment_plan_id: number;
+  treatment_block_id: number;
+  block_number: number;
+  block_start_day: number;
+  block_end_day: number;
+  completed_days: number;
+  pending_days: number;
+  task_type: "block_completed" | "review_requested";
+  task_status: "open" | "resolved";
+  replan_required: boolean;
+};
+
+export type FollowUpQueueItem =
+  | LegacyFollowUpItem
+  | TherapistWorklistItem
+  | DoctorActionItem;
+
+export type FollowUpsResponse = {
+  items: FollowUpQueueItem[];
+  meta: {
+    tab: "all" | "therapist" | "doctor";
+    status: "open" | "resolved";
+    counts: {
+      legacy: number;
+      therapist: number;
+      doctor: number;
+      total: number;
+    };
+  };
 };
 
 // ── Data Portability ──

@@ -1,5 +1,6 @@
 """Base settings shared across all environments."""
 import os
+from datetime import timedelta
 from pathlib import Path
 
 from corsheaders.defaults import default_headers
@@ -30,6 +31,7 @@ INSTALLED_APPS = [
     "patients",
     "consultations",
     "prescriptions",
+    "treatments",
     "reminders",
 ]
 
@@ -133,3 +135,11 @@ CLINIC_LOGO_ALLOWED_HOSTS = [
     for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
+
+# JWT
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
+}

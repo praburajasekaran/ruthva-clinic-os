@@ -12,6 +12,18 @@ export const SECTION_LABELS = {
   patientDetails: { en: "Patient Details", ta: "\u0BA8\u0BCB\u0BAF\u0BBE\u0BB3\u0BBF \u0BB5\u0BBF\u0BB5\u0BB0\u0B99\u0BCD\u0B95\u0BB3\u0BCD" },
 } as const;
 
+// Discipline-specific diagnostic section labels
+export const DIAGNOSTIC_SECTION_LABELS: Record<
+  string,
+  { en: string; ta: string }
+> = {
+  siddha: { en: "Envagai Thervu", ta: "\u0B8E\u0BA3\u0BCD\u0BB5\u0B95\u0BC8\u0BA4\u0BCD \u0BA4\u0BC7\u0BB0\u0BCD\u0BB5\u0BC1" },
+  ayurveda: { en: "Prakriti Analysis", ta: "\u0BAA\u0BBF\u0BB0\u0B95\u0BBF\u0BB0\u0BC1\u0BA4\u0BBF \u0BAA\u0B95\u0BC1\u0BAA\u0BCD\u0BAA\u0BBE\u0BAF\u0BCD\u0BB5\u0BC1" },
+  yoga_naturopathy: { en: "Diagnostic Notes", ta: "\u0BA8\u0BCB\u0BAF\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD" },
+  unani: { en: "Diagnostic Notes", ta: "\u0BA8\u0BCB\u0BAF\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD" },
+  homeopathy: { en: "Diagnostic Notes", ta: "\u0BA8\u0BCB\u0BAF\u0BCD \u0B95\u0BC1\u0BB1\u0BBF\u0BAA\u0BCD\u0BAA\u0BC1\u0B95\u0BB3\u0BCD" },
+};
+
 // Vitals field labels
 export const VITALS_LABELS = {
   weight: { en: "Weight", ta: "\u0B8E\u0B9F\u0BC8" },
