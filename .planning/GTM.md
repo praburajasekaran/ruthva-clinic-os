@@ -211,6 +211,93 @@ Clinic owner signs up → Invites 2 doctors →
 Doctors leave and open own clinic → Sign up independently
 ```
 
+### Loop 5: Patient Follow-Up Loop
+```
+Doctor creates follow-up reminder → Patient receives branded email →
+Email contains clinic subdomain link → Patient shares with family/friends →
+New patients ask their AYUSH doctor "why don't you use this?" → Doctor signs up
+```
+*Patients become passive evangelists. Every follow-up email is a touchpoint that normalizes digital AYUSH care and creates demand from the patient side.*
+
+### Loop 6: AYUSH College Pipeline
+```
+Partner with AYUSH colleges → Final-year students get free access →
+Students learn clinic management on Sivanethram during internship →
+Graduate and open own practice → Default to Sivanethram (already familiar) →
+Recommend to batchmates
+```
+*This is the "Figma/GitHub student" playbook. Capture practitioners at the start of their career and they'll never switch. India produces ~50,000 AYUSH graduates/year.*
+
+### Loop 7: CSV Import Lock-In Loop
+```
+Practitioner imports 500+ patient records via CSV →
+All historical data now lives in Sivanethram → Switching cost is high →
+Practitioner upgrades to paid tier → Stays for years →
+Tells peers "I moved all my records here, you should too"
+```
+*Data gravity is the strongest retention mechanism in SaaS. Once a clinic imports years of patient history, leaving is painful. The free CSV import is a trojan horse for long-term retention.*
+
+### Loop 8: WhatsApp Community Flywheel
+```
+Doctor joins WhatsApp support group → Asks question, gets help →
+Sees other practitioners sharing tips → Feels part of a community →
+Invites colleague to the group → Colleague sees the product in action → Signs up
+```
+*AYUSH practitioners are deeply community-oriented. WhatsApp groups are their primary professional network. A well-moderated support group becomes a self-sustaining acquisition channel.*
+
+### Loop 9: Pharmacy Supplier Network Effect
+```
+Clinic uses pharmacy module → Orders from AYUSH medicine suppliers →
+Supplier notices multiple clinics using Sivanethram → Supplier partners with platform →
+Supplier recommends Sivanethram to other clinic customers →
+New clinics sign up → Order from same supplier → Reinforcing loop
+```
+*The pharmacy module (Phase 6) unlocks a B2B2C distribution channel. Medicine suppliers have direct relationships with hundreds of clinics and are trusted advisors.*
+
+### Loop 10: Conference Demo Cascade
+```
+Demo at AYUSH conference → Doctor signs up on the spot →
+Doctor shows branded PDF to colleagues back home →
+Colleagues see professional output → Ask "what tool is this?" →
+Word spreads in local AYUSH association → Bulk adoption in a region
+```
+*AYUSH practitioners attend state and national conferences regularly. One compelling live demo (especially showing a Tamil-language branded prescription generated in 30 seconds) can trigger regional adoption cascades.*
+
+### Loop 11: Data Export Trust Loop
+```
+Clinic exports all data as ZIP → Realizes data is truly portable →
+Trusts the platform more → Upgrades to paid tier → Tells others
+"They let you export everything, no lock-in" → Others sign up
+```
+*In a market where practitioners fear vendor lock-in, transparent data portability is a counter-intuitive growth driver. The freedom to leave makes people stay — and talk about it.*
+
+### Loop 12: Multi-Discipline Cross-Pollination
+```
+Siddha doctor signs up → Recommends to Ayurveda friend →
+Ayurveda doctor sees discipline-specific Prakriti form → Impressed →
+Tells Homeopathy colleague → Homeopathy doctor signs up →
+Each discipline's network feeds the others
+```
+*AYUSH practitioners often know doctors from other disciplines (shared colleges, conferences, referral networks). Supporting all 5 disciplines means each discipline's adoption feeds the others. A Siddha-only tool couldn't tap Ayurveda networks, but Sivanethram can.*
+
+### Loop 13: Government Compliance Pull
+```
+Ministry of AYUSH increases digital reporting requirements →
+Practitioners scramble for tools → Search "AYUSH clinic software" →
+Find Sivanethram (SEO + word of mouth) → Sign up in waves →
+Government compliance becomes recurring need → Long-term retention
+```
+*The Indian government's National AYUSH Mission is actively pushing digitization. Regulatory tailwinds create demand spikes that reward whoever has the best SEO and word-of-mouth when mandates hit.*
+
+### Loop 14: Branded Clinic Subdomain as Marketing
+```
+Clinic gets subdomain (e.g., drkarthik.sivanethram.com) →
+Doctor puts subdomain on business card, clinic board, WhatsApp status →
+Patients and peers visit the URL → See professional digital presence →
+Peers want their own subdomain → Sign up
+```
+*The subdomain is not just infrastructure — it's a status symbol. "I have my own clinic URL" is a powerful differentiator for practitioners in competitive local markets.*
+
 ---
 
 ## 9. Key Metrics & Milestones
