@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
+from django.utils import timezone
 from rest_framework import serializers
 
 from .models import ClinicInvitation
@@ -27,12 +29,15 @@ class InviteMemberSerializer(serializers.Serializer):
     role = serializers.ChoiceField(choices=User.ROLE_CHOICES)
 
     def validate_email(self, value):
+        value = value.lower()
         clinic = self.context["clinic"]
         # Check if user already belongs to this clinic
         if User.objects.filter(email=value, clinic=clinic).exists():
             raise serializers.ValidationError("This user is already a member of this clinic.")
-        # Check if there's already a pending invite
-        if ClinicInvitation.objects.filter(clinic=clinic, email=value, accepted_at__isnull=True).exists():
+        # Check if there's already a pending (non-expired) invite
+        if ClinicInvitation.objects.filter(
+            clinic=clinic, email=value, accepted_at__isnull=True, expires_at__gt=timezone.now()
+        ).exists():
             raise serializers.ValidationError("An invitation has already been sent to this email.")
         return value
 
@@ -73,6 +78,18 @@ class AcceptInviteSerializer(serializers.Serializer):
         if User.objects.filter(username=value).exists():
             raise serializers.ValidationError("This username is already taken.")
         return value
+
+    def validate_password(self, value):
+        validate_password(value)
+        return value
+
+    def validate(self, attrs):
+        invitation = self._invitation
+        if User.objects.filter(email=invitation.email).exists():
+            raise serializers.ValidationError(
+                "A user with this email address already exists."
+            )
+        return attrs
 
     @property
     def invitation(self):

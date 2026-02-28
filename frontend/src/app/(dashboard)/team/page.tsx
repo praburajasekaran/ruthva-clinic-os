@@ -11,7 +11,7 @@ import {
   Users2,
   X,
 } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { useMutation } from "@/hooks/useMutation";
@@ -42,7 +42,7 @@ export default function TeamPage() {
   const { user } = useAuth();
   const isOwner = user?.is_clinic_owner ?? false;
 
-  const { data: members, refetch: refetchMembers } =
+  const { data: members, error: membersError, isLoading: membersLoading, refetch: refetchMembers } =
     useApi<TeamMember[]>("/team/");
   const { data: invitations, refetch: refetchInvitations } =
     useApi<Invitation[]>(isOwner ? "/team/invitations/" : null);
@@ -50,6 +50,7 @@ export default function TeamPage() {
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
   const [roleEditId, setRoleEditId] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const pendingInvitations = invitations?.filter((inv) => !inv.accepted_at) ?? [];
 
@@ -70,6 +71,14 @@ export default function TeamPage() {
           </Button>
         )}
       </div>
+
+      {/* Error banner */}
+      {error && (
+        <div className="flex items-center justify-between bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <span>{error}</span>
+          <button onClick={() => setError(null)} className="ml-2 font-bold">&times;</button>
+        </div>
+      )}
 
       {/* Members list */}
       <div className="rounded-xl border border-gray-200 bg-white">
@@ -96,14 +105,26 @@ export default function TeamPage() {
               roleEditId={roleEditId}
               setRoleEditId={setRoleEditId}
               onUpdate={refetchMembers}
+              onError={setError}
             />
           ))}
-          {!members && (
+          {membersLoading && !members && (
             <div className="px-6 py-12 text-center text-sm text-gray-400">
               Loading team members...
             </div>
           )}
-          {members?.length === 0 && (
+          {membersError && !members && (
+            <div className="px-6 py-12 text-center text-sm text-red-500">
+              Failed to load team members.{" "}
+              <button
+                onClick={refetchMembers}
+                className="underline hover:text-red-700"
+              >
+                Try again
+              </button>
+            </div>
+          )}
+          {!membersLoading && !membersError && members?.length === 0 && (
             <div className="px-6 py-12 text-center text-sm text-gray-400">
               No team members yet
             </div>
@@ -129,6 +150,7 @@ export default function TeamPage() {
                 key={inv.id}
                 invitation={inv}
                 onCancel={refetchInvitations}
+                onError={setError}
               />
             ))}
           </div>
@@ -160,6 +182,7 @@ function MemberRow({
   roleEditId,
   setRoleEditId,
   onUpdate,
+  onError,
 }: {
   member: TeamMember;
   isOwner: boolean;
@@ -169,6 +192,7 @@ function MemberRow({
   roleEditId: number | null;
   setRoleEditId: (id: number | null) => void;
   onUpdate: () => void;
+  onError: (message: string) => void;
 }) {
   const [isRoleUpdating, setIsRoleUpdating] = useState(false);
   const [isRemoving, setIsRemoving] = useState(false);
@@ -178,35 +202,39 @@ function MemberRow({
 
   const handleRoleChange = useCallback(
     async (newRole: UserRole) => {
+      onError("");
       setIsRoleUpdating(true);
       try {
         await api.patch(`/team/${member.id}/role/`, { role: newRole });
         setRoleEditId(null);
         onUpdate();
-      } catch {
-        // Error handling via UI feedback
+      } catch (err) {
+        console.error("Failed to update role:", err);
+        onError(err instanceof Error ? err.message : "Failed to update role. Please try again.");
       } finally {
         setIsRoleUpdating(false);
       }
     },
-    [member.id, setRoleEditId, onUpdate],
+    [member.id, setRoleEditId, onUpdate, onError],
   );
 
   const handleRemove = useCallback(async () => {
     if (!confirm(`Remove ${member.first_name} ${member.last_name} from the clinic?`)) {
       return;
     }
+    onError("");
     setIsRemoving(true);
     try {
       await api.delete(`/team/${member.id}/`);
       setActionMenuId(null);
       onUpdate();
-    } catch {
-      // Error handling via UI feedback
+    } catch (err) {
+      console.error("Failed to remove member:", err);
+      onError(err instanceof Error ? err.message : "Failed to remove member. Please try again.");
     } finally {
       setIsRemoving(false);
     }
-  }, [member, setActionMenuId, onUpdate]);
+  }, [member, setActionMenuId, onUpdate, onError]);
 
   return (
     <div className="flex items-center justify-between px-6 py-4">
@@ -319,23 +347,27 @@ function MemberRow({
 function InvitationRow({
   invitation,
   onCancel,
+  onError,
 }: {
   invitation: Invitation;
   onCancel: () => void;
+  onError: (message: string) => void;
 }) {
   const [isCancelling, setIsCancelling] = useState(false);
 
   const handleCancel = useCallback(async () => {
+    onError("");
     setIsCancelling(true);
     try {
       await api.delete(`/team/invitations/${invitation.id}/`);
       onCancel();
-    } catch {
-      // Error handling via UI feedback
+    } catch (err) {
+      console.error("Failed to cancel invitation:", err);
+      onError(err instanceof Error ? err.message : "Failed to cancel invitation. Please try again.");
     } finally {
       setIsCancelling(false);
     }
-  }, [invitation.id, onCancel]);
+  }, [invitation.id, onCancel, onError]);
 
   const expiresAt = new Date(invitation.expires_at);
   const isExpired = expiresAt < new Date();
@@ -396,6 +428,9 @@ function InviteModal({
     role: "doctor",
   });
 
+  const modalRef = useRef<HTMLDivElement>(null);
+  const firstInputRef = useRef<HTMLInputElement>(null);
+
   const {
     mutate: invite,
     isLoading,
@@ -413,12 +448,70 @@ function InviteModal({
     [form, invite, onSuccess],
   );
 
+  // Focus first input when modal opens
+  useEffect(() => {
+    firstInputRef.current?.focus();
+  }, []);
+
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  // Basic focus trap: keep Tab within the modal
+  useEffect(() => {
+    const modal = modalRef.current;
+    if (!modal) return;
+
+    const handleFocusTrap = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+
+      const focusableElements = modal.querySelectorAll<HTMLElement>(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      );
+      if (focusableElements.length === 0) return;
+
+      const firstFocusable = focusableElements[0];
+      const lastFocusable = focusableElements[focusableElements.length - 1];
+
+      if (e.shiftKey) {
+        if (document.activeElement === firstFocusable) {
+          e.preventDefault();
+          lastFocusable.focus();
+        }
+      } else {
+        if (document.activeElement === lastFocusable) {
+          e.preventDefault();
+          firstFocusable.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleFocusTrap);
+    return () => document.removeEventListener("keydown", handleFocusTrap);
+  }, []);
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       <div className="fixed inset-0 bg-black/30" onClick={onClose} />
-      <div className="relative w-full max-w-md rounded-xl border bg-white p-6 shadow-xl">
+      <div
+        ref={modalRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="invite-modal-title"
+        className="relative w-full max-w-md rounded-xl border bg-white p-6 shadow-xl"
+      >
         <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">
+          <h2
+            id="invite-modal-title"
+            className="text-lg font-semibold text-gray-900"
+          >
             Invite Team Member
           </h2>
           <button
@@ -432,10 +525,15 @@ function InviteModal({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="invite-email"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Email
             </label>
             <Input
+              id="invite-email"
+              ref={firstInputRef}
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
@@ -452,10 +550,14 @@ function InviteModal({
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="invite-first-name"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 First Name
               </label>
               <Input
+                id="invite-first-name"
                 value={form.first_name}
                 onChange={(e) =>
                   setForm({ ...form, first_name: e.target.value })
@@ -465,10 +567,14 @@ function InviteModal({
               />
             </div>
             <div>
-              <label className="mb-1 block text-sm font-medium text-gray-700">
+              <label
+                htmlFor="invite-last-name"
+                className="mb-1 block text-sm font-medium text-gray-700"
+              >
                 Last Name
               </label>
               <Input
+                id="invite-last-name"
                 value={form.last_name}
                 onChange={(e) =>
                   setForm({ ...form, last_name: e.target.value })
@@ -479,10 +585,14 @@ function InviteModal({
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-gray-700">
+            <label
+              htmlFor="invite-role"
+              className="mb-1 block text-sm font-medium text-gray-700"
+            >
               Role
             </label>
             <Select
+              id="invite-role"
               value={form.role}
               onChange={(e) =>
                 setForm({ ...form, role: e.target.value as UserRole })
