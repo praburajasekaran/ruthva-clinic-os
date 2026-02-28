@@ -274,12 +274,6 @@ export type InviteDetails = {
   clinic_name: string;
 };
 
-export type AcceptInviteRequest = {
-  token: string;
-  username: string;
-  password: string;
-};
-
 // ── Dashboard ──
 export type RecentPatient = {
   id: number;

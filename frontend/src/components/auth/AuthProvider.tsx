@@ -21,6 +21,11 @@ type AuthContextValue = AuthState & {
   login: (data: LoginRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   logout: () => void;
+  setTokens: (tokens: {
+    access: string;
+    refresh: string;
+    clinic_slug?: string;
+  }) => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -58,32 +63,46 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     fetchUser();
   }, [fetchUser]);
 
+  const setTokens = useCallback(
+    async (tokens: {
+      access: string;
+      refresh: string;
+      clinic_slug?: string;
+    }) => {
+      localStorage.setItem("access_token", tokens.access);
+      localStorage.setItem("refresh_token", tokens.refresh);
+      if (tokens.clinic_slug) {
+        localStorage.setItem("clinic_slug", tokens.clinic_slug);
+      }
+      await fetchUser();
+    },
+    [fetchUser],
+  );
+
   const login = useCallback(
     async (data: LoginRequest) => {
       const res = await api.post("/auth/token/", data);
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-      if (res.data.clinic_slug) {
-        localStorage.setItem("clinic_slug", res.data.clinic_slug);
-      }
-      await fetchUser();
+      await setTokens({
+        access: res.data.access,
+        refresh: res.data.refresh,
+        clinic_slug: res.data.clinic_slug,
+      });
       router.push("/");
     },
-    [fetchUser, router],
+    [setTokens, router],
   );
 
   const signup = useCallback(
     async (data: SignupRequest) => {
       const res = await api.post("/auth/signup/", data);
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
-      if (res.data.clinic?.subdomain) {
-        localStorage.setItem("clinic_slug", res.data.clinic.subdomain);
-      }
-      await fetchUser();
+      await setTokens({
+        access: res.data.access,
+        refresh: res.data.refresh,
+        clinic_slug: res.data.clinic?.subdomain,
+      });
       router.push("/");
     },
-    [fetchUser, router],
+    [setTokens, router],
   );
 
   const logout = useCallback(() => {
@@ -96,7 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, signup, logout }}
+      value={{ ...state, login, signup, logout, setTokens }}
     >
       {children}
     </AuthContext.Provider>

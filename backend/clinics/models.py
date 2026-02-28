@@ -51,7 +51,7 @@ class ClinicInvitation(models.Model):
     ])
     first_name = models.CharField(max_length=150)
     last_name = models.CharField(max_length=150, blank=True, default="")
-    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False, db_index=True)
     invited_by = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_invitations"
     )
@@ -61,6 +61,9 @@ class ClinicInvitation(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["clinic", "accepted_at"], name="clinic_invitation_list_idx"),
+        ]
         constraints = [
             models.UniqueConstraint(
                 fields=["clinic", "email"],
@@ -70,6 +73,7 @@ class ClinicInvitation(models.Model):
         ]
 
     def save(self, *args, **kwargs):
+        self.email = self.email.lower()
         if not self.expires_at:
             self.expires_at = timezone.now() + timedelta(days=self.INVITE_EXPIRY_DAYS)
         super().save(*args, **kwargs)
@@ -77,10 +81,6 @@ class ClinicInvitation(models.Model):
     @property
     def is_expired(self):
         return timezone.now() > self.expires_at
-
-    @property
-    def is_pending(self):
-        return self.accepted_at is None and not self.is_expired
 
     def __str__(self):
         return f"Invite {self.email} → {self.clinic.name} ({self.get_role_display()})"
