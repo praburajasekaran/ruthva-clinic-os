@@ -4,6 +4,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 
 from clinics.mixins import TenantQuerySetMixin
+from clinics.permissions import IsClinicMember, IsDoctorOrReadOnly
 
 from .models import Prescription
 from .pdf import generate_prescription_pdf
@@ -11,6 +12,7 @@ from .serializers import PrescriptionDetailSerializer, PrescriptionListSerialize
 
 
 class PrescriptionViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    permission_classes = [IsClinicMember, IsDoctorOrReadOnly]
     queryset = (
         Prescription.objects.select_related("consultation", "consultation__patient")
         .prefetch_related("medications", "procedures")

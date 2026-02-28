@@ -2,6 +2,7 @@ from django.db.models import Exists, OuterRef
 from rest_framework import viewsets
 
 from clinics.mixins import TenantQuerySetMixin
+from clinics.permissions import IsClinicMember, IsDoctorOrReadOnly
 from prescriptions.models import Prescription
 
 from .models import Consultation
@@ -9,6 +10,7 @@ from .serializers import ConsultationDetailSerializer, ConsultationListSerialize
 
 
 class ConsultationViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    permission_classes = [IsClinicMember, IsDoctorOrReadOnly]
     queryset = Consultation.objects.select_related("patient").annotate(
         has_prescription=Exists(
             Prescription.objects.filter(consultation=OuterRef("pk"))
