@@ -6,11 +6,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import api from "@/lib/api";
 import type { InviteDetails } from "@/lib/types";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Input } from "@/components/ui/Input";
 
 function AcceptInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const { setTokens } = useAuth();
 
   const [invite, setInvite] = useState<InviteDetails | null>(null);
   const [loadError, setLoadError] = useState("");
@@ -61,12 +64,12 @@ function AcceptInviteContent() {
           password,
         });
 
-        // Store tokens and redirect to dashboard
-        localStorage.setItem("access_token", res.data.access);
-        localStorage.setItem("refresh_token", res.data.refresh);
-        if (res.data.clinic_slug) {
-          localStorage.setItem("clinic_slug", res.data.clinic_slug);
-        }
+        // Store tokens via AuthProvider and redirect to dashboard
+        await setTokens({
+          access: res.data.access,
+          refresh: res.data.refresh,
+          clinic_slug: res.data.clinic_slug,
+        });
         router.push("/");
       } catch (err: unknown) {
         const data =
@@ -93,7 +96,7 @@ function AcceptInviteContent() {
         setLoading(false);
       }
     },
-    [token, username, password, confirmPassword, router],
+    [token, username, password, confirmPassword, router, setTokens],
   );
 
   if (isLoadingInvite) {
@@ -166,7 +169,7 @@ function AcceptInviteContent() {
             >
               Choose a username
             </label>
-            <input
+            <Input
               id="username"
               type="text"
               value={username}
@@ -174,11 +177,7 @@ function AcceptInviteContent() {
               required
               autoFocus
               placeholder="your_username"
-              className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
-                fieldErrors.username
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-              }`}
+              hasError={!!fieldErrors.username}
             />
             {fieldErrors.username && (
               <p className="mt-1 text-sm text-red-600">
@@ -194,18 +193,14 @@ function AcceptInviteContent() {
             >
               Create a password
             </label>
-            <input
+            <Input
               id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               minLength={8}
-              className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${
-                fieldErrors.password
-                  ? "border-red-300 focus:border-red-500 focus:ring-red-500"
-                  : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"
-              }`}
+              hasError={!!fieldErrors.password}
             />
             {fieldErrors.password && (
               <p className="mt-1 text-sm text-red-600">
@@ -221,14 +216,13 @@ function AcceptInviteContent() {
             >
               Confirm password
             </label>
-            <input
+            <Input
               id="confirm-password"
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               required
               minLength={8}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
             />
           </div>
 
