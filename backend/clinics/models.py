@@ -84,3 +84,29 @@ class ClinicInvitation(models.Model):
 
     def __str__(self):
         return f"Invite {self.email} → {self.clinic.name} ({self.get_role_display()})"
+
+
+class DataExportAudit(models.Model):
+    clinic = models.ForeignKey(
+        Clinic,
+        on_delete=models.CASCADE,
+        related_name="data_export_audits",
+    )
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="data_export_audits",
+    )
+    endpoint = models.CharField(max_length=100)
+    row_count = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["clinic", "-created_at"], name="export_audit_clinic_created"),
+            models.Index(fields=["endpoint", "-created_at"], name="export_audit_endpoint_created"),
+        ]
+
+    def __str__(self):
+        return f"{self.clinic.subdomain} {self.endpoint} ({self.row_count})"

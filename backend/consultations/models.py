@@ -94,6 +94,12 @@ class Consultation(models.Model):
             models.Index(fields=["clinic", "-consultation_date"], name="consult_clinic_date"),
             models.Index(fields=["clinic", "patient", "-consultation_date"], name="consult_clinic_pat_date"),
         ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["clinic", "patient", "consultation_date"],
+                name="unique_consultation_per_patient_day",
+            ),
+        ]
 
     def __str__(self):
         return f"Consultation for {self.patient.name} on {self.consultation_date}"

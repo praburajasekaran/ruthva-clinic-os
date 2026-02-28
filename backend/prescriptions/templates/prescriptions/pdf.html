@@ -122,6 +122,7 @@
 </head>
 <body>
     <div class="header">
+        {% if clinic_logo_url %}<img src="{{ clinic_logo_url }}" style="max-height:60px; max-width:200px; margin-bottom:5px;" alt="">{% endif %}
         <h1>{{ clinic.name }}</h1>
         {% if clinic.tagline %}<p>{{ clinic.tagline }}</p>{% endif %}
         {% if clinic.address %}<p>{{ clinic.address }}</p>{% endif %}

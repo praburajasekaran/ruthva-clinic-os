@@ -3,7 +3,15 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from clinics.urls import invite_urlpatterns
-from config.views import dashboard_stats, follow_ups_list, health_check
+from config.views import (
+    dashboard_stats,
+    export_all_zip,
+    export_consultations_csv,
+    export_patients_csv,
+    export_prescriptions_csv,
+    follow_ups_list,
+    health_check,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,6 +23,11 @@ urlpatterns = [
     # Dashboard
     path("api/v1/dashboard/stats/", dashboard_stats, name="dashboard-stats"),
     path("api/v1/dashboard/follow-ups/", follow_ups_list, name="follow-ups-list"),
+    # Data portability exports
+    path("api/v1/export/patients/", export_patients_csv, name="export-patients"),
+    path("api/v1/export/consultations/", export_consultations_csv, name="export-consultations"),
+    path("api/v1/export/prescriptions/", export_prescriptions_csv, name="export-prescriptions"),
+    path("api/v1/export/all/", export_all_zip, name="export-all"),
     # Auth
     path("api/v1/auth/", include("users.urls")),
     # Invitations (public endpoints)

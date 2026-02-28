@@ -1,11 +1,18 @@
 from datetime import timedelta
 
 from django.db.models import Count, Q
+from django.http import HttpResponse
 from django.utils import timezone
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import serializers
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 
+from clinics.export_service import DataExportService
+from clinics.models import DataExportAudit
+from clinics.permissions import IsClinicOwner
 from consultations.models import Consultation
 from patients.models import Patient
 from prescriptions.models import ProcedureEntry, Prescription
@@ -108,3 +115,91 @@ def follow_ups_list(request):
 
     results.sort(key=lambda x: x["follow_up_date"])
     return Response(results)
+
+
+def _record_export_audit(*, request, endpoint, row_count):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return
+    DataExportAudit.objects.create(
+        clinic=clinic,
+        actor=request.user,
+        endpoint=endpoint,
+        row_count=row_count,
+    )
+
+
+@extend_schema(responses={200: {"type": "string", "format": "binary"}})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+@throttle_classes([UserRateThrottle])
+def export_patients_csv(request):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return Response({"detail": "No clinic context."}, status=403)
+    content, row_count = DataExportService.export_patients_csv(clinic)
+    _record_export_audit(
+        request=request,
+        endpoint="/api/v1/export/patients/",
+        row_count=row_count,
+    )
+    response = HttpResponse(content, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="patients.csv"'
+    return response
+
+
+@extend_schema(responses={200: {"type": "string", "format": "binary"}})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+@throttle_classes([UserRateThrottle])
+def export_consultations_csv(request):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return Response({"detail": "No clinic context."}, status=403)
+    content, row_count = DataExportService.export_consultations_csv(clinic)
+    _record_export_audit(
+        request=request,
+        endpoint="/api/v1/export/consultations/",
+        row_count=row_count,
+    )
+    response = HttpResponse(content, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="consultations.csv"'
+    return response
+
+
+@extend_schema(responses={200: {"type": "string", "format": "binary"}})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+@throttle_classes([UserRateThrottle])
+def export_prescriptions_csv(request):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return Response({"detail": "No clinic context."}, status=403)
+    content, row_count = DataExportService.export_prescriptions_csv(clinic)
+    _record_export_audit(
+        request=request,
+        endpoint="/api/v1/export/prescriptions/",
+        row_count=row_count,
+    )
+    response = HttpResponse(content, content_type="text/csv; charset=utf-8")
+    response["Content-Disposition"] = 'attachment; filename="prescriptions.csv"'
+    return response
+
+
+@extend_schema(responses={200: {"type": "string", "format": "binary"}})
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+@throttle_classes([UserRateThrottle])
+def export_all_zip(request):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return Response({"detail": "No clinic context."}, status=403)
+    content, counts = DataExportService.export_all_zip(clinic)
+    _record_export_audit(
+        request=request,
+        endpoint="/api/v1/export/all/",
+        row_count=counts["total"],
+    )
+    response = HttpResponse(content, content_type="application/zip")
+    response["Content-Disposition"] = 'attachment; filename="clinic-export.zip"'
+    return response

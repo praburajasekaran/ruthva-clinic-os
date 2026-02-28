@@ -10,10 +10,11 @@ import {
   X,
   Search,
   LogOut,
+  Settings,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { useShortcuts } from "@/components/layout/KeyboardProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -24,6 +25,7 @@ const navItems = [
   { href: "/consultations", label: "Consultations", icon: Stethoscope },
   { href: "/prescriptions", label: "Prescriptions", icon: FileText },
   { href: "/team", label: "Team", icon: Users2 },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar() {
@@ -31,8 +33,15 @@ export function Sidebar() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useShortcuts();
   const { user, logout } = useAuth();
+  const [logoError, setLogoError] = useState(false);
 
   const clinicName = user?.clinic?.name ?? "Clinic";
+  const clinicLogoUrl = user?.clinic?.logo_url ?? "";
+  const clinicInitial = clinicName.trim().charAt(0).toUpperCase() || "C";
+
+  useEffect(() => {
+    setLogoError(false);
+  }, [clinicLogoUrl]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/";
@@ -43,9 +52,24 @@ export function Sidebar() {
     <div className="flex flex-1 flex-col">
       <div>
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="truncate text-xl font-bold text-emerald-700">
-            {clinicName}
-          </h1>
+          <div className="flex min-w-0 items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700">
+              {clinicLogoUrl && !logoError ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={clinicLogoUrl}
+                  alt={`${clinicName} logo`}
+                  className="h-full w-full object-cover"
+                  onError={() => setLogoError(true)}
+                />
+              ) : (
+                clinicInitial
+              )}
+            </div>
+            <h1 className="truncate text-xl font-bold text-emerald-700">
+              {clinicName}
+            </h1>
+          </div>
           <button
             type="button"
             onClick={() => setMobileOpen(false)}
