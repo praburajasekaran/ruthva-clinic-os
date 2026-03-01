@@ -10,12 +10,12 @@ import { Calendar, FileText, Pencil, Plus } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { DIAGNOSTIC_SECTION_LABELS } from "@/lib/constants/bilingual-labels";
 import { useApi } from "@/hooks/useApi";
-import type { Consultation, Discipline, Patient } from "@/lib/types";
+import type { Consultation, Patient } from "@/lib/types";
 
 export default function ConsultationDetailPage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
-  const discipline = (user?.clinic?.discipline ?? "siddha") as Discipline;
+  const discipline = user?.clinic?.discipline ?? "siddha";
   const { data: consultation, isLoading } = useApi<
     Consultation & { prescription?: { id: number } }
   >(`/consultations/${params.id}/`);
@@ -188,6 +188,14 @@ export default function ConsultationDetailPage() {
                 </dd>
               </div>
             ))}
+            {consultation.mental_state && (
+              <div>
+                <dt className="text-gray-500">Mental State</dt>
+                <dd className="font-medium text-gray-900">
+                  {consultation.mental_state}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       </div>

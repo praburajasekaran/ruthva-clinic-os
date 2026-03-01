@@ -8,7 +8,11 @@ from django.db import IntegrityError, transaction
 from patients.models import Patient
 
 from .models import Consultation
-from .serializers import ConsultationImportRowSerializer
+from .serializers import (
+    ConsultationImportRowSerializer,
+    DISCIPLINE_SCHEMA_KEYS,
+    _validate_diagnostic_structure,
+)
 
 MAX_IMPORT_FILE_SIZE = 2 * 1024 * 1024  # 2MB
 MAX_IMPORT_ROW_COUNT = 5000
@@ -136,13 +140,48 @@ class ConsultationImportService:
                     "raw": raw,
                 }
             try:
-                row["diagnostic_data"] = json.loads(diag_raw)
+                parsed = json.loads(diag_raw)
             except (json.JSONDecodeError, TypeError):
                 return {
                     "line": line_number,
                     "errors": ["Invalid JSON in diagnostic_data."],
                     "raw": raw,
                 }
+
+            if not isinstance(parsed, dict):
+                return {
+                    "line": line_number,
+                    "errors": ["diagnostic_data must be a JSON object."],
+                    "raw": raw,
+                }
+
+            # Structure validation: denied keys + nesting depth
+            try:
+                _validate_diagnostic_structure(parsed)
+            except Exception as e:
+                return {
+                    "line": line_number,
+                    "errors": [str(e.detail[0]) if hasattr(e, "detail") else str(e)],
+                    "raw": raw,
+                }
+
+            # Discipline-specific top-level key validation
+            if parsed:
+                expected_key = DISCIPLINE_SCHEMA_KEYS.get(self.clinic.discipline)
+                if expected_key:
+                    unexpected = set(parsed.keys()) - {expected_key}
+                    if unexpected:
+                        return {
+                            "line": line_number,
+                            "errors": [
+                                f"Unexpected keys in diagnostic_data for "
+                                f"{self.clinic.discipline}: {unexpected}. "
+                                f"Expected: '{expected_key}'."
+                            ],
+                            "raw": raw,
+                        }
+
+            row["diagnostic_data"] = parsed
         else:
             row.pop("diagnostic_data", None)
 
