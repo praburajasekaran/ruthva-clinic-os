@@ -7,7 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
-import { ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
+import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
 import type {
   DoctorActionItem,
   FollowUpsResponse,
@@ -62,6 +62,14 @@ export default function FollowUpsPage() {
   const [showResolveNotes, setShowResolveNotes] = useState<Set<number>>(new Set());
   const [feedbackSessions, setFeedbackSessions] = useState<Record<number, TreatmentSessionWithFeedback[]>>({});
   const [expandedFeedback, setExpandedFeedback] = useState<Set<number>>(new Set());
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
+  const [sessionEditDraft, setSessionEditDraft] = useState<{
+    procedure_name: string;
+    medium_type: "oil" | "powder" | "other";
+    medium_name: string;
+    instructions: string;
+  } | null>(null);
+  const [savingSessionId, setSavingSessionId] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
@@ -264,6 +272,44 @@ export default function FollowUpsPage() {
     }
   };
 
+  const startEditSession = (s: TreatmentSessionWithFeedback) => {
+    setEditingSessionId(s.id);
+    setSessionEditDraft({
+      procedure_name: s.procedure_name,
+      medium_type: s.medium_type,
+      medium_name: s.medium_name,
+      instructions: s.instructions,
+    });
+  };
+
+  const cancelEditSession = () => {
+    setEditingSessionId(null);
+    setSessionEditDraft(null);
+  };
+
+  const saveEditSession = async (taskId: number) => {
+    if (!editingSessionId || !sessionEditDraft) return;
+    setSavingSessionId(editingSessionId);
+    setErrorMessage("");
+    try {
+      await api.patch(`/treatments/sessions/${editingSessionId}/`, sessionEditDraft);
+      // Update local cache
+      setFeedbackSessions((prev) => ({
+        ...prev,
+        [taskId]: (prev[taskId] ?? []).map((s) =>
+          s.id === editingSessionId ? { ...s, ...sessionEditDraft } : s,
+        ),
+      }));
+      cancelEditSession();
+    } catch {
+      setErrorMessage("Could not update session. Please try again.");
+    } finally {
+      setSavingSessionId(null);
+    }
+  };
+
+  const isDoctor = user?.role === "doctor" || user?.role === "admin";
+
   const renderFeedbackSummary = (item: DoctorActionItem) => {
     const taskId = item.doctor_action_task_id;
     const isExpanded = expandedFeedback.has(taskId);
@@ -286,6 +332,68 @@ export default function FollowUpsPage() {
               const fb = s.feedback;
               const isLowScore = fb && fb.response_score <= 2;
               const isNotDone = fb?.completion_status === "not_done";
+              const isEditing = editingSessionId === s.id;
+              const canEdit = isDoctor && s.execution_status === "planned";
+
+              if (isEditing && sessionEditDraft) {
+                return (
+                  <div key={s.id} className="space-y-2 rounded-md border border-blue-200 bg-blue-50/50 p-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-500">Day {s.day_number} — Edit Session</span>
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => saveEditSession(taskId)}
+                          disabled={savingSessionId === s.id}
+                          className="rounded p-1 text-emerald-600 hover:bg-emerald-100"
+                        >
+                          <Save className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={cancelEditSession}
+                          className="rounded p-1 text-gray-400 hover:bg-gray-200"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                      <input
+                        type="text"
+                        value={sessionEditDraft.procedure_name}
+                        onChange={(e) => setSessionEditDraft((d) => d ? { ...d, procedure_name: e.target.value } : d)}
+                        placeholder="Procedure"
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                      />
+                      <select
+                        value={sessionEditDraft.medium_type}
+                        onChange={(e) => setSessionEditDraft((d) => d ? { ...d, medium_type: e.target.value as "oil" | "powder" | "other" } : d)}
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                      >
+                        <option value="oil">Oil</option>
+                        <option value="powder">Powder</option>
+                        <option value="other">Other</option>
+                      </select>
+                      <input
+                        type="text"
+                        value={sessionEditDraft.medium_name}
+                        onChange={(e) => setSessionEditDraft((d) => d ? { ...d, medium_name: e.target.value } : d)}
+                        placeholder="Medium name"
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={sessionEditDraft.instructions}
+                        onChange={(e) => setSessionEditDraft((d) => d ? { ...d, instructions: e.target.value } : d)}
+                        placeholder="Instructions"
+                        className="rounded-md border border-gray-300 px-2 py-1.5 text-sm"
+                      />
+                    </div>
+                  </div>
+                );
+              }
+
               return (
                 <div
                   key={s.id}
@@ -315,6 +423,16 @@ export default function FollowUpsPage() {
                     </>
                   ) : (
                     <span className="text-xs text-gray-400">No feedback yet</span>
+                  )}
+                  {canEdit && (
+                    <button
+                      type="button"
+                      onClick={() => startEditSession(s)}
+                      className="ml-auto shrink-0 rounded p-1 text-gray-400 hover:bg-gray-200 hover:text-gray-600"
+                      title="Edit session"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
                   )}
                 </div>
               );
