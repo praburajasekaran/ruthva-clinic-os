@@ -61,10 +61,11 @@ def migrate_envagai_to_json(apps, schema_editor):
         )
         migrated_count = cursor.fetchone()[0]
 
-    assert original_count == migrated_count, (
-        f"Migration integrity check failed: {original_count} had Envagai data, "
-        f"but {migrated_count} have diagnostic_data"
-    )
+    if original_count != migrated_count:
+        raise RuntimeError(
+            f"Migration integrity check failed: {original_count} had Envagai data, "
+            f"but {migrated_count} have diagnostic_data"
+        )
 
 
 def reverse_migration(apps, schema_editor):

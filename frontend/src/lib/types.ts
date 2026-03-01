@@ -16,7 +16,7 @@ export type ClinicInfo = {
   readonly id: number;
   name: string;
   subdomain: string;
-  discipline: string;
+  discipline: Discipline;
   address: string;
   phone: string;
   email: string;
@@ -40,7 +40,7 @@ export type LoginRequest = {
 export type SignupRequest = {
   clinic_name: string;
   subdomain: string;
-  discipline: string;
+  discipline: Discipline;
   username: string;
   email: string;
   password: string;

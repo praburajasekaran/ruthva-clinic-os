@@ -1,4 +1,4 @@
-import sys
+import json
 
 from rest_framework import serializers
 
@@ -135,7 +135,7 @@ class ConsultationDetailSerializer(serializers.ModelSerializer):
             )
 
         # Payload size limit (SEC-5.1)
-        if sys.getsizeof(str(value)) > MAX_DIAGNOSTIC_DATA_SIZE:
+        if len(json.dumps(value)) > MAX_DIAGNOSTIC_DATA_SIZE:
             raise serializers.ValidationError(
                 "diagnostic_data exceeds maximum size (32KB)."
             )

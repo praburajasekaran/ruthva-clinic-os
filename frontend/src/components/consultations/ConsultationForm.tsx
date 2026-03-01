@@ -115,7 +115,7 @@ export function ConsultationForm({
 }: ConsultationFormProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const discipline = (user?.clinic?.discipline ?? "siddha") as Discipline;
+  const discipline = user?.clinic?.discipline ?? "siddha";
   const sections = getSections(discipline);
   const isEdit = mode === "edit";
   const draftKey = isEdit
