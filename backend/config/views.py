@@ -197,6 +197,7 @@ def follow_ups_list(request):
                 "treatment_plan_id": session.treatment_block.treatment_plan_id,
                 "treatment_block_id": session.treatment_block_id,
                 "day_number": session.day_number,
+                "sequence_number": session.sequence_number,
                 "block_number": session.treatment_block.block_number,
                 "block_start_day": session.treatment_block.start_day_number,
                 "block_end_day": session.treatment_block.end_day_number,
@@ -233,6 +234,8 @@ def follow_ups_list(request):
                 "pending_days": pending_days,
                 "task_type": task.task_type,
                 "task_status": task.status,
+                "total_days": task.treatment_plan.total_days,
+                "plan_status": task.treatment_plan.status,
                 "replan_required": task.treatment_block.replan_required,
             })
 
