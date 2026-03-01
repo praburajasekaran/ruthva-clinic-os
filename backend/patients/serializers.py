@@ -23,7 +23,8 @@ class PatientListSerializer(serializers.ModelSerializer):
         model = Patient
         fields = [
             "id", "record_id", "name", "age", "gender", "phone",
-            "whatsapp_number", "consultation_count", "last_visit", "created_at",
+            "whatsapp_number", "is_active",
+            "consultation_count", "last_visit", "created_at",
         ]
 
 
@@ -39,7 +40,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
             "occupation", "marital_status", "referred_by", "allergies",
             "food_habits", "activity_level", "menstrual_history",
             "number_of_children", "vaccination_records", "date_of_birth",
-            "medical_history", "family_history",
+            "is_active", "medical_history", "family_history",
             "created_at", "updated_at",
         ]
         read_only_fields = ["record_id", "created_at", "updated_at"]

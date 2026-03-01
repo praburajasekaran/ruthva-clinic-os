@@ -10,11 +10,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
 
+from django.db.models import F
+
 from clinics.export_service import DataExportService
 from clinics.models import DataExportAudit
 from clinics.permissions import IsClinicOwner
 from consultations.models import Consultation
 from patients.models import Patient
+from pharmacy.models import Medicine
 from prescriptions.models import ProcedureEntry, Prescription
 from treatments.models import DoctorActionTask, TreatmentSession
 
@@ -343,3 +346,28 @@ def export_all_zip(request):
     response = HttpResponse(content, content_type="application/zip")
     response["Content-Disposition"] = 'attachment; filename="clinic-export.zip"'
     return response
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicOwner])
+def usage_dashboard(request):
+    clinic = getattr(request, "clinic", None)
+    if clinic is None:
+        return Response({"detail": "No clinic context."}, status=403)
+
+    active_count = Patient.objects.filter(clinic=clinic, is_active=True).count()
+    limit = clinic.active_patient_limit
+    return Response({
+        "active_patients": active_count,
+        "patient_limit": limit,
+        "usage_percentage": round(
+            (active_count / limit * 100) if limit else 0, 1
+        ),
+        "medicines_count": Medicine.objects.filter(
+            clinic=clinic, is_active=True
+        ).count(),
+        "low_stock_count": Medicine.objects.filter(
+            clinic=clinic, is_active=True,
+            current_stock__lte=F("reorder_level"),
+        ).count(),
+    })

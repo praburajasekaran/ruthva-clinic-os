@@ -56,6 +56,7 @@ class Patient(models.Model):
     number_of_children = models.PositiveSmallIntegerField(null=True, blank=True)
     vaccination_records = models.TextField(blank=True, default="")
     date_of_birth = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
