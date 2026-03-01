@@ -96,6 +96,7 @@ export type Patient = {
   menstrual_history: string;
   number_of_children: number | null;
   vaccination_records: string;
+  is_active: boolean;
   medical_history: MedicalHistory[];
   family_history: FamilyHistory[];
   readonly created_at: string;
@@ -109,6 +110,7 @@ export type PatientListItem = {
   age: number;
   gender: Gender;
   phone: string;
+  is_active: boolean;
   consultation_count: number;
   last_visit: string | null;
   readonly created_at: string;
@@ -216,6 +218,9 @@ export type Prescription = {
 
 export type Medication = {
   readonly id: number;
+  medicine?: number | null;
+  medicine_id?: number | null;
+  medicine_name?: string;
   drug_name: string;
   dosage: string;
   frequency: MedicationFrequency;
@@ -371,4 +376,66 @@ export type ImportConfirmResult = {
   created: number;
   skipped: number;
   errors: ImportPreviewRow[];
+};
+
+// ── Pharmacy ──
+export type MedicineCategory =
+  | "kashayam" | "choornam" | "lehyam" | "tailam"
+  | "arishtam" | "asavam" | "gulika" | "parpam"
+  | "chenduram" | "nei" | "tablet" | "capsule"
+  | "syrup" | "external" | "other";
+
+export type DosageForm =
+  | "ml" | "g" | "tablets" | "capsules"
+  | "drops" | "pinch" | "spoon" | "other";
+
+export type Medicine = {
+  readonly id: number;
+  name: string;
+  name_ta: string;
+  category: MedicineCategory;
+  dosage_form: DosageForm;
+  unit_price: string;
+  current_stock: number;
+  reorder_level: number;
+  is_active: boolean;
+  is_low_stock: boolean;
+  readonly created_at?: string;
+  readonly updated_at?: string;
+  recent_stock_entries?: StockEntry[];
+};
+
+export type StockEntry = {
+  readonly id: number;
+  entry_type: "purchase" | "adjustment" | "dispense";
+  quantity_change: number;
+  balance_after: number;
+  notes: string;
+  actor_name: string;
+  readonly created_at: string;
+};
+
+export type DispensingItem = {
+  readonly id: number;
+  medicine: number;
+  drug_name_snapshot: string;
+  quantity_dispensed: number;
+  unit_price_snapshot: string;
+};
+
+export type DispensingRecord = {
+  readonly id: number;
+  prescription: number;
+  dispensed_by_name: string;
+  notes: string;
+  items: DispensingItem[];
+  readonly created_at: string;
+};
+
+export type UsageDashboard = {
+  active_patients: number;
+  patient_limit: number;
+  usage_percentage: number;
+  medicines_count: number;
+  low_stock_count: number;
 };

@@ -1,5 +1,12 @@
 import axios from "axios";
-import type { ImportConfirmResult, ImportPreviewResult } from "@/lib/types";
+import type {
+  DispensingRecord,
+  ImportConfirmResult,
+  ImportPreviewResult,
+  Medicine,
+  PaginatedResponse,
+  UsageDashboard,
+} from "@/lib/types";
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -151,6 +158,29 @@ export const dataPortabilityApi = {
   exportConsultations: () => downloadExport("/export/consultations/"),
   exportPrescriptions: () => downloadExport("/export/prescriptions/"),
   exportAll: () => downloadExport("/export/all/"),
+};
+
+export const pharmacyApi = {
+  listMedicines: (params?: Record<string, string>) =>
+    api.get<PaginatedResponse<Medicine>>("/pharmacy/medicines/", { params }),
+  getMedicine: (id: number) =>
+    api.get<Medicine>(`/pharmacy/medicines/${id}/`),
+  createMedicine: (data: Partial<Medicine>) =>
+    api.post<Medicine>("/pharmacy/medicines/", data),
+  updateMedicine: (id: number, data: Partial<Medicine>) =>
+    api.patch<Medicine>(`/pharmacy/medicines/${id}/`, data),
+  lowStock: () =>
+    api.get<Medicine[]>("/pharmacy/medicines/low-stock/"),
+  adjustStock: (id: number, data: { quantity: number; entry_type: string; notes?: string }) =>
+    api.post<Medicine>(`/pharmacy/medicines/${id}/adjust-stock/`, data),
+  dispense: (data: { prescription_id: number; notes?: string; items: { medicine_id: number; quantity_dispensed: number }[] }) =>
+    api.post<DispensingRecord>("/pharmacy/dispensing/", data),
+  listDispensing: (prescriptionId: number) =>
+    api.get<DispensingRecord[]>("/pharmacy/dispensing/", { params: { prescription: prescriptionId } }),
+  usageDashboard: () =>
+    api.get<UsageDashboard>("/usage/"),
+  togglePatientActive: (patientId: number) =>
+    api.post<{ is_active: boolean }>(`/patients/${patientId}/toggle-active/`),
 };
 
 export default api;

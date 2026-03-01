@@ -11,6 +11,7 @@ from config.views import (
     export_prescriptions_csv,
     follow_ups_list,
     health_check,
+    usage_dashboard,
 )
 
 urlpatterns = [
@@ -20,10 +21,12 @@ urlpatterns = [
     path("api/v1/consultations/", include("consultations.urls")),
     path("api/v1/prescriptions/", include("prescriptions.urls")),
     path("api/v1/treatments/", include("treatments.urls")),
+    path("api/v1/pharmacy/", include("pharmacy.urls")),
     path("api/v1/team/", include("clinics.urls")),
     # Dashboard
     path("api/v1/dashboard/stats/", dashboard_stats, name="dashboard-stats"),
     path("api/v1/dashboard/follow-ups/", follow_ups_list, name="follow-ups-list"),
+    path("api/v1/usage/", usage_dashboard, name="usage-dashboard"),
     # Data portability exports
     path("api/v1/export/patients/", export_patients_csv, name="export-patients"),
     path("api/v1/export/consultations/", export_consultations_csv, name="export-consultations"),

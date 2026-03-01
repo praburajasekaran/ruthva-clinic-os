@@ -4,14 +4,17 @@ import { GripVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
+import { MedicineAutocomplete } from "@/components/pharmacy/MedicineAutocomplete";
 import {
   FREQUENCY_OPTIONS,
   DOSAGE_UNITS,
   TIMING_OPTIONS,
 } from "@/lib/constants/envagai-options";
 import { MEDICATION_LABELS } from "@/lib/constants/bilingual-labels";
+import type { Medicine } from "@/lib/types";
 
 type MedicationData = {
+  medicine: number | null;
   drug_name: string;
   dosage_amount: string;
   dosage_unit: string;
@@ -27,7 +30,7 @@ type MedicationData = {
 type MedicationRowProps = {
   index: number;
   data: MedicationData;
-  onChange: (field: keyof MedicationData, value: string) => void;
+  onChange: (field: keyof MedicationData, value: string | number | null) => void;
   onRemove: () => void;
 };
 
@@ -62,9 +65,12 @@ export function MedicationRow({
             english={MEDICATION_LABELS.drugName.en}
             tamil={MEDICATION_LABELS.drugName.ta}
           />
-          <Input
+          <MedicineAutocomplete
             value={data.drug_name}
-            onChange={(e) => onChange("drug_name", e.target.value)}
+            onChange={(val: string, medicine?: Medicine) => {
+              onChange("drug_name", val);
+              onChange("medicine", medicine?.id ?? null);
+            }}
             placeholder="e.g., Nilavembu Kudineer"
           />
         </div>

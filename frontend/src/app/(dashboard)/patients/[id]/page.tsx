@@ -1,11 +1,14 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import {
+  Archive,
+  ArchiveRestore,
   Calendar,
   FileText,
   Plus,
@@ -13,6 +16,7 @@ import {
   User,
 } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
+import { pharmacyApi } from "@/lib/api";
 import type { Patient, PaginatedResponse } from "@/lib/types";
 
 type ConsultationListItem = {
@@ -25,13 +29,25 @@ type ConsultationListItem = {
 
 export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
-  const { data: patient, isLoading } = useApi<Patient>(
+  const { data: patient, isLoading, refetch } = useApi<Patient>(
     `/patients/${params.id}/`,
   );
   const { data: consultationsData } =
     useApi<PaginatedResponse<ConsultationListItem>>(
       `/consultations/?patient=${params.id}`,
     );
+  const [toggling, setToggling] = useState(false);
+
+  const handleToggleActive = async () => {
+    if (!patient) return;
+    setToggling(true);
+    try {
+      await pharmacyApi.togglePatientActive(patient.id);
+      refetch();
+    } finally {
+      setToggling(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -67,7 +83,30 @@ export default function PatientDetailPage() {
             aria-label="Press C to start a new consultation"
           />
         </Link>
+        <button
+          type="button"
+          onClick={handleToggleActive}
+          disabled={toggling}
+          className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${
+            patient.is_active
+              ? "border-gray-300 text-gray-700 hover:bg-gray-50"
+              : "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+          }`}
+        >
+          {patient.is_active ? (
+            <><Archive className="h-4 w-4" /> Archive Patient</>
+          ) : (
+            <><ArchiveRestore className="h-4 w-4" /> Reactivate Patient</>
+          )}
+        </button>
       </div>
+
+      {/* Archived banner */}
+      {!patient.is_active && (
+        <div className="rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-600">
+          This patient is archived and does not count toward your active patient limit.
+        </div>
+      )}
 
       {/* Patient Details */}
       <div className="grid gap-6 lg:grid-cols-3">

@@ -50,6 +50,13 @@ class Medication(models.Model):
     prescription = models.ForeignKey(
         Prescription, on_delete=models.CASCADE, related_name="medications"
     )
+    medicine = models.ForeignKey(
+        "pharmacy.Medicine",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="medication_usages",
+    )
     drug_name = models.CharField(max_length=255)
     dosage = models.CharField(max_length=100)
     frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES)

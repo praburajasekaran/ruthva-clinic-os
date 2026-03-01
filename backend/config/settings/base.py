@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "prescriptions",
     "treatments",
     "reminders",
+    "pharmacy",
 ]
 
 MIDDLEWARE = [

@@ -29,12 +29,21 @@ class PrescriptionImportRowSerializer(serializers.Serializer):
 
 
 class MedicationSerializer(serializers.ModelSerializer):
+    medicine_id = serializers.IntegerField(
+        source="medicine.id", read_only=True, default=None
+    )
+    medicine_name = serializers.CharField(
+        source="medicine.name", read_only=True, default=""
+    )
+
     class Meta:
         model = Medication
         fields = [
-            "id", "drug_name", "dosage", "frequency", "frequency_tamil",
+            "id", "medicine", "medicine_id", "medicine_name",
+            "drug_name", "dosage", "frequency", "frequency_tamil",
             "duration", "instructions", "instructions_ta", "sort_order",
         ]
+        extra_kwargs = {"medicine": {"required": False, "allow_null": True}}
 
 
 class ProcedureEntrySerializer(serializers.ModelSerializer):
