@@ -2,18 +2,18 @@
 
 ## Overview
 
-Phase 1 (multi-tenant foundation, auth, tenant isolation, CSV patient import, dynamic PDF) is complete and live. Phases 2–6 build the remaining capabilities needed for launch readiness: team management, clinic branding, data portability, multi-discipline diagnostic forms, pharmacy inventory, and usage limits.
+Phases 1–4 (multi-tenant foundation, auth, tenant isolation, CSV patient import, dynamic PDF, team management, clinic branding, data portability) are complete and live. Phases 5–6 build the remaining capabilities needed for launch readiness: multi-discipline diagnostic forms, pharmacy inventory, and usage limits.
 
 ## Phases
 
 **Phase Numbering:**
-- Phase 1: Complete (multi-tenant foundation)
-- Phases 2–6: Remaining launch-readiness work
+- Phases 1–4: Complete (foundation, team, branding, data portability)
+- Phases 5–6: Remaining launch-readiness work
 
 - [x] **Phase 1: Foundation** - Multi-tenant core, auth, tenant isolation, CSV patient import, dynamic PDF (COMPLETE)
 - [x] **Phase 2: Team & Roles** - Clinic owner can invite members and enforce role-based access (COMPLETE)
-- [ ] **Phase 3: Branding & Settings** - Logo upload to R2, editable clinic settings, print preview
-- [ ] **Phase 4: Data Portability** - Full CSV import for consultations/prescriptions, complete CSV/ZIP export
+- [x] **Phase 3: Branding & Settings** - Logo upload to R2, editable clinic settings, print preview (COMPLETE)
+- [x] **Phase 4: Data Portability** - Full CSV import for consultations/prescriptions, complete CSV/ZIP export (COMPLETE)
 - [ ] **Phase 5: Multi-Discipline** - Abstract diagnostic forms with JSONField migration and Ayurveda Prakriti support
 - [ ] **Phase 6: Pharmacy & Usage** - Medicine catalog, stock tracking, prescription auto-suggest, active patient billing limits
 
@@ -52,7 +52,8 @@ Phase 1 (multi-tenant foundation, auth, tenant isolation, CSV patient import, dy
   2. The uploaded logo appears in the prescription PDF header and in the app sidebar
   3. Clinic owner can edit clinic settings (name, address, phone, email, tagline, primary color) and changes are reflected immediately
   4. Clinic owner can toggle paper size between A4 and A5 and see a print preview of the prescription
-**Plans**: TBD
+**Plans**: Complete — PR #16
+**Delivered**: Logo upload API with R2 storage and security validation, /settings page with logo upload + clinic info editing, logo in PDF header and sidebar, paper size toggle with print preview
 
 ### Phase 4: Data Portability
 **Goal**: Clinics can import their full historical data and export everything for backup or migration
@@ -64,7 +65,8 @@ Phase 1 (multi-tenant foundation, auth, tenant isolation, CSV patient import, dy
   3. Import rejects prescriptions before their referenced consultations exist, and consultations before their referenced patients exist
   4. User can download all patients, consultations, or prescriptions as individual CSV files
   5. User can download a single ZIP file containing all clinic data as separate CSVs
-**Plans**: TBD
+**Plans**: Complete — PR #16
+**Delivered**: ConsultationImportService and PrescriptionImportService with CSV preview/validation, referential integrity checks, ExportService with individual CSV and ZIP export, DataExportAudit model, ImportPreviewTable component
 
 ### Phase 5: Multi-Discipline
 **Goal**: The platform supports all five AYUSH disciplines with the right diagnostic form shown per clinic
@@ -99,7 +101,7 @@ Phases execute in numeric order: 2 → 3 → 4 → 5 → 6
 |-------|----------------|--------|-----------|
 | 1. Foundation | - | Complete | 2026-02-28 |
 | 2. Team & Roles | 1/1 | Complete | 2026-02-28 |
-| 3. Branding & Settings | 0/? | Not started | - |
-| 4. Data Portability | 0/? | Not started | - |
+| 3. Branding & Settings | 1/1 | Complete | 2026-03-01 |
+| 4. Data Portability | 1/1 | Complete | 2026-03-01 |
 | 5. Multi-Discipline | 0/? | Not started | - |
 | 6. Pharmacy & Usage | 0/? | Not started | - |

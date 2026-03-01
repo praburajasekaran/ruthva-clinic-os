@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { CheckCircle, Building2, User, ImageIcon, FileUp, Download, Database } from "lucide-react";
+import { useState, useRef, useCallback } from "react";
+import { CheckCircle, Building2, User, ImageIcon, Upload, Download, ArrowDownUp, FileDown } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ImportPreviewTable } from "@/components/data-portability/ImportPreviewTable";
 import { FormField } from "@/components/forms/FormField";
@@ -421,6 +421,64 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
   );
 }
 
+function FileUploadField({
+  label,
+  file,
+  onFileChange,
+  inputRef,
+}: {
+  label: string;
+  file: File | null;
+  onFileChange: (f: File | null) => void;
+  inputRef: React.RefObject<HTMLInputElement | null>;
+}) {
+  return (
+    <div>
+      <p className="mb-2 text-sm font-medium text-gray-700">{label}</p>
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".csv"
+        onChange={(e) => onFileChange(e.target.files?.[0] || null)}
+        className="hidden"
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        className="flex w-full items-center gap-3 rounded-lg border border-dashed border-gray-300 bg-gray-50/50 px-4 py-3 text-sm transition-colors hover:border-emerald-400 hover:bg-emerald-50/30"
+      >
+        <Upload className="h-4 w-4 text-gray-400" />
+        {file ? (
+          <span className="truncate text-gray-900">{file.name}</span>
+        ) : (
+          <span className="text-gray-500">Choose a CSV file...</span>
+        )}
+      </button>
+    </div>
+  );
+}
+
+const CONSULTATION_TEMPLATE = [
+  "patient_phone,consultation_date,chief_complaints,diagnosis,history_of_present_illness,weight,height,bp_systolic,bp_diastolic,pulse_rate,temperature",
+  "9876543210,2025-01-15,Headache and fatigue,Migraine,Recurring for 2 weeks,68.5,165,120,80,72,98.6",
+].join("\n");
+
+const PRESCRIPTION_TEMPLATE = [
+  "patient_phone,consultation_date,row_type,drug_name,dosage,frequency,duration,instructions,sort_order,diet_advice,lifestyle_advice,exercise_advice,follow_up_date,follow_up_notes,procedure_name,procedure_details,procedure_duration,procedure_follow_up_date",
+  "9876543210,2025-01-15,medication,Triphala Churna,1 tsp,Twice daily,30 days,After meals with warm water,1,Avoid spicy food,Sleep by 10 PM,30 min walk daily,2025-02-15,Review after 1 month,,,,",
+  "9876543210,2025-01-15,procedure,,,,,,,,,,,,Nasyam,With Anu Taila,30 minutes,2025-02-01",
+].join("\n");
+
+function downloadTemplate(csv: string, filename: string) {
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
+
 function DataPortabilitySection() {
   const [consultationFile, setConsultationFile] = useState<File | null>(null);
   const [prescriptionFile, setPrescriptionFile] = useState<File | null>(null);
@@ -431,6 +489,9 @@ function DataPortabilitySection() {
   const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const consultationInputRef = useRef<HTMLInputElement | null>(null);
+  const prescriptionInputRef = useRef<HTMLInputElement | null>(null);
 
   const triggerDownload = (blob: Blob, filename: string) => {
     const url = window.URL.createObjectURL(blob);
@@ -532,89 +593,108 @@ function DataPortabilitySection() {
   return (
     <div className="space-y-6">
       <FormSection title="Import CSV Data">
-        <div className="space-y-4">
-          <label className="flex items-center gap-2 text-sm text-gray-700">
+        <div className="space-y-5">
+          <label className="flex items-center gap-2.5 text-sm text-gray-700 select-none cursor-pointer">
             <input
               type="checkbox"
               checked={skipDuplicates}
               onChange={(e) => setSkipDuplicates(e.target.checked)}
+              className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
             />
-            Skip duplicates during confirm
+            Skip duplicates during import
           </label>
 
-          <div className="rounded-lg border border-gray-200 p-4">
-            <p className="mb-3 text-sm font-semibold text-gray-800">Consultations Import</p>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={(e) => setConsultationFile(e.target.files?.[0] || null)}
-              className="mb-3 block w-full text-sm"
+          {/* Consultations import */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-5">
+            <FileUploadField
+              label="Consultations"
+              file={consultationFile}
+              onFileChange={setConsultationFile}
+              inputRef={consultationInputRef}
             />
-            <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={handleConsultationPreview} disabled={!consultationFile || isBusy}>
-                <FileUp className="mr-1 h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => downloadTemplate(CONSULTATION_TEMPLATE, "consultations-template.csv")}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+            >
+              <FileDown className="h-3 w-3" />
+              Download sample CSV
+            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={handleConsultationPreview} disabled={!consultationFile || isBusy}>
                 Preview
               </Button>
-              <Button type="button" onClick={handleConsultationConfirm} disabled={!consultationFile || isBusy}>
-                Confirm Import
+              <Button type="button" size="sm" onClick={handleConsultationConfirm} disabled={!consultationFile || isBusy}>
+                <Upload className="h-3.5 w-3.5" />
+                Import
               </Button>
             </div>
             {consultationPreview && (
-              <p className="mt-3 text-sm text-gray-700">
-                Total: {consultationPreview.total_rows ?? 0}, Errors: {consultationPreview.error_count ?? 0}
+              <p className="mt-3 text-sm text-gray-600">
+                {consultationPreview.total_rows ?? 0} rows found, {consultationPreview.error_count ?? 0} errors
               </p>
             )}
             {consultationResult && (
-              <p className="mt-2 text-sm text-emerald-700">
-                Created: {consultationResult.created}, Skipped: {consultationResult.skipped}
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-700">
+                <CheckCircle className="h-3.5 w-3.5" />
+                {consultationResult.created} created, {consultationResult.skipped} skipped
               </p>
             )}
             <div className="mt-3 space-y-3">
               <ImportPreviewTable
-                title="Consultation Preview Rows"
+                title="Preview Rows"
                 rows={consultationPreview?.preview || []}
               />
               <ImportPreviewTable
-                title="Consultation Import Errors"
+                title="Errors"
                 rows={consultationResult?.errors || consultationPreview?.errors || []}
               />
             </div>
           </div>
 
-          <div className="rounded-lg border border-gray-200 p-4">
-            <p className="mb-3 text-sm font-semibold text-gray-800">Prescriptions Import</p>
-            <input
-              type="file"
-              accept=".csv"
-              onChange={(e) => setPrescriptionFile(e.target.files?.[0] || null)}
-              className="mb-3 block w-full text-sm"
+          {/* Prescriptions import */}
+          <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-5">
+            <FileUploadField
+              label="Prescriptions"
+              file={prescriptionFile}
+              onFileChange={setPrescriptionFile}
+              inputRef={prescriptionInputRef}
             />
-            <div className="flex flex-wrap gap-2">
-              <Button type="button" onClick={handlePrescriptionPreview} disabled={!prescriptionFile || isBusy}>
-                <FileUp className="mr-1 h-4 w-4" />
+            <button
+              type="button"
+              onClick={() => downloadTemplate(PRESCRIPTION_TEMPLATE, "prescriptions-template.csv")}
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 hover:text-emerald-800 hover:underline"
+            >
+              <FileDown className="h-3 w-3" />
+              Download sample CSV
+            </button>
+            <div className="mt-3 flex flex-wrap gap-2">
+              <Button type="button" variant="secondary" size="sm" onClick={handlePrescriptionPreview} disabled={!prescriptionFile || isBusy}>
                 Preview
               </Button>
-              <Button type="button" onClick={handlePrescriptionConfirm} disabled={!prescriptionFile || isBusy}>
-                Confirm Import
+              <Button type="button" size="sm" onClick={handlePrescriptionConfirm} disabled={!prescriptionFile || isBusy}>
+                <Upload className="h-3.5 w-3.5" />
+                Import
               </Button>
             </div>
             {prescriptionPreview && (
-              <p className="mt-3 text-sm text-gray-700">
-                Total: {prescriptionPreview.total_rows ?? 0}, Errors: {prescriptionPreview.error_count ?? 0}
+              <p className="mt-3 text-sm text-gray-600">
+                {prescriptionPreview.total_rows ?? 0} rows found, {prescriptionPreview.error_count ?? 0} errors
               </p>
             )}
             {prescriptionResult && (
-              <p className="mt-2 text-sm text-emerald-700">
-                Created: {prescriptionResult.created}, Skipped: {prescriptionResult.skipped}
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-emerald-700">
+                <CheckCircle className="h-3.5 w-3.5" />
+                {prescriptionResult.created} created, {prescriptionResult.skipped} skipped
               </p>
             )}
             <div className="mt-3 space-y-3">
               <ImportPreviewTable
-                title="Prescription Preview Rows"
+                title="Preview Rows"
                 rows={prescriptionPreview?.preview || []}
               />
               <ImportPreviewTable
-                title="Prescription Import Errors"
+                title="Errors"
                 rows={prescriptionResult?.errors || prescriptionPreview?.errors || []}
               />
             </div>
@@ -622,24 +702,27 @@ function DataPortabilitySection() {
         </div>
       </FormSection>
 
-      <FormSection title="Export Clinic Data">
-        <div className="grid gap-2 sm:grid-cols-2">
-          <Button type="button" onClick={() => handleExport(dataPortabilityApi.exportPatients, "patients.csv")} disabled={isBusy}>
-            <Download className="mr-1 h-4 w-4" />
-            Export Patients CSV
-          </Button>
-          <Button type="button" onClick={() => handleExport(dataPortabilityApi.exportConsultations, "consultations.csv")} disabled={isBusy}>
-            <Download className="mr-1 h-4 w-4" />
-            Export Consultations CSV
-          </Button>
-          <Button type="button" onClick={() => handleExport(dataPortabilityApi.exportPrescriptions, "prescriptions.csv")} disabled={isBusy}>
-            <Download className="mr-1 h-4 w-4" />
-            Export Prescriptions CSV
-          </Button>
-          <Button type="button" onClick={() => handleExport(dataPortabilityApi.exportAll, "clinic-export.zip")} disabled={isBusy}>
-            <Database className="mr-1 h-4 w-4" />
-            Export All (ZIP)
-          </Button>
+      <FormSection title="Export Data">
+        <div className="space-y-2">
+          <p className="text-sm text-gray-500 mb-3">Download your clinic data as CSV files.</p>
+          <div className="grid gap-2 sm:grid-cols-2">
+            <Button type="button" variant="secondary" size="sm" onClick={() => handleExport(dataPortabilityApi.exportPatients, "patients.csv")} disabled={isBusy}>
+              <Download className="h-3.5 w-3.5" />
+              Patients
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => handleExport(dataPortabilityApi.exportConsultations, "consultations.csv")} disabled={isBusy}>
+              <Download className="h-3.5 w-3.5" />
+              Consultations
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => handleExport(dataPortabilityApi.exportPrescriptions, "prescriptions.csv")} disabled={isBusy}>
+              <Download className="h-3.5 w-3.5" />
+              Prescriptions
+            </Button>
+            <Button type="button" variant="secondary" size="sm" onClick={() => handleExport(dataPortabilityApi.exportAll, "clinic-export.zip")} disabled={isBusy}>
+              <Download className="h-3.5 w-3.5" />
+              Everything (ZIP)
+            </Button>
+          </div>
         </div>
       </FormSection>
 
@@ -672,7 +755,7 @@ export default function SettingsPage() {
   const tabs: { id: Tab; label: string; icon: React.ElementType; show: boolean }[] = [
     { id: "profile", label: "Profile", icon: User, show: true },
     { id: "clinic", label: "Clinic", icon: Building2, show: !!user.is_clinic_owner },
-    { id: "portability", label: "Data Portability", icon: Database, show: !!user.is_clinic_owner },
+    { id: "portability", label: "Import & Export", icon: ArrowDownUp, show: !!user.is_clinic_owner },
   ];
 
   return (

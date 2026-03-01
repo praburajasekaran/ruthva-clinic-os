@@ -5,6 +5,7 @@ import Link from "next/link";
 import axios from "axios";
 import { Leaf, Loader2, CircleCheck, CircleX } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import type { SignupRequest } from "@/lib/types";
 
 const DISCIPLINES = [
   { value: "siddha", label: "Siddha" },
@@ -20,7 +21,7 @@ type AvailabilityStatus = "idle" | "checking" | "available" | "taken";
 
 export default function SignupPage() {
   const { signup } = useAuth();
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<SignupRequest>({
     clinic_name: "",
     subdomain: "",
     discipline: "siddha",
@@ -86,9 +87,9 @@ export default function SignupPage() {
     }, 500);
   }
 
-  function update(field: string, value: string) {
+  function update(field: keyof SignupRequest, value: string) {
     setForm((prev) => {
-      const next = { ...prev, [field]: value };
+      const next = { ...prev, [field]: value } as SignupRequest;
       // Auto-generate subdomain from clinic name
       if (field === "clinic_name") {
         next.subdomain = value

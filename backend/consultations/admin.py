@@ -18,11 +18,9 @@ class ConsultationAdmin(admin.ModelAdmin):
         ("General Assessment", {"fields": [
             "appetite", "appetite_notes", "bowel", "bowel_notes",
             "micturition", "micturition_notes", "sleep_quality", "sleep_notes",
+            "mental_state",
         ]}),
-        ("Envagai Thervu", {"fields": [
-            "naa", "niram", "mozhi", "vizhi", "nadi", "mei",
-            "muthiram", "varmam", "mental_state",
-        ]}),
+        ("Diagnostic Data", {"fields": ["diagnostic_data"]}),
         ("Diagnosis", {"fields": [
             "chief_complaints", "history_of_present_illness",
             "diagnosis", "icd_code",

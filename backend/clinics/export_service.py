@@ -1,5 +1,6 @@
 import csv
 import io
+import json
 import zipfile
 
 from consultations.models import Consultation
@@ -68,6 +69,7 @@ class DataExportService:
             "bp_diastolic",
             "pulse_rate",
             "temperature",
+            "diagnostic_data",
             "created_at",
         ]
         buffer = io.StringIO()
@@ -95,6 +97,7 @@ class DataExportService:
                 consultation.bp_diastolic,
                 consultation.pulse_rate,
                 consultation.temperature,
+                json.dumps(consultation.diagnostic_data) if consultation.diagnostic_data else "",
                 consultation.created_at.isoformat(),
             ])
             row_count += 1

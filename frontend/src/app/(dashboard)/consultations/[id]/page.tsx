@@ -4,27 +4,18 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { DiagnosticDataDisplay } from "@/components/consultations/DiagnosticDataDisplay";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, FileText, Pencil, Plus } from "lucide-react";
-import {
-  ENVAGAI_OPTIONS,
-  type EnvagaiTool,
-} from "@/lib/constants/envagai-options";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { DIAGNOSTIC_SECTION_LABELS } from "@/lib/constants/bilingual-labels";
 import { useApi } from "@/hooks/useApi";
 import type { Consultation, Patient } from "@/lib/types";
 
-function parseEnvagaiValue(raw: string): Record<string, string> {
-  if (!raw) return {};
-  const result: Record<string, string> = {};
-  for (const part of raw.split("|")) {
-    const [k, ...v] = part.split(":");
-    if (k) result[k] = v.join(":");
-  }
-  return result;
-}
-
 export default function ConsultationDetailPage() {
   const params = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const discipline = user?.clinic?.discipline ?? "siddha";
   const { data: consultation, isLoading } = useApi<
     Consultation & { prescription?: { id: number } }
   >(`/consultations/${params.id}/`);
@@ -197,53 +188,27 @@ export default function ConsultationDetailPage() {
                 </dd>
               </div>
             ))}
+            {consultation.mental_state && (
+              <div>
+                <dt className="text-gray-500">Mental State</dt>
+                <dd className="font-medium text-gray-900">
+                  {consultation.mental_state}
+                </dd>
+              </div>
+            )}
           </dl>
         </div>
       </div>
 
-      {/* Envagai Thervu */}
+      {/* Discipline-specific Diagnostics */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
         <h2 className="mb-4 text-base font-semibold text-gray-900">
-          Envagai Thervu
+          {(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).en}
         </h2>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {(
-            Object.entries(ENVAGAI_OPTIONS) as [
-              EnvagaiTool,
-              (typeof ENVAGAI_OPTIONS)[EnvagaiTool],
-            ][]
-          ).map(([key, tool]) => {
-            const raw = (consultation as Record<string, unknown>)[
-              key
-            ] as string;
-            const values = parseEnvagaiValue(raw);
-            const hasData = Object.keys(values).length > 0;
-            return (
-              <div key={key} className="rounded-lg border border-gray-100 p-3">
-                <h4 className="text-sm font-medium text-gray-900">
-                  {tool.label}{" "}
-                  <span className="font-tamil text-xs text-gray-400">
-                    ({tool.labelTamil})
-                  </span>
-                </h4>
-                {hasData ? (
-                  <dl className="mt-2 space-y-1 text-xs">
-                    {Object.entries(values).map(([field, val]) => (
-                      <div key={field}>
-                        <dt className="inline capitalize text-gray-500">
-                          {field.replace(/_/g, " ")}:
-                        </dt>{" "}
-                        <dd className="inline text-gray-700">{val}</dd>
-                      </div>
-                    ))}
-                  </dl>
-                ) : (
-                  <p className="mt-2 text-xs text-gray-400">Not assessed</p>
-                )}
-              </div>
-            );
-          })}
-        </div>
+        <DiagnosticDataDisplay
+          discipline={discipline}
+          data={consultation.diagnostic_data}
+        />
       </div>
 
       {/* Diagnosis */}
