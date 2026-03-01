@@ -1,17 +1,20 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { DispenseModal } from "@/components/pharmacy/DispenseModal";
 import { KbdBadge } from "@/components/ui/KbdBadge";
-import { Calendar, Pencil, Printer } from "lucide-react";
+import { Calendar, Package, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 import { useApi } from "@/hooks/useApi";
-import type { Prescription, Consultation, Patient } from "@/lib/types";
+import type { Prescription, Consultation, Patient, DispensingRecord } from "@/lib/types";
 
 export default function PrescriptionDetailPage() {
   const params = useParams<{ id: string }>();
+  const [showDispense, setShowDispense] = useState(false);
   const { data: prescription, isLoading } = useApi<Prescription>(
     `/prescriptions/${params.id}/`,
   );
@@ -21,6 +24,11 @@ export default function PrescriptionDetailPage() {
   const { data: patient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
+  const { data: dispensingRecords, refetch: refreshDispensing } = useApi<DispensingRecord[]>(
+    prescription ? `/pharmacy/dispensing/?prescription=${prescription.id}` : null,
+  );
+
+  const hasLinkedMeds = prescription?.medications?.some((m) => m.medicine_id || m.medicine) ?? false;
 
   if (isLoading) {
     return (
@@ -74,6 +82,16 @@ export default function PrescriptionDetailPage() {
                 aria-label="Press H to go to patient detail"
               />
             </Link>
+          )}
+          {hasLinkedMeds && (
+            <button
+              type="button"
+              onClick={() => setShowDispense(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+            >
+              <Package className="h-4 w-4" />
+              Dispense
+            </button>
           )}
           <Link
             href={`/prescriptions/${params.id}/edit`}
@@ -244,6 +262,58 @@ export default function PrescriptionDetailPage() {
             </p>
           )}
         </div>
+      )}
+
+      {/* Dispensing History */}
+      {dispensingRecords && dispensingRecords.length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+            <Package className="h-4 w-4" />
+            Dispensing History
+          </h2>
+          <div className="space-y-3">
+            {dispensingRecords.map((record) => (
+              <div key={record.id} className="rounded-lg border border-gray-100 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">
+                    {new Date(record.created_at).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="text-gray-500">by {record.dispensed_by_name}</span>
+                </div>
+                <div className="mt-2 space-y-1">
+                  {record.items.map((item) => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.drug_name_snapshot}</span>
+                      <span className="text-gray-500">x{item.quantity_dispensed}</span>
+                    </div>
+                  ))}
+                </div>
+                {record.notes && (
+                  <p className="mt-1 text-xs text-gray-400">{record.notes}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dispense Modal */}
+      {showDispense && (
+        <DispenseModal
+          prescriptionId={prescription.id}
+          medications={medications}
+          onClose={() => setShowDispense(false)}
+          onDispensed={() => {
+            setShowDispense(false);
+            refreshDispensing();
+          }}
+        />
       )}
     </div>
   );

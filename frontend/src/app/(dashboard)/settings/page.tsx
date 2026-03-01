@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useRef, useCallback } from "react";
-import { CheckCircle, Building2, User, ImageIcon, Upload, Download, ArrowDownUp, FileDown } from "lucide-react";
+import { CheckCircle, Building2, BarChart3, User, ImageIcon, Upload, Download, ArrowDownUp, FileDown } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { UsageDashboard } from "@/components/pharmacy/UsageDashboard";
 import { ImportPreviewTable } from "@/components/data-portability/ImportPreviewTable";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
@@ -733,7 +734,7 @@ function DataPortabilitySection() {
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
-type Tab = "profile" | "clinic" | "portability";
+type Tab = "profile" | "clinic" | "usage" | "portability";
 
 export default function SettingsPage() {
   const { user, isLoading, refreshUser } = useAuth();
@@ -755,6 +756,7 @@ export default function SettingsPage() {
   const tabs: { id: Tab; label: string; icon: React.ElementType; show: boolean }[] = [
     { id: "profile", label: "Profile", icon: User, show: true },
     { id: "clinic", label: "Clinic", icon: Building2, show: !!user.is_clinic_owner },
+    { id: "usage", label: "Usage", icon: BarChart3, show: !!user.is_clinic_owner },
     { id: "portability", label: "Import & Export", icon: ArrowDownUp, show: !!user.is_clinic_owner },
   ];
 
@@ -789,6 +791,9 @@ export default function SettingsPage() {
       )}
       {activeTab === "clinic" && user.is_clinic_owner && user.clinic && (
         <ClinicSection clinic={user.clinic} onSaved={refreshUser} />
+      )}
+      {activeTab === "usage" && user.is_clinic_owner && (
+        <UsageDashboard />
       )}
       {activeTab === "portability" && user.is_clinic_owner && (
         <DataPortabilitySection />

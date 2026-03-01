@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronLeft, ChevronRight, Phone, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, Phone, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
@@ -18,6 +18,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
   const router = useRouter();
   const [paginatedData, setPaginatedData] = useState(initialData);
   const [paginatingDir, setPaginatingDir] = useState<"next" | "prev" | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
 
   const paginate = useCallback(async (url: string | null, dir: "next" | "prev") => {
     if (!url) return;
@@ -41,7 +42,8 @@ export function PatientTable({ initialData }: PatientTableProps) {
 
   const data = query.length >= 2 ? searchResults : paginatedData;
   const isLoading = query.length >= 2 && searchLoading;
-  const patients = data?.results ?? [];
+  const allPatients = data?.results ?? [];
+  const patients = showArchived ? allPatients : allPatients.filter((p) => p.is_active !== false);
   const hasNext = !!data?.next;
   const hasPrev = !!data?.previous;
   const totalCount = data?.count ?? 0;
@@ -65,12 +67,26 @@ export function PatientTable({ initialData }: PatientTableProps) {
             <span>Tip: Enter phone number for fastest lookup</span>
           </p>
         </div>
-        <Link href="/patients/new">
-          <Button>
-            <Plus className="h-4 w-4" />
-            New Patient
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => setShowArchived(!showArchived)}
+            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+              showArchived
+                ? "border-emerald-300 bg-emerald-50 text-emerald-700"
+                : "border-gray-300 text-gray-600 hover:bg-gray-50"
+            }`}
+          >
+            {showArchived ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+            {showArchived ? "Showing All" : "Active Only"}
+          </button>
+          <Link href="/patients/new">
+            <Button>
+              <Plus className="h-4 w-4" />
+              New Patient
+            </Button>
+          </Link>
+        </div>
       </div>
 
       {/* Table */}
@@ -129,6 +145,11 @@ export function PatientTable({ initialData }: PatientTableProps) {
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
                     {patient.name}
+                    {patient.is_active === false && (
+                      <span className="ml-2 inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-normal text-gray-500">
+                        Archived
+                      </span>
+                    )}
                   </td>
                   <td className="hidden px-4 py-3 text-gray-600 sm:table-cell">
                     {patient.age}y / {patient.gender.charAt(0).toUpperCase()}
