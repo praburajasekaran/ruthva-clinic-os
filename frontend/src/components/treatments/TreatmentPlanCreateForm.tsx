@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
-import { Plus, Trash2 } from "lucide-react";
+import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import api from "@/lib/api";
-import type { MediumType, SessionPlanEntry, TreatmentPlan } from "@/lib/types";
+import type { SessionPlanEntry, TreatmentPlan } from "@/lib/types";
 
 type Props = {
   prescriptionId: number;
@@ -12,7 +12,7 @@ type Props = {
   onCancel: () => void;
 };
 
-const EMPTY_ENTRY: SessionPlanEntry = {
+const DEFAULT_ENTRY: SessionPlanEntry = {
   entry_type: "day_range",
   start_day_number: 1,
   end_day_number: 5,
@@ -21,12 +21,6 @@ const EMPTY_ENTRY: SessionPlanEntry = {
   medium_name: "",
   instructions: "",
 };
-
-const MEDIUM_OPTIONS: { value: MediumType; label: string }[] = [
-  { value: "oil", label: "Oil" },
-  { value: "powder", label: "Powder" },
-  { value: "other", label: "Other" },
-];
 
 export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }: Props) {
   const [totalDays, setTotalDays] = useState(15);
@@ -37,29 +31,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
     tomorrow.setDate(tomorrow.getDate() + 1);
     return tomorrow.toISOString().split("T")[0];
   });
-  const [entries, setEntries] = useState<SessionPlanEntry[]>([{ ...EMPTY_ENTRY }]);
+  const [entries, setEntries] = useState<SessionPlanEntry[]>([{ ...DEFAULT_ENTRY }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  const updateEntry = (index: number, field: keyof SessionPlanEntry, value: string | number) => {
-    setEntries((prev) => prev.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
-  };
-
-  const addEntry = () => {
-    setEntries((prev) => [
-      ...prev,
-      {
-        ...EMPTY_ENTRY,
-        start_day_number: blockStartDay,
-        end_day_number: blockEndDay,
-      },
-    ]);
-  };
-
-  const removeEntry = (index: number) => {
-    if (entries.length <= 1) return;
-    setEntries((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = async () => {
     setError(null);
@@ -168,129 +142,13 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
         </div>
       </div>
 
-      {/* Entries */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <h4 className="text-sm font-medium text-gray-700">Procedures</h4>
-          <button
-            type="button"
-            onClick={addEntry}
-            className="inline-flex items-center gap-1 text-sm text-emerald-600 hover:text-emerald-700"
-          >
-            <Plus className="h-3.5 w-3.5" />
-            Add Procedure
-          </button>
-        </div>
-
-        {entries.map((entry, idx) => (
-          <div key={idx} className="rounded-md border border-gray-200 bg-white p-4 space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <select
-                  value={entry.entry_type}
-                  onChange={(e) => updateEntry(idx, "entry_type", e.target.value)}
-                  className="rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                >
-                  <option value="day_range">Day Range</option>
-                  <option value="single_day">Single Day</option>
-                </select>
-
-                {entry.entry_type === "single_day" ? (
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-500">Day</label>
-                    <input
-                      type="number"
-                      min={blockStartDay}
-                      max={blockEndDay}
-                      value={entry.day_number ?? blockStartDay}
-                      onChange={(e) => updateEntry(idx, "day_number", Number(e.target.value))}
-                      className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                    />
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <label className="text-sm text-gray-500">Days</label>
-                    <input
-                      type="number"
-                      min={blockStartDay}
-                      max={blockEndDay}
-                      value={entry.start_day_number ?? blockStartDay}
-                      onChange={(e) => updateEntry(idx, "start_day_number", Number(e.target.value))}
-                      className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                    />
-                    <span className="text-sm text-gray-400">to</span>
-                    <input
-                      type="number"
-                      min={entry.start_day_number ?? blockStartDay}
-                      max={blockEndDay}
-                      value={entry.end_day_number ?? blockEndDay}
-                      onChange={(e) => updateEntry(idx, "end_day_number", Number(e.target.value))}
-                      className="w-20 rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {entries.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeEntry(idx)}
-                  className="text-gray-400 hover:text-red-500"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <div className="col-span-2 sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-600">Procedure</label>
-                <input
-                  type="text"
-                  value={entry.procedure_name}
-                  onChange={(e) => updateEntry(idx, "procedure_name", e.target.value)}
-                  placeholder="e.g. Abhyanga"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600">Medium</label>
-                <select
-                  value={entry.medium_type}
-                  onChange={(e) => updateEntry(idx, "medium_type", e.target.value)}
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                >
-                  {MEDIUM_OPTIONS.map((opt) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600">Medium Name</label>
-                <input
-                  type="text"
-                  value={entry.medium_name}
-                  onChange={(e) => updateEntry(idx, "medium_name", e.target.value)}
-                  placeholder="e.g. Dhanwantharam Thailam"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                />
-              </div>
-              <div className="col-span-2 sm:col-span-4">
-                <label className="block text-xs font-medium text-gray-600">Instructions</label>
-                <input
-                  type="text"
-                  value={entry.instructions}
-                  onChange={(e) => updateEntry(idx, "instructions", e.target.value)}
-                  placeholder="Optional instructions"
-                  className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
+      {/* Entries via shared BlockEntryForm */}
+      <BlockEntryForm
+        blockStartDay={blockStartDay}
+        blockEndDay={blockEndDay}
+        entries={entries}
+        onChange={setEntries}
+      />
 
       {error && (
         <p className="text-sm text-red-600">{error}</p>
