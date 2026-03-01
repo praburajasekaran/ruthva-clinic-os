@@ -22,6 +22,7 @@ export function FormSection({
     <section id={id} className="rounded-lg border border-gray-200 bg-white">
       <button
         type="button"
+        aria-expanded={isOpen}
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-6 py-4 text-left"
       >

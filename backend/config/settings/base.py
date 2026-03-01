@@ -1,12 +1,16 @@
 """Base settings shared across all environments."""
 import os
+from datetime import timedelta
 from pathlib import Path
 
+from corsheaders.defaults import default_headers
 from decouple import config
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 SECRET_KEY = config("DJANGO_SECRET_KEY", default="change-me-in-production")
+
+AUTH_USER_MODEL = "users.User"
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -21,10 +25,14 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "drf_spectacular",
-    # Local apps
+    # Local apps — users before auth for custom User model
+    "users",
+    "clinics",
     "patients",
     "consultations",
     "prescriptions",
+    "treatments",
+    "reminders",
 ]
 
 MIDDLEWARE = [
@@ -34,6 +42,7 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "clinics.middleware.TenantMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
@@ -59,7 +68,7 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAccountSimilarityValidator"},
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -77,10 +86,13 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# CORS
+CORS_ALLOW_HEADERS = (*default_headers, "x-clinic-slug")
+
 # DRF
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "users.authentication.TenantJWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     "DEFAULT_PERMISSION_CLASSES": [
@@ -94,14 +106,40 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 20,
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_RATES": {
+        "user": "100/hour",
+        "anon": "20/hour",
+    },
 }
 
 # Spectacular (OpenAPI)
 SPECTACULAR_SETTINGS = {
-    "TITLE": "Sivanethram API",
-    "DESCRIPTION": "Siddha Clinic Management System API",
-    "VERSION": "1.0.0",
+    "TITLE": "AYUSH Clinic Platform API",
+    "DESCRIPTION": "Multi-tenant Clinic Management System API",
+    "VERSION": "2.0.0",
     "ENUM_NAME_OVERRIDES": {
         "AssessmentEnum": "consultations.models.Consultation.ASSESSMENT_CHOICES",
     },
+}
+
+# Resend (email)
+RESEND_API_KEY = config("RESEND_API_KEY", default="")
+RESEND_FROM_EMAIL = config(
+    "RESEND_FROM_EMAIL",
+    default="AYUSH Clinic Platform <onboarding@resend.dev>",
+)
+CLINIC_NAME = "Sivanethram Siddha Clinic"
+CLINIC_DOCTOR_NAME = config("CLINIC_DOCTOR_NAME", default="Dr. Subashini")
+CLINIC_LOGO_ALLOWED_HOSTS = [
+    host.strip().lower()
+    for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
+    if host.strip()
+]
+
+# JWT
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
+    "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": False,
 }

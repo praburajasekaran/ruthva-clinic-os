@@ -1,13 +1,18 @@
 from django.db.models import Count, Max
-from rest_framework import viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
+from clinics.mixins import TenantQuerySetMixin
+from clinics.permissions import IsClinicMember
+
+from .import_service import PatientImportService
 from .models import Patient
 from .serializers import PatientDetailSerializer, PatientListSerializer
 
 
-class PatientViewSet(viewsets.ModelViewSet):
+class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    permission_classes = [IsClinicMember]
     queryset = Patient.objects.annotate(
         consultation_count=Count("consultations"),
         last_visit=Max("consultations__consultation_date"),
@@ -42,3 +47,33 @@ class PatientViewSet(viewsets.ModelViewSet):
             qs = qs.exclude(pk=exclude)
         matches = qs.values("id", "name", "record_id")[:5]
         return Response(list(matches))
+
+    @action(detail=False, methods=["post"], url_path="import/preview")
+    def import_preview(self, request):
+        file = request.FILES.get("file")
+        if not file:
+            return Response(
+                {"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        if not file.name.endswith(".csv"):
+            return Response(
+                {"error": "Only CSV files are supported."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        content = file.read().decode("utf-8-sig")  # Handle BOM
+        svc = PatientImportService(request.clinic)
+        preview = svc.validate_and_preview(content)
+        return Response(preview)
+
+    @action(detail=False, methods=["post"], url_path="import/confirm")
+    def import_confirm(self, request):
+        file = request.FILES.get("file")
+        if not file:
+            return Response(
+                {"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        content = file.read().decode("utf-8-sig")
+        skip_duplicates = request.data.get("skip_duplicates", True)
+        svc = PatientImportService(request.clinic)
+        result = svc.import_patients(content, skip_duplicates=skip_duplicates)
+        return Response(result, status=status.HTTP_201_CREATED)

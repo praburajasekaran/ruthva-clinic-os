@@ -2,18 +2,33 @@ from django.db import models
 
 
 class Prescription(models.Model):
+    clinic = models.ForeignKey(
+        "clinics.Clinic",
+        on_delete=models.CASCADE,
+        related_name="prescriptions",
+    )
     consultation = models.OneToOneField(
         "consultations.Consultation",
         on_delete=models.CASCADE,
         related_name="prescription",
     )
     diet_advice = models.TextField(blank=True, default="")
+    diet_advice_ta = models.TextField(blank=True, default="")
     lifestyle_advice = models.TextField(blank=True, default="")
+    lifestyle_advice_ta = models.TextField(blank=True, default="")
     exercise_advice = models.TextField(blank=True, default="")
+    exercise_advice_ta = models.TextField(blank=True, default="")
     follow_up_date = models.DateField(null=True, blank=True)
     follow_up_notes = models.TextField(blank=True, default="")
+    follow_up_notes_ta = models.TextField(blank=True, default="")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["clinic", "-created_at"], name="rx_clinic_created"),
+            models.Index(fields=["clinic", "follow_up_date"], name="rx_clinic_followup"),
+        ]
 
     def __str__(self):
         return (
@@ -41,6 +56,7 @@ class Medication(models.Model):
     frequency_tamil = models.CharField(max_length=100, blank=True, default="")
     duration = models.CharField(max_length=100)
     instructions = models.TextField(blank=True, default="")
+    instructions_ta = models.TextField(blank=True, default="")
     sort_order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
@@ -57,6 +73,7 @@ class ProcedureEntry(models.Model):
     name = models.CharField(max_length=255)
     details = models.TextField(blank=True, default="")
     duration = models.CharField(max_length=100, blank=True, default="")
+    follow_up_date = models.DateField(null=True, blank=True)
 
     class Meta:
         verbose_name_plural = "Procedure entries"

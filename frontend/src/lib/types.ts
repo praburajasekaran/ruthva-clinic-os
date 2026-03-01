@@ -1,3 +1,57 @@
+// ── Auth ──
+export type UserRole = "doctor" | "therapist" | "admin";
+
+export type User = {
+  readonly id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  is_clinic_owner: boolean;
+  clinic: ClinicInfo | null;
+};
+
+export type ClinicInfo = {
+  readonly id: number;
+  name: string;
+  subdomain: string;
+  discipline: Discipline;
+  address: string;
+  phone: string;
+  email: string;
+  logo_url: string;
+  paper_size: string;
+  primary_color: string;
+  tagline: string;
+  is_active: boolean;
+};
+
+export type AuthTokens = {
+  access: string;
+  refresh: string;
+};
+
+export type LoginRequest = {
+  username: string;
+  password: string;
+};
+
+export type SignupRequest = {
+  clinic_name: string;
+  subdomain: string;
+  discipline: Discipline;
+  username: string;
+  email: string;
+  password: string;
+  first_name: string;
+  last_name: string;
+};
+
+export type SignupResponse = AuthTokens & {
+  user: User;
+};
+
 // ── Domain unions ──
 export type Gender = "male" | "female" | "other";
 export type BloodGroup = "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
@@ -31,6 +85,7 @@ export type Patient = {
   readonly calculated_age: number;
   gender: Gender;
   phone: string;
+  whatsapp_number: string;
   email: string;
   address: string;
   blood_group: BloodGroup | "";
@@ -84,6 +139,7 @@ export type PatientFormState = {
   date_of_birth: string;
   gender: Gender | "";
   phone: string;
+  whatsapp_number: string;
   email: string;
   address: string;
   blood_group: BloodGroup | "";
@@ -100,7 +156,17 @@ export type PatientFormState = {
   family_history: Omit<FamilyHistory, "id">[];
 };
 
+// ── Discipline ──
+export type Discipline =
+  | "siddha"
+  | "ayurveda"
+  | "yoga_naturopathy"
+  | "unani"
+  | "homeopathy";
+
 // ── Consultation ──
+export type DiagnosticData = Record<string, unknown>;
+
 export type Consultation = {
   readonly id: number;
   patient: number;
@@ -121,16 +187,9 @@ export type Consultation = {
   micturition_notes: string;
   sleep_quality: AssessmentValue;
   sleep_notes: string;
-  // Envagai Thervu
-  naa: string;
-  niram: string;
-  mozhi: string;
-  vizhi: string;
-  nadi: string;
-  mei: string;
-  muthiram: string;
-  varmam: string;
   mental_state: string;
+  // Discipline-specific diagnostics
+  diagnostic_data: DiagnosticData;
   // Diagnosis
   chief_complaints: string;
   history_of_present_illness: string;
@@ -148,10 +207,14 @@ export type Prescription = {
   medications: Medication[];
   procedures: ProcedureEntry[];
   diet_advice: string;
+  diet_advice_ta: string;
   lifestyle_advice: string;
+  lifestyle_advice_ta: string;
   exercise_advice: string;
+  exercise_advice_ta: string;
   follow_up_date: string | null;
   follow_up_notes: string;
+  follow_up_notes_ta: string;
   readonly created_at: string;
   readonly updated_at: string;
 };
@@ -164,6 +227,7 @@ export type Medication = {
   frequency_tamil: string;
   duration: string;
   instructions: string;
+  instructions_ta: string;
   sort_order: number;
 };
 
@@ -172,6 +236,45 @@ export type ProcedureEntry = {
   name: string;
   details: string;
   duration: string;
+};
+
+// ── Team ──
+export type TeamMember = {
+  readonly id: number;
+  username: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  is_clinic_owner: boolean;
+  date_joined: string;
+};
+
+export type Invitation = {
+  readonly id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  created_at: string;
+  expires_at: string;
+  accepted_at: string | null;
+  invited_by_name: string;
+};
+
+export type InviteMemberRequest = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+};
+
+export type InviteDetails = {
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: UserRole;
+  clinic_name: string;
 };
 
 // ── Dashboard ──
@@ -192,4 +295,189 @@ export type DashboardStats = {
   follow_ups_due: number;
   total_patients: number;
   recent_patients: RecentPatient[];
+};
+
+export type LegacyFollowUpItem = {
+  queue_type: "legacy";
+  legacy_type: "prescription" | "procedure";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  notes: string;
+};
+
+export type TherapistWorklistItem = {
+  queue_type: "therapist";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  treatment_session_id: number;
+  treatment_plan_id: number;
+  treatment_block_id: number;
+  block_number: number;
+  block_start_day: number;
+  block_end_day: number;
+  day_number: number;
+  sequence_number: number;
+  completed_days: number;
+  pending_days: number;
+  procedure_name: string;
+  medium_type: "oil" | "powder" | "other";
+  medium_name: string;
+  instructions: string;
+};
+
+export type DoctorActionItem = {
+  queue_type: "doctor";
+  follow_up_date: string | null;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  doctor_action_task_id: number;
+  treatment_plan_id: number;
+  treatment_block_id: number;
+  block_number: number;
+  block_start_day: number;
+  block_end_day: number;
+  completed_days: number;
+  pending_days: number;
+  task_type: "block_completed" | "review_requested" | "plan_completed";
+  task_status: "open" | "resolved";
+  total_days: number;
+  plan_status: "draft" | "active" | "completed" | "cancelled";
+  replan_required: boolean;
+};
+
+export type FollowUpQueueItem =
+  | LegacyFollowUpItem
+  | TherapistWorklistItem
+  | DoctorActionItem;
+
+export type FollowUpsResponse = {
+  items: FollowUpQueueItem[];
+  meta: {
+    tab: "all" | "therapist" | "doctor";
+    status: "open" | "resolved";
+    counts: {
+      legacy: number;
+      therapist: number;
+      doctor: number;
+      total: number;
+    };
+  };
+};
+
+// ── Data Portability ──
+export type ImportPreviewRow = {
+  line: number;
+  errors: string[];
+  raw?: Record<string, string>;
+  [key: string]: unknown;
+};
+
+export type ImportPreviewResult = {
+  valid: boolean;
+  total_rows?: number;
+  error_count?: number;
+  preview?: ImportPreviewRow[];
+  errors?: ImportPreviewRow[];
+  error?: string;
+};
+
+export type ImportConfirmResult = {
+  created: number;
+  skipped: number;
+  errors: ImportPreviewRow[];
+};
+
+// ── Treatment Plans ──
+export type MediumType = "oil" | "powder" | "other";
+
+export type SessionFeedbackRead = {
+  readonly id: number;
+  completion_status: "done" | "not_done";
+  response_score: number;
+  notes: string;
+  review_requested: boolean;
+  created_at: string;
+};
+
+export type TreatmentSession = {
+  readonly id: number;
+  day_number: number;
+  sequence_number: number;
+  session_date: string;
+  procedure_name: string;
+  medium_type: MediumType;
+  medium_name: string;
+  instructions: string;
+  execution_status: "planned" | "done" | "not_done";
+};
+
+export type TreatmentSessionWithFeedback = TreatmentSession & {
+  feedback: SessionFeedbackRead | null;
+};
+
+export type TreatmentBlock = {
+  readonly id: number;
+  block_number: number;
+  start_day_number: number;
+  end_day_number: number;
+  start_date: string;
+  end_date: string;
+  status: "planned" | "in_progress" | "completed";
+  replan_required: boolean;
+  completed_at: string | null;
+  sessions: TreatmentSession[];
+};
+
+export type TreatmentPlanStatus = "draft" | "active" | "completed" | "cancelled";
+
+export type TreatmentPlan = {
+  readonly id: number;
+  prescription: number;
+  total_days: number;
+  status: TreatmentPlanStatus;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  blocks: TreatmentBlock[];
+  readonly created_at: string;
+  readonly updated_at: string;
+};
+
+export type TreatmentPlanListItem = {
+  readonly id: number;
+  prescription: number;
+  total_days: number;
+  status: TreatmentPlanStatus;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  block_count: number;
+  readonly created_at: string;
+};
+
+export type SessionPlanEntry = {
+  entry_type: "single_day" | "day_range";
+  day_number?: number;
+  start_day_number?: number;
+  end_day_number?: number;
+  procedure_name: string;
+  medium_type: MediumType;
+  medium_name: string;
+  instructions: string;
+};
+
+export type TreatmentPlanCreatePayload = {
+  prescription: number;
+  total_days: number;
+  block: {
+    start_day_number: number;
+    end_day_number: number;
+    start_date: string;
+    entries: SessionPlanEntry[];
+  };
 };

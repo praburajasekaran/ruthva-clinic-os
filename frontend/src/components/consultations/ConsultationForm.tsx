@@ -7,16 +7,17 @@ import { Input } from "@/components/ui/Input";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
-import { EnvagaiThervu } from "./EnvagaiThervu";
+import { DiagnosticFormRouter } from "./DiagnosticFormRouter";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { useAutoSave, loadDraft, clearDraft } from "@/hooks/useAutoSave";
 import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useMutation } from "@/hooks/useMutation";
 import {
   SECTION_LABELS,
   ASSESSMENT_LABELS,
+  DIAGNOSTIC_SECTION_LABELS,
 } from "@/lib/constants/bilingual-labels";
-import type { Consultation } from "@/lib/types";
-import type { EnvagaiTool } from "@/lib/constants/envagai-options";
+import type { Consultation, DiagnosticData, Discipline } from "@/lib/types";
 
 type ConsultationFormState = {
   weight: string;
@@ -33,15 +34,8 @@ type ConsultationFormState = {
   micturition_notes: string;
   sleep_quality: string;
   sleep_notes: string;
-  naa: string;
-  niram: string;
-  mozhi: string;
-  vizhi: string;
-  nadi: string;
-  mei: string;
-  muthiram: string;
-  varmam: string;
   mental_state: string;
+  diagnostic_data: DiagnosticData;
   chief_complaints: string;
   history_of_present_illness: string;
   diagnosis: string;
@@ -50,8 +44,7 @@ type ConsultationFormState = {
 };
 
 type Action =
-  | { type: "SET_FIELD"; field: keyof ConsultationFormState; value: string }
-  | { type: "SET_ENVAGAI"; tool: EnvagaiTool; value: string }
+  | { type: "SET_FIELD"; field: keyof ConsultationFormState; value: string | DiagnosticData }
   | { type: "LOAD_DRAFT"; data: ConsultationFormState }
   | { type: "RESET" };
 
@@ -71,15 +64,8 @@ function getInitialState(): ConsultationFormState {
     micturition_notes: "",
     sleep_quality: "",
     sleep_notes: "",
-    naa: "",
-    niram: "",
-    mozhi: "",
-    vizhi: "",
-    nadi: "",
-    mei: "",
-    muthiram: "",
-    varmam: "",
     mental_state: "",
+    diagnostic_data: {},
     chief_complaints: "",
     history_of_present_illness: "",
     diagnosis: "",
@@ -95,8 +81,6 @@ function reducer(
   switch (action.type) {
     case "SET_FIELD":
       return { ...state, [action.field]: action.value };
-    case "SET_ENVAGAI":
-      return { ...state, [action.tool]: action.value };
     case "LOAD_DRAFT":
       return action.data;
     case "RESET":
@@ -106,12 +90,15 @@ function reducer(
   }
 }
 
-const SECTIONS = [
-  { id: "vitals", label: SECTION_LABELS.vitals.en, labelTamil: SECTION_LABELS.vitals.ta },
-  { id: "general-assessment", label: SECTION_LABELS.generalAssessment.en, labelTamil: SECTION_LABELS.generalAssessment.ta },
-  { id: "envagai-thervu", label: SECTION_LABELS.envagaiThervu.en, labelTamil: SECTION_LABELS.envagaiThervu.ta },
-  { id: "diagnosis-section", label: SECTION_LABELS.diagnosis.en, labelTamil: SECTION_LABELS.diagnosis.ta },
-];
+function getSections(discipline: Discipline) {
+  const diagLabel = DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha;
+  return [
+    { id: "vitals", label: SECTION_LABELS.vitals.en, labelTamil: SECTION_LABELS.vitals.ta },
+    { id: "general-assessment", label: SECTION_LABELS.generalAssessment.en, labelTamil: SECTION_LABELS.generalAssessment.ta },
+    { id: "diagnostics", label: diagLabel.en, labelTamil: diagLabel.ta },
+    { id: "diagnosis-section", label: SECTION_LABELS.diagnosis.en, labelTamil: SECTION_LABELS.diagnosis.ta },
+  ];
+}
 
 type ConsultationFormProps = {
   patientId: number;
@@ -127,6 +114,9 @@ export function ConsultationForm({
   initialData,
 }: ConsultationFormProps) {
   const router = useRouter();
+  const { user } = useAuth();
+  const discipline = user?.clinic?.discipline ?? "siddha";
+  const sections = getSections(discipline);
   const isEdit = mode === "edit";
   const draftKey = isEdit
     ? `consultation-edit-draft-${consultationId}`
@@ -141,7 +131,7 @@ export function ConsultationForm({
   const draftLoadedRef = useRef(false);
 
   const { activeSection, scrollToSection } = useScrollSpy(
-    SECTIONS.map((s) => s.id),
+    sections.map((s) => s.id),
   );
 
   const { mutate, isLoading } = useMutation<unknown, Consultation>(
@@ -175,7 +165,7 @@ export function ConsultationForm({
     setShowDraftBanner(false);
   }, [draftKey]);
 
-  function setField(field: keyof ConsultationFormState, value: string) {
+  function setField(field: keyof ConsultationFormState, value: string | DiagnosticData) {
     dispatch({ type: "SET_FIELD", field, value });
   }
 
@@ -211,7 +201,7 @@ export function ConsultationForm({
       {/* Section Navigator - desktop */}
       <nav className="hidden w-48 shrink-0 lg:block">
         <div className="sticky top-0 space-y-1">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <button
               key={section.id}
               type="button"
@@ -234,7 +224,7 @@ export function ConsultationForm({
       {/* Section Navigator - mobile pill bar */}
       <div className="fixed left-0 right-0 top-14 z-30 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 md:top-0 lg:hidden">
         <div className="flex gap-2">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <button
               key={section.id}
               type="button"
@@ -416,28 +406,7 @@ export function ConsultationForm({
                 </div>
               </div>
             ))}
-          </div>
-        </FormSection>
 
-        {/* Envagai Thervu */}
-        <FormSection title={<BilingualLabel english={SECTION_LABELS.envagaiThervu.en} tamil={SECTION_LABELS.envagaiThervu.ta} as="span" />} id="envagai-thervu">
-          <EnvagaiThervu
-            values={{
-              naa: state.naa,
-              niram: state.niram,
-              mozhi: state.mozhi,
-              vizhi: state.vizhi,
-              nadi: state.nadi,
-              mei: state.mei,
-              muthiram: state.muthiram,
-              varmam: state.varmam,
-            }}
-            onChange={(tool, value) =>
-              dispatch({ type: "SET_ENVAGAI", tool, value })
-            }
-          />
-
-          <div className="mt-4">
             <FormField label="Mental State / Attitude">
               {(props) => (
                 <textarea
@@ -451,6 +420,24 @@ export function ConsultationForm({
               )}
             </FormField>
           </div>
+        </FormSection>
+
+        {/* Discipline-specific Diagnostics */}
+        <FormSection
+          title={
+            <BilingualLabel
+              english={(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).en}
+              tamil={(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).ta}
+              as="span"
+            />
+          }
+          id="diagnostics"
+        >
+          <DiagnosticFormRouter
+            discipline={discipline}
+            value={state.diagnostic_data}
+            onChange={(data) => setField("diagnostic_data", data)}
+          />
         </FormSection>
 
         {/* Diagnosis */}
