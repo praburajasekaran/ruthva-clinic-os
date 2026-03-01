@@ -5,10 +5,12 @@ import api from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
+import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import type {
   DoctorActionItem,
   FollowUpsResponse,
   LegacyFollowUpItem,
+  SessionPlanEntry,
   TherapistWorklistItem,
 } from "@/lib/types";
 
@@ -25,10 +27,7 @@ type BlockDraft = {
   start_day_number: number;
   end_day_number: number;
   start_date: string;
-  procedure_name: string;
-  medium_type: "oil" | "powder" | "other";
-  medium_name: string;
-  instructions: string;
+  entries: SessionPlanEntry[];
 };
 
 const isTherapistItem = (item: FollowUpsResponse["items"][number]): item is TherapistWorklistItem =>
@@ -46,6 +45,7 @@ export default function FollowUpsPage() {
   const [submittingTaskId, setSubmittingTaskId] = useState<number | null>(null);
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, FeedbackDraft>>({});
   const [blockDrafts, setBlockDrafts] = useState<Record<number, BlockDraft>>({});
+  const [expandedBlocks, setExpandedBlocks] = useState<Set<number>>(new Set());
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
@@ -96,11 +96,52 @@ export default function FollowUpsPage() {
     }));
   };
 
-  const upsertBlockDraft = (taskId: number, defaults: BlockDraft) => {
-    setBlockDrafts((prev) => ({
-      ...prev,
-      [taskId]: prev[taskId] ?? defaults,
-    }));
+  const getOrCreateBlockDraft = (item: DoctorActionItem): BlockDraft => {
+    if (blockDrafts[item.doctor_action_task_id]) {
+      return blockDrafts[item.doctor_action_task_id];
+    }
+    const defaultStartDay = item.block_end_day + 1;
+    return {
+      start_day_number: defaultStartDay,
+      end_day_number: defaultStartDay + 2,
+      start_date: item.follow_up_date ?? new Date().toISOString().slice(0, 10),
+      entries: [
+        {
+          entry_type: "day_range",
+          start_day_number: defaultStartDay,
+          end_day_number: defaultStartDay + 2,
+          procedure_name: "",
+          medium_type: "oil",
+          medium_name: "",
+          instructions: "",
+        },
+      ],
+    };
+  };
+
+  const updateBlockDraft = (taskId: number, patch: Partial<BlockDraft>) => {
+    setBlockDrafts((prev) => {
+      const existing = prev[taskId];
+      return { ...prev, [taskId]: { ...existing, ...patch } as BlockDraft };
+    });
+  };
+
+  const toggleBlockExpanded = (item: DoctorActionItem) => {
+    const taskId = item.doctor_action_task_id;
+    setExpandedBlocks((prev) => {
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
+      } else {
+        next.add(taskId);
+        // Ensure draft is initialized
+        if (!blockDrafts[taskId]) {
+          const draft = getOrCreateBlockDraft(item);
+          setBlockDrafts((p) => ({ ...p, [taskId]: draft }));
+        }
+      }
+      return next;
+    });
   };
 
   const submitFeedback = async (item: TherapistWorklistItem) => {
@@ -133,17 +174,32 @@ export default function FollowUpsPage() {
         start_day_number: Number(draft.start_day_number),
         end_day_number: Number(draft.end_day_number),
         start_date: draft.start_date,
-        entries: [
-          {
-            entry_type: "day_range",
-            start_day_number: Number(draft.start_day_number),
-            end_day_number: Number(draft.end_day_number),
-            procedure_name: draft.procedure_name,
-            medium_type: draft.medium_type,
-            medium_name: draft.medium_name,
-            instructions: draft.instructions,
-          },
-        ],
+        entries: draft.entries.map((e) => {
+          if (e.entry_type === "single_day") {
+            return {
+              entry_type: "single_day" as const,
+              day_number: e.day_number ?? draft.start_day_number,
+              procedure_name: e.procedure_name,
+              medium_type: e.medium_type,
+              medium_name: e.medium_name,
+              instructions: e.instructions,
+            };
+          }
+          return {
+            entry_type: "day_range" as const,
+            start_day_number: e.start_day_number ?? draft.start_day_number,
+            end_day_number: e.end_day_number ?? draft.end_day_number,
+            procedure_name: e.procedure_name,
+            medium_type: e.medium_type,
+            medium_name: e.medium_name,
+            instructions: e.instructions,
+          };
+        }),
+      });
+      setExpandedBlocks((prev) => {
+        const next = new Set(prev);
+        next.delete(item.doctor_action_task_id);
+        return next;
       });
       await refetch();
     } catch {
@@ -334,28 +390,29 @@ export default function FollowUpsPage() {
                 </div>
               ) : (
                 doctorItems.map((item) => {
-                  const defaultStartDay = item.block_end_day + 1;
-                  const draft = blockDrafts[item.doctor_action_task_id] ?? {
-                    start_day_number: defaultStartDay,
-                    end_day_number: defaultStartDay,
-                    start_date: item.follow_up_date ?? new Date().toISOString().slice(0, 10),
-                    procedure_name: "",
-                    medium_type: "other",
-                    medium_name: "",
-                    instructions: "",
-                  };
+                  const isExpanded = expandedBlocks.has(item.doctor_action_task_id);
+                  const draft = blockDrafts[item.doctor_action_task_id] ?? getOrCreateBlockDraft(item);
+                  const taskLabel =
+                    item.task_type === "block_completed"
+                      ? "Current block completed — plan next block"
+                      : item.task_type === "plan_completed"
+                        ? "Treatment plan completed"
+                        : "Therapist requested review";
                   return (
                     <div key={item.doctor_action_task_id} className="rounded-lg border border-gray-200 bg-white p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
                           <p className="font-semibold text-gray-900">{item.patient_name}</p>
                           <p className="text-sm text-gray-600">{item.patient_record_id} · Block {item.block_number}</p>
-                          <p className="text-sm text-gray-500">
-                            {item.task_type === "block_completed" ? "Current block completed" : "Therapist requested review"}
-                          </p>
+                          <p className="text-sm text-gray-500">{taskLabel}</p>
                           <p className="text-xs text-gray-500">
                             Timeline: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
                           </p>
+                          {item.total_days && (
+                            <p className="text-xs text-gray-500">
+                              Plan: {item.total_days} total days · Status: {item.plan_status ?? "active"}
+                            </p>
+                          )}
                         </div>
                         <span
                           className={`rounded-full px-2 py-1 text-xs font-medium ${
@@ -366,114 +423,102 @@ export default function FollowUpsPage() {
                         </span>
                       </div>
 
-                      {item.task_status === "open" ? (
-                        <div className="mt-3 space-y-3">
-                          <div className="grid gap-3 md:grid-cols-3">
-                            <input
-                              type="number"
-                              min={1}
-                              value={draft.start_day_number}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  start_day_number: Number(e.target.value),
-                                })
-                              }
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                              placeholder="Start day"
-                            />
-                            <input
-                              type="number"
-                              min={1}
-                              value={draft.end_day_number}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  end_day_number: Number(e.target.value),
-                                })
-                              }
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                              placeholder="End day"
-                            />
-                            <input
-                              type="date"
-                              value={draft.start_date}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  start_date: e.target.value,
-                                })
-                              }
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                            />
-                          </div>
-
-                          <div className="grid gap-3 md:grid-cols-3">
-                            <input
-                              type="text"
-                              value={draft.procedure_name}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  procedure_name: e.target.value,
-                                })
-                              }
-                              placeholder="Procedure name"
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                            />
-                            <select
-                              value={draft.medium_type}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  medium_type: e.target.value as "oil" | "powder" | "other",
-                                })
-                              }
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      {item.task_status === "open" && item.task_type === "block_completed" ? (
+                        <div className="mt-3">
+                          {!isExpanded ? (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="sm"
+                              onClick={() => toggleBlockExpanded(item)}
                             >
-                              <option value="other">Other</option>
-                              <option value="oil">Oil</option>
-                              <option value="powder">Powder</option>
-                            </select>
-                            <input
-                              type="text"
-                              value={draft.medium_name}
-                              onChange={(e) =>
-                                upsertBlockDraft(item.doctor_action_task_id, {
-                                  ...draft,
-                                  medium_name: e.target.value,
-                                })
-                              }
-                              placeholder="Medium name"
-                              className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                            />
-                          </div>
+                              Plan Next Block
+                            </Button>
+                          ) : (
+                            <div className="space-y-4 rounded-lg border border-blue-100 bg-blue-50/30 p-4">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-sm font-semibold text-gray-900">Next Block</h4>
+                                <button
+                                  type="button"
+                                  onClick={() => toggleBlockExpanded(item)}
+                                  className="text-sm text-gray-500 hover:text-gray-700"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                              <div className="grid gap-3 md:grid-cols-3">
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600">Start Day</label>
+                                  <input
+                                    type="number"
+                                    min={1}
+                                    value={draft.start_day_number}
+                                    onChange={(e) =>
+                                      updateBlockDraft(item.doctor_action_task_id, {
+                                        start_day_number: Number(e.target.value),
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600">End Day</label>
+                                  <input
+                                    type="number"
+                                    min={draft.start_day_number}
+                                    value={draft.end_day_number}
+                                    onChange={(e) =>
+                                      updateBlockDraft(item.doctor_action_task_id, {
+                                        end_day_number: Number(e.target.value),
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-xs font-medium text-gray-600">Start Date</label>
+                                  <input
+                                    type="date"
+                                    value={draft.start_date}
+                                    onChange={(e) =>
+                                      updateBlockDraft(item.doctor_action_task_id, {
+                                        start_date: e.target.value,
+                                      })
+                                    }
+                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                                  />
+                                </div>
+                              </div>
 
-                          <textarea
-                            rows={2}
-                            value={draft.instructions}
-                            onChange={(e) =>
-                              upsertBlockDraft(item.doctor_action_task_id, {
-                                ...draft,
-                                instructions: e.target.value,
-                              })
-                            }
-                            placeholder="Instructions"
-                            className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-                          />
+                              <BlockEntryForm
+                                blockStartDay={draft.start_day_number}
+                                blockEndDay={draft.end_day_number}
+                                entries={draft.entries}
+                                onChange={(entries) =>
+                                  updateBlockDraft(item.doctor_action_task_id, { entries })
+                                }
+                              />
 
-                          <Button
-                            type="button"
-                            isLoading={submittingTaskId === item.doctor_action_task_id}
-                            onClick={() => submitNextBlock(item)}
-                            disabled={!draft.procedure_name}
-                          >
-                            Create Next Block
-                          </Button>
+                              <Button
+                                type="button"
+                                isLoading={submittingTaskId === item.doctor_action_task_id}
+                                onClick={() => submitNextBlock(item)}
+                                disabled={!draft.entries.some((e) => e.procedure_name.trim())}
+                              >
+                                Create Next Block
+                              </Button>
+                            </div>
+                          )}
                         </div>
-                      ) : (
+                      ) : item.task_status === "open" && item.task_type === "plan_completed" ? (
+                        <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                          <p className="text-sm text-emerald-700">
+                            All blocks have been completed. The treatment plan is now finished.
+                          </p>
+                        </div>
+                      ) : item.task_status === "resolved" ? (
                         <p className="mt-3 text-sm text-gray-500">Resolved when next block was created.</p>
-                      )}
+                      ) : null}
                     </div>
                   );
                 })
