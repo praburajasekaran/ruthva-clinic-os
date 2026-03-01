@@ -19,6 +19,7 @@ from .serializers import (
     TreatmentPlanUpdateSerializer,
     TreatmentSessionSerializer,
     TreatmentSessionUpdateSerializer,
+    TreatmentSessionWithFeedbackSerializer,
 )
 
 
@@ -96,6 +97,20 @@ class TreatmentSessionViewSet(viewsets.GenericViewSet):
         if clinic is None:
             return self.queryset.none()
         return self.queryset.filter(treatment_block__treatment_plan__clinic=clinic)
+
+    @extend_schema(responses={200: TreatmentSessionWithFeedbackSerializer(many=True)})
+    def list(self, request):
+        qs = self.get_queryset().select_related("feedback")
+        block_id = request.query_params.get("block_id")
+        if block_id:
+            qs = qs.filter(treatment_block_id=block_id)
+        else:
+            return Response(
+                {"detail": "block_id query parameter is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        qs = qs.order_by("day_number", "sequence_number")
+        return Response(TreatmentSessionWithFeedbackSerializer(qs, many=True).data)
 
     @extend_schema(request=TreatmentSessionUpdateSerializer, responses={200: TreatmentSessionSerializer})
     def partial_update(self, request, pk=None):
