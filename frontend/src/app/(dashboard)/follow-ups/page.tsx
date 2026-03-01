@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
+import { ChevronDown, ChevronUp, CheckCircle } from "lucide-react";
 import type {
   DoctorActionItem,
   FollowUpsResponse,
   LegacyFollowUpItem,
   SessionPlanEntry,
   TherapistWorklistItem,
+  TreatmentSessionWithFeedback,
 } from "@/lib/types";
 
 type QueueTab = "all" | "therapist" | "doctor";
@@ -30,6 +33,14 @@ type BlockDraft = {
   entries: SessionPlanEntry[];
 };
 
+const SCORE_LABELS: Record<number, string> = {
+  1: "No response",
+  2: "Mild",
+  3: "Moderate",
+  4: "Good",
+  5: "Excellent",
+};
+
 const isTherapistItem = (item: FollowUpsResponse["items"][number]): item is TherapistWorklistItem =>
   item.queue_type === "therapist";
 const isDoctorItem = (item: FollowUpsResponse["items"][number]): item is DoctorActionItem =>
@@ -43,9 +54,14 @@ export default function FollowUpsPage() {
   const [doctorStatus, setDoctorStatus] = useState<DoctorStatus>("open");
   const [submittingSessionId, setSubmittingSessionId] = useState<number | null>(null);
   const [submittingTaskId, setSubmittingTaskId] = useState<number | null>(null);
+  const [resolvingTaskId, setResolvingTaskId] = useState<number | null>(null);
   const [feedbackDrafts, setFeedbackDrafts] = useState<Record<number, FeedbackDraft>>({});
   const [blockDrafts, setBlockDrafts] = useState<Record<number, BlockDraft>>({});
   const [expandedBlocks, setExpandedBlocks] = useState<Set<number>>(new Set());
+  const [resolveNotes, setResolveNotes] = useState<Record<number, string>>({});
+  const [showResolveNotes, setShowResolveNotes] = useState<Set<number>>(new Set());
+  const [feedbackSessions, setFeedbackSessions] = useState<Record<number, TreatmentSessionWithFeedback[]>>({});
+  const [expandedFeedback, setExpandedFeedback] = useState<Set<number>>(new Set());
   const [errorMessage, setErrorMessage] = useState<string>("");
 
   useEffect(() => {
@@ -134,7 +150,6 @@ export default function FollowUpsPage() {
         next.delete(taskId);
       } else {
         next.add(taskId);
-        // Ensure draft is initialized
         if (!blockDrafts[taskId]) {
           const draft = getOrCreateBlockDraft(item);
           setBlockDrafts((p) => ({ ...p, [taskId]: draft }));
@@ -142,6 +157,31 @@ export default function FollowUpsPage() {
       }
       return next;
     });
+  };
+
+  const toggleFeedbackExpanded = async (item: DoctorActionItem) => {
+    const taskId = item.doctor_action_task_id;
+    if (expandedFeedback.has(taskId)) {
+      setExpandedFeedback((prev) => {
+        const next = new Set(prev);
+        next.delete(taskId);
+        return next;
+      });
+      return;
+    }
+    // Lazy load sessions with feedback
+    if (!feedbackSessions[taskId]) {
+      try {
+        const res = await api.get<TreatmentSessionWithFeedback[]>(
+          `/treatments/sessions/?block_id=${item.treatment_block_id}`,
+        );
+        setFeedbackSessions((prev) => ({ ...prev, [taskId]: res.data }));
+      } catch {
+        setErrorMessage("Could not load session feedback.");
+        return;
+      }
+    }
+    setExpandedFeedback((prev) => new Set(prev).add(taskId));
   };
 
   const submitFeedback = async (item: TherapistWorklistItem) => {
@@ -207,6 +247,82 @@ export default function FollowUpsPage() {
     } finally {
       setSubmittingTaskId(null);
     }
+  };
+
+  const resolveTask = async (taskId: number) => {
+    setResolvingTaskId(taskId);
+    setErrorMessage("");
+    try {
+      await api.post(`/treatments/doctor-tasks/${taskId}/resolve/`, {
+        notes: resolveNotes[taskId] ?? "",
+      });
+      await refetch();
+    } catch {
+      setErrorMessage("Could not resolve the task. Please try again.");
+    } finally {
+      setResolvingTaskId(null);
+    }
+  };
+
+  const renderFeedbackSummary = (item: DoctorActionItem) => {
+    const taskId = item.doctor_action_task_id;
+    const isExpanded = expandedFeedback.has(taskId);
+    const sessions = feedbackSessions[taskId];
+
+    return (
+      <div className="mt-3">
+        <button
+          type="button"
+          onClick={() => toggleFeedbackExpanded(item)}
+          className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-700"
+        >
+          {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+          Session Feedback
+        </button>
+
+        {isExpanded && sessions && (
+          <div className="mt-2 space-y-1.5">
+            {sessions.map((s) => {
+              const fb = s.feedback;
+              const isLowScore = fb && fb.response_score <= 2;
+              const isNotDone = fb?.completion_status === "not_done";
+              return (
+                <div
+                  key={s.id}
+                  className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm ${
+                    isNotDone || isLowScore ? "bg-amber-50" : "bg-gray-50"
+                  }`}
+                >
+                  <span className="w-14 shrink-0 text-xs text-gray-500">Day {s.day_number}</span>
+                  <span className="w-28 shrink-0 truncate font-medium text-gray-800">{s.procedure_name}</span>
+                  {fb ? (
+                    <>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                          fb.completion_status === "done"
+                            ? "bg-emerald-100 text-emerald-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {fb.completion_status === "done" ? "Done" : "Not done"}
+                      </span>
+                      <span
+                        className={`text-xs ${isLowScore ? "font-medium text-amber-700" : "text-gray-500"}`}
+                      >
+                        {fb.response_score}/5 ({SCORE_LABELS[fb.response_score] ?? ""})
+                      </span>
+                      {fb.notes && <span className="truncate text-xs text-gray-500">{fb.notes}</span>}
+                    </>
+                  ) : (
+                    <span className="text-xs text-gray-400">No feedback yet</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -281,6 +397,7 @@ export default function FollowUpsPage() {
         </div>
       ) : (
         <div className="space-y-4">
+          {/* Therapist Worklist */}
           {(tab === "therapist" || tab === "all") && (
             <section className="space-y-3">
               {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Therapist Worklist</h2>}
@@ -300,8 +417,13 @@ export default function FollowUpsPage() {
                     <div key={item.treatment_session_id} className="rounded-lg border border-gray-200 bg-white p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <p className="font-semibold text-gray-900">{item.patient_name}</p>
-                          <p className="text-sm text-gray-600">{item.patient_record_id} · Block {item.block_number} · Day {item.day_number}</p>
+                          <Link href={`/patients/${item.patient_id}`} className="font-semibold text-gray-900 hover:text-emerald-700 hover:underline">
+                            {item.patient_name}
+                          </Link>
+                          <p className="text-sm text-gray-600">
+                            <Link href={`/patients/${item.patient_id}`} className="hover:underline">{item.patient_record_id}</Link>
+                            {" "}· Block {item.block_number} · Day {item.day_number}
+                          </p>
                           <p className="text-sm text-gray-500">{item.procedure_name} ({item.medium_type})</p>
                           <p className="text-xs text-gray-500">
                             Timeline: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
@@ -336,7 +458,7 @@ export default function FollowUpsPage() {
                         >
                           {[1, 2, 3, 4, 5].map((score) => (
                             <option key={score} value={score}>
-                              Response score {score}
+                              {score} — {SCORE_LABELS[score]}
                             </option>
                           ))}
                         </select>
@@ -381,6 +503,7 @@ export default function FollowUpsPage() {
             </section>
           )}
 
+          {/* Doctor Actions */}
           {(tab === "doctor" || tab === "all") && (
             <section className="space-y-3">
               {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Doctor Actions</h2>}
@@ -390,7 +513,7 @@ export default function FollowUpsPage() {
                 </div>
               ) : (
                 doctorItems.map((item) => {
-                  const isExpanded = expandedBlocks.has(item.doctor_action_task_id);
+                  const isBlockExpanded = expandedBlocks.has(item.doctor_action_task_id);
                   const draft = blockDrafts[item.doctor_action_task_id] ?? getOrCreateBlockDraft(item);
                   const taskLabel =
                     item.task_type === "block_completed"
@@ -402,8 +525,13 @@ export default function FollowUpsPage() {
                     <div key={item.doctor_action_task_id} className="rounded-lg border border-gray-200 bg-white p-4">
                       <div className="flex flex-wrap items-start justify-between gap-2">
                         <div>
-                          <p className="font-semibold text-gray-900">{item.patient_name}</p>
-                          <p className="text-sm text-gray-600">{item.patient_record_id} · Block {item.block_number}</p>
+                          <Link href={`/patients/${item.patient_id}`} className="font-semibold text-gray-900 hover:text-emerald-700 hover:underline">
+                            {item.patient_name}
+                          </Link>
+                          <p className="text-sm text-gray-600">
+                            <Link href={`/patients/${item.patient_id}`} className="hover:underline">{item.patient_record_id}</Link>
+                            {" "}· Block {item.block_number}
+                          </p>
                           <p className="text-sm text-gray-500">{taskLabel}</p>
                           <p className="text-xs text-gray-500">
                             Timeline: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
@@ -423,9 +551,14 @@ export default function FollowUpsPage() {
                         </span>
                       </div>
 
-                      {item.task_status === "open" && item.task_type === "block_completed" ? (
+                      {/* Feedback summary (for block_completed and review_requested) */}
+                      {(item.task_type === "block_completed" || item.task_type === "review_requested") &&
+                        renderFeedbackSummary(item)}
+
+                      {/* block_completed: plan next block */}
+                      {item.task_status === "open" && item.task_type === "block_completed" && (
                         <div className="mt-3">
-                          {!isExpanded ? (
+                          {!isBlockExpanded ? (
                             <Button
                               type="button"
                               variant="secondary"
@@ -510,15 +643,86 @@ export default function FollowUpsPage() {
                             </div>
                           )}
                         </div>
-                      ) : item.task_status === "open" && item.task_type === "plan_completed" ? (
-                        <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-3">
-                          <p className="text-sm text-emerald-700">
-                            All blocks have been completed. The treatment plan is now finished.
-                          </p>
+                      )}
+
+                      {/* review_requested: mark reviewed */}
+                      {item.task_status === "open" && item.task_type === "review_requested" && (
+                        <div className="mt-3 space-y-2">
+                          {showResolveNotes.has(item.doctor_action_task_id) && (
+                            <textarea
+                              rows={2}
+                              value={resolveNotes[item.doctor_action_task_id] ?? ""}
+                              onChange={(e) =>
+                                setResolveNotes((prev) => ({ ...prev, [item.doctor_action_task_id]: e.target.value }))
+                              }
+                              placeholder="Optional notes..."
+                              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                            />
+                          )}
+                          <div className="flex items-center gap-2">
+                            <Button
+                              type="button"
+                              size="sm"
+                              isLoading={resolvingTaskId === item.doctor_action_task_id}
+                              onClick={() => resolveTask(item.doctor_action_task_id)}
+                            >
+                              <CheckCircle className="h-4 w-4" />
+                              Mark Reviewed
+                            </Button>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setShowResolveNotes((prev) => {
+                                  const next = new Set(prev);
+                                  if (next.has(item.doctor_action_task_id)) {
+                                    next.delete(item.doctor_action_task_id);
+                                  } else {
+                                    next.add(item.doctor_action_task_id);
+                                  }
+                                  return next;
+                                })
+                              }
+                              className="text-sm text-gray-500 hover:text-gray-700"
+                            >
+                              {showResolveNotes.has(item.doctor_action_task_id) ? "Hide notes" : "Add notes"}
+                            </button>
+                          </div>
                         </div>
-                      ) : item.task_status === "resolved" ? (
-                        <p className="mt-3 text-sm text-gray-500">Resolved when next block was created.</p>
-                      ) : null}
+                      )}
+
+                      {/* plan_completed: acknowledge */}
+                      {item.task_status === "open" && item.task_type === "plan_completed" && (
+                        <div className="mt-3 space-y-3">
+                          <div className="rounded-md border border-emerald-200 bg-emerald-50 p-3">
+                            <p className="text-sm font-medium text-emerald-800">
+                              Treatment plan complete — {item.total_days} days
+                            </p>
+                            <p className="text-xs text-emerald-600">
+                              Block {item.block_number}: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} sessions
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            isLoading={resolvingTaskId === item.doctor_action_task_id}
+                            onClick={() => resolveTask(item.doctor_action_task_id)}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                            Acknowledge
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Resolved state */}
+                      {item.task_status === "resolved" && (
+                        <p className="mt-3 text-sm text-gray-500">
+                          {item.task_type === "block_completed"
+                            ? "Resolved when next block was created."
+                            : item.task_type === "plan_completed"
+                              ? "Plan completion acknowledged."
+                              : "Reviewed and resolved."}
+                        </p>
+                      )}
                     </div>
                   );
                 })
@@ -526,12 +730,15 @@ export default function FollowUpsPage() {
             </section>
           )}
 
+          {/* Legacy Follow-ups */}
           {(tab === "therapist" || tab === "all") && legacyItems.length > 0 && (
             <section className="space-y-3">
               <h2 className="text-base font-semibold text-gray-900">Legacy Follow-ups</h2>
               {legacyItems.map((item, idx) => (
                 <div key={`${item.legacy_type}-${item.patient_id}-${idx}`} className="rounded-lg border border-gray-200 bg-white p-4">
-                  <p className="font-medium text-gray-900">{item.patient_name}</p>
+                  <Link href={`/patients/${item.patient_id}`} className="font-medium text-gray-900 hover:text-emerald-700 hover:underline">
+                    {item.patient_name}
+                  </Link>
                   <p className="text-sm text-gray-600">{item.legacy_type} · {item.patient_record_id}</p>
                   <p className="text-sm text-gray-500">{item.notes || "No notes"}</p>
                 </div>

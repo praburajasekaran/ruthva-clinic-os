@@ -395,6 +395,15 @@ export type ImportConfirmResult = {
 // ── Treatment Plans ──
 export type MediumType = "oil" | "powder" | "other";
 
+export type SessionFeedbackRead = {
+  readonly id: number;
+  completion_status: "done" | "not_done";
+  response_score: number;
+  notes: string;
+  review_requested: boolean;
+  created_at: string;
+};
+
 export type TreatmentSession = {
   readonly id: number;
   day_number: number;
@@ -405,6 +414,10 @@ export type TreatmentSession = {
   medium_name: string;
   instructions: string;
   execution_status: "planned" | "done" | "not_done";
+};
+
+export type TreatmentSessionWithFeedback = TreatmentSession & {
+  feedback: SessionFeedbackRead | null;
 };
 
 export type TreatmentBlock = {

@@ -22,6 +22,19 @@ User = get_user_model()
 # Read serializers
 # ---------------------------------------------------------------------------
 
+class SessionFeedbackReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SessionFeedback
+        fields = [
+            "id",
+            "completion_status",
+            "response_score",
+            "notes",
+            "review_requested",
+            "created_at",
+        ]
+
+
 class TreatmentSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentSession
@@ -35,6 +48,25 @@ class TreatmentSessionSerializer(serializers.ModelSerializer):
             "medium_name",
             "instructions",
             "execution_status",
+        ]
+
+
+class TreatmentSessionWithFeedbackSerializer(serializers.ModelSerializer):
+    feedback = SessionFeedbackReadSerializer(read_only=True)
+
+    class Meta:
+        model = TreatmentSession
+        fields = [
+            "id",
+            "day_number",
+            "sequence_number",
+            "session_date",
+            "procedure_name",
+            "medium_type",
+            "medium_name",
+            "instructions",
+            "execution_status",
+            "feedback",
         ]
 
 
