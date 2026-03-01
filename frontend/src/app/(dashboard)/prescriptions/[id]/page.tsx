@@ -1,17 +1,23 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
 import { KbdBadge } from "@/components/ui/KbdBadge";
-import { Calendar, Pencil, Printer } from "lucide-react";
+import { Button } from "@/components/ui/Button";
+import { Calendar, ClipboardList, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 import { useApi } from "@/hooks/useApi";
-import type { Prescription, Consultation, Patient } from "@/lib/types";
+import { useAuth } from "@/components/auth/AuthProvider";
+import type { Prescription, Consultation, Patient, TreatmentPlanListItem } from "@/lib/types";
 
 export default function PrescriptionDetailPage() {
   const params = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const [showPlanForm, setShowPlanForm] = useState(false);
   const { data: prescription, isLoading } = useApi<Prescription>(
     `/prescriptions/${params.id}/`,
   );
@@ -21,6 +27,11 @@ export default function PrescriptionDetailPage() {
   const { data: patient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
+  const { data: plans, refetch: refetchPlans } = useApi<TreatmentPlanListItem[]>(
+    prescription ? `/treatments/plans/?status=active` : null,
+  );
+  const activePlan = plans?.find((p) => p.prescription === prescription?.id) ?? null;
+  const isDoctor = user?.role === "doctor" || user?.role === "admin";
 
   if (isLoading) {
     return (
@@ -221,6 +232,51 @@ export default function PrescriptionDetailPage() {
           </dl>
         </div>
       )}
+
+      {/* Treatment Plan */}
+      {activePlan ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <ClipboardList className="h-5 w-5 text-emerald-600" />
+              <div>
+                <h3 className="text-sm font-semibold text-gray-900">
+                  Active Treatment Plan
+                </h3>
+                <p className="text-sm text-gray-600">
+                  {activePlan.total_days} days &middot; {activePlan.block_count} block{activePlan.block_count !== 1 ? "s" : ""}
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/follow-ups"
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
+            >
+              View in Follow-ups
+            </Link>
+          </div>
+        </div>
+      ) : showPlanForm && prescription ? (
+        <TreatmentPlanCreateForm
+          prescriptionId={prescription.id}
+          onCreated={() => {
+            setShowPlanForm(false);
+            refetchPlans();
+          }}
+          onCancel={() => setShowPlanForm(false)}
+        />
+      ) : isDoctor && prescription ? (
+        <div className="flex">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setShowPlanForm(true)}
+          >
+            <ClipboardList className="h-4 w-4" />
+            Start Treatment Plan
+          </Button>
+        </div>
+      ) : null}
 
       {/* Follow-up */}
       {prescription.follow_up_date && (

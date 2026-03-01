@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { CheckCircle, Building2, User, ImageIcon, Upload, Download, ArrowDownUp, FileDown } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { ImportPreviewTable } from "@/components/data-portability/ImportPreviewTable";
@@ -430,7 +430,7 @@ function FileUploadField({
   label: string;
   file: File | null;
   onFileChange: (f: File | null) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: React.RefObject<HTMLInputElement>;
 }) {
   return (
     <div>
@@ -490,8 +490,8 @@ function DataPortabilitySection() {
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  const consultationInputRef = useRef<HTMLInputElement | null>(null);
-  const prescriptionInputRef = useRef<HTMLInputElement | null>(null);
+  const consultationInputRef = useRef<HTMLInputElement>(null);
+  const prescriptionInputRef = useRef<HTMLInputElement>(null);
 
   const triggerDownload = (blob: Blob, filename: string) => {
     const url = window.URL.createObjectURL(blob);
