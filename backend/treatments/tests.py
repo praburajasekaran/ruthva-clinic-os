@@ -323,3 +323,284 @@ class TreatmentWorkflowAPITest(TestCase):
             format="json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # --- Phase G: Hardening tests ---
+
+    def test_multiple_sessions_per_day_with_sequence_numbers(self):
+        """G3: Multiple entries on the same day get distinct sequence_numbers."""
+        self._auth(self.doctor)
+        payload = {
+            "prescription": self.prescription.id,
+            "total_days": 5,
+            "block": {
+                "start_day_number": 1,
+                "end_day_number": 3,
+                "start_date": "2026-03-01",
+                "entries": [
+                    {
+                        "entry_type": "day_range",
+                        "start_day_number": 1,
+                        "end_day_number": 3,
+                        "procedure_name": "Abhyanga",
+                        "medium_type": "oil",
+                        "medium_name": "Sesame",
+                    },
+                    {
+                        "entry_type": "day_range",
+                        "start_day_number": 1,
+                        "end_day_number": 3,
+                        "procedure_name": "Swedana",
+                        "medium_type": "other",
+                        "medium_name": "Steam",
+                    },
+                    {
+                        "entry_type": "single_day",
+                        "day_number": 2,
+                        "procedure_name": "Vasti",
+                        "medium_type": "oil",
+                        "medium_name": "Ksheerabala",
+                    },
+                ],
+            },
+        }
+        response = self.client.post("/api/v1/treatments/plans/", payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        plan = TreatmentPlan.objects.get(pk=response.data["id"])
+        block = plan.blocks.first()
+        # 3 days x 2 range entries = 6, plus 1 single_day on day 2 = 7
+        self.assertEqual(block.sessions.count(), 7)
+
+        day2_sessions = list(block.sessions.filter(day_number=2).order_by("sequence_number"))
+        self.assertEqual(len(day2_sessions), 3)
+        self.assertEqual(day2_sessions[0].procedure_name, "Abhyanga")
+        self.assertEqual(day2_sessions[0].sequence_number, 1)
+        self.assertEqual(day2_sessions[1].procedure_name, "Swedana")
+        self.assertEqual(day2_sessions[1].sequence_number, 2)
+        self.assertEqual(day2_sessions[2].procedure_name, "Vasti")
+        self.assertEqual(day2_sessions[2].sequence_number, 3)
+
+    def test_feedback_rejection_on_completed_block(self):
+        """G3: Cannot submit feedback for sessions in a completed block."""
+        plan = self._create_plan()
+        sessions = list(plan.blocks.first().sessions.order_by("day_number"))
+
+        self._auth(self.therapist)
+        for session in sessions:
+            self.client.post(
+                f"/api/v1/treatments/sessions/{session.id}/feedback/",
+                {"completion_status": "done", "response_score": 5, "notes": "OK", "review_requested": False},
+                format="json",
+            )
+
+        block = plan.blocks.first()
+        block.refresh_from_db()
+        self.assertEqual(block.status, TreatmentBlock.STATUS_COMPLETED)
+
+        # Re-submitting on the same session should fail
+        response = self.client.post(
+            f"/api/v1/treatments/sessions/{sessions[0].id}/feedback/",
+            {"completion_status": "done", "response_score": 5, "notes": "Again", "review_requested": False},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_plan_auto_completion_on_final_block(self):
+        """G3: When final block covers total_days, plan auto-completes."""
+        self._auth(self.doctor)
+        payload = {
+            "prescription": self.prescription.id,
+            "total_days": 3,
+            "block": {
+                "start_day_number": 1,
+                "end_day_number": 3,
+                "start_date": "2026-03-01",
+                "entries": [
+                    {
+                        "entry_type": "day_range",
+                        "start_day_number": 1,
+                        "end_day_number": 3,
+                        "procedure_name": "Treatment",
+                        "medium_type": "oil",
+                    }
+                ],
+            },
+        }
+        response = self.client.post("/api/v1/treatments/plans/", payload, format="json")
+        plan = TreatmentPlan.objects.get(pk=response.data["id"])
+
+        self._auth(self.therapist)
+        for session in plan.blocks.first().sessions.order_by("day_number"):
+            self.client.post(
+                f"/api/v1/treatments/sessions/{session.id}/feedback/",
+                {"completion_status": "done", "response_score": 4, "notes": "", "review_requested": False},
+                format="json",
+            )
+
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, TreatmentPlan.STATUS_COMPLETED)
+        self.assertTrue(
+            DoctorActionTask.objects.filter(
+                treatment_plan=plan,
+                task_type=DoctorActionTask.TYPE_PLAN_COMPLETED,
+            ).exists()
+        )
+        # Should NOT have a block_completed task since plan completed
+        self.assertFalse(
+            DoctorActionTask.objects.filter(
+                treatment_plan=plan,
+                task_type=DoctorActionTask.TYPE_BLOCK_COMPLETED,
+            ).exists()
+        )
+
+    def test_doctor_task_resolve_and_already_resolved(self):
+        """G3: Doctor can resolve task; re-resolving returns 400."""
+        plan = self._create_plan()
+        first_session = plan.blocks.first().sessions.order_by("day_number").first()
+
+        self._auth(self.therapist)
+        self.client.post(
+            f"/api/v1/treatments/sessions/{first_session.id}/feedback/",
+            {"completion_status": "done", "response_score": 4, "notes": "Review me", "review_requested": True},
+            format="json",
+        )
+
+        task = DoctorActionTask.objects.get(
+            treatment_plan=plan, task_type=DoctorActionTask.TYPE_REVIEW_REQUESTED
+        )
+
+        self._auth(self.doctor)
+        response = self.client.post(
+            f"/api/v1/treatments/doctor-tasks/{task.id}/resolve/",
+            {"notes": "Looks good"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "resolved")
+
+        # Already resolved
+        response = self.client.post(
+            f"/api/v1/treatments/doctor-tasks/{task.id}/resolve/",
+            {"notes": "Again"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_therapist_cannot_resolve_doctor_task(self):
+        """G3: Therapist should not be able to resolve doctor tasks."""
+        plan = self._create_plan()
+        first_session = plan.blocks.first().sessions.order_by("day_number").first()
+
+        self._auth(self.therapist)
+        self.client.post(
+            f"/api/v1/treatments/sessions/{first_session.id}/feedback/",
+            {"completion_status": "done", "response_score": 4, "notes": "Review me", "review_requested": True},
+            format="json",
+        )
+
+        task = DoctorActionTask.objects.get(
+            treatment_plan=plan, task_type=DoctorActionTask.TYPE_REVIEW_REQUESTED
+        )
+
+        # Therapist tries to resolve
+        response = self.client.post(
+            f"/api/v1/treatments/doctor-tasks/{task.id}/resolve/",
+            {"notes": "I resolved it"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_session_edit_planned_ok_done_rejected(self):
+        """G3: Doctor can edit planned sessions, but not executed ones."""
+        plan = self._create_plan()
+        sessions = list(plan.blocks.first().sessions.order_by("day_number"))
+        planned_session = sessions[0]
+        done_session = sessions[1]
+
+        # Mark one session as done
+        self._auth(self.therapist)
+        self.client.post(
+            f"/api/v1/treatments/sessions/{done_session.id}/feedback/",
+            {"completion_status": "done", "response_score": 5, "notes": "", "review_requested": False},
+            format="json",
+        )
+
+        self._auth(self.doctor)
+
+        # Edit planned session — should succeed
+        response = self.client.patch(
+            f"/api/v1/treatments/sessions/{planned_session.id}/",
+            {"procedure_name": "Updated Procedure", "medium_type": "powder"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["procedure_name"], "Updated Procedure")
+
+        # Edit done session — should fail
+        response = self.client.patch(
+            f"/api/v1/treatments/sessions/{done_session.id}/",
+            {"procedure_name": "Should Fail"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_plan_update_extend_total_days_and_cancel(self):
+        """G3: Doctor can extend total_days and cancel a plan."""
+        plan = self._create_plan()
+        self._auth(self.doctor)
+
+        # Extend total_days
+        response = self.client.patch(
+            f"/api/v1/treatments/plans/{plan.id}/",
+            {"total_days": 20},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        plan.refresh_from_db()
+        self.assertEqual(plan.total_days, 20)
+
+        # Cancel plan
+        response = self.client.patch(
+            f"/api/v1/treatments/plans/{plan.id}/",
+            {"status": "cancelled"},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        plan.refresh_from_db()
+        self.assertEqual(plan.status, "cancelled")
+
+    def test_cascade_protection_on_prescription_delete(self):
+        """G3: Deleting prescription with treatment plan raises ProtectedError."""
+        from django.db.models import ProtectedError
+
+        self._create_plan()
+        with self.assertRaises(ProtectedError):
+            self.prescription.delete()
+
+    def test_duplicate_active_plan_prevention(self):
+        """G3: Cannot create two active plans for the same prescription."""
+        self._create_plan()
+        self._auth(self.doctor)
+        response = self.client.post(
+            "/api/v1/treatments/plans/",
+            {
+                "prescription": self.prescription.id,
+                "total_days": 5,
+                "block": {
+                    "start_day_number": 1,
+                    "end_day_number": 2,
+                    "start_date": "2026-03-10",
+                    "entries": [
+                        {
+                            "entry_type": "day_range",
+                            "start_day_number": 1,
+                            "end_day_number": 2,
+                            "procedure_name": "Duplicate",
+                            "medium_type": "oil",
+                        }
+                    ],
+                },
+            },
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
