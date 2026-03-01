@@ -8,10 +8,12 @@ class TreatmentPlan(models.Model):
     STATUS_DRAFT = "draft"
     STATUS_ACTIVE = "active"
     STATUS_COMPLETED = "completed"
+    STATUS_CANCELLED = "cancelled"
     STATUS_CHOICES = [
         (STATUS_DRAFT, "Draft"),
         (STATUS_ACTIVE, "Active"),
         (STATUS_COMPLETED, "Completed"),
+        (STATUS_CANCELLED, "Cancelled"),
     ]
 
     clinic = models.ForeignKey(
@@ -21,7 +23,7 @@ class TreatmentPlan(models.Model):
     )
     prescription = models.ForeignKey(
         "prescriptions.Prescription",
-        on_delete=models.CASCADE,
+        on_delete=models.PROTECT,
         related_name="treatment_plans",
     )
     total_days = models.PositiveSmallIntegerField(default=1)
@@ -31,6 +33,13 @@ class TreatmentPlan(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["prescription"],
+                condition=Q(status="active"),
+                name="uniq_active_plan_per_prescription",
+            ),
+        ]
         indexes = [
             models.Index(fields=["clinic", "status"], name="tplan_clinic_status"),
             models.Index(fields=["clinic", "prescription"], name="tplan_clinic_rx"),
@@ -108,6 +117,7 @@ class TreatmentSession(models.Model):
         related_name="sessions",
     )
     day_number = models.PositiveSmallIntegerField()
+    sequence_number = models.PositiveSmallIntegerField(default=1)
     session_date = models.DateField()
     procedure_name = models.CharField(max_length=255)
     medium_type = models.CharField(max_length=20, choices=MEDIUM_CHOICES, default=MEDIUM_OTHER)
@@ -122,11 +132,11 @@ class TreatmentSession(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ["day_number", "id"]
+        ordering = ["day_number", "sequence_number"]
         constraints = [
             models.UniqueConstraint(
-                fields=["treatment_block", "day_number"],
-                name="uniq_tsession_block_day",
+                fields=["treatment_block", "day_number", "sequence_number"],
+                name="uniq_tsession_block_day_seq",
             ),
         ]
         indexes = [
@@ -178,9 +188,11 @@ class SessionFeedback(models.Model):
 class DoctorActionTask(models.Model):
     TYPE_BLOCK_COMPLETED = "block_completed"
     TYPE_REVIEW_REQUESTED = "review_requested"
+    TYPE_PLAN_COMPLETED = "plan_completed"
     TYPE_CHOICES = [
         (TYPE_BLOCK_COMPLETED, "Block Completed"),
         (TYPE_REVIEW_REQUESTED, "Review Requested"),
+        (TYPE_PLAN_COMPLETED, "Plan Completed"),
     ]
 
     STATUS_OPEN = "open"
@@ -214,6 +226,7 @@ class DoctorActionTask(models.Model):
     )
     task_type = models.CharField(max_length=32, choices=TYPE_CHOICES)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_OPEN)
+    notes = models.TextField(blank=True, default="")
     due_date = models.DateField(null=True, blank=True)
     resolved_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

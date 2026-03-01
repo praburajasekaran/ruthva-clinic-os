@@ -38,7 +38,7 @@ class TreatmentBlockAdmin(admin.ModelAdmin):
 
 @admin.register(TreatmentSession)
 class TreatmentSessionAdmin(admin.ModelAdmin):
-    list_display = ["id", "treatment_block", "day_number", "session_date", "procedure_name", "execution_status"]
+    list_display = ["id", "treatment_block", "day_number", "sequence_number", "session_date", "procedure_name", "execution_status"]
     list_filter = ["execution_status", "medium_type"]
     search_fields = ["procedure_name", "medium_name"]
 
