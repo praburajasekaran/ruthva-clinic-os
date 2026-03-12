@@ -40,6 +40,13 @@ class RuthvaService:
 
     def _request(self, method, path, json=None):
         """Make an authenticated request to Ruthva. Returns RuthvaResponse."""
+        if not self.base_url:
+            return RuthvaResponse(
+                ok=False,
+                status_code=0,
+                data={},
+                error="Ruthva integration is not configured. Set RUTHVA_API_URL in environment.",
+            )
         url = f"{self.base_url}{path}"
         try:
             response = requests.request(
