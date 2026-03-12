@@ -8,7 +8,7 @@ class TenantMiddleware:
     """Resolves clinic from subdomain or X-Clinic-Slug header. CACHED."""
 
     EXEMPT_SUBDOMAINS = {"www", "api", "admin", ""}
-    EXEMPT_PATH_PREFIXES = ("/api/health/", "/api/schema/", "/api/docs/", "/api/v1/auth/", "/api/v1/invite/")
+    EXEMPT_PATH_PREFIXES = ("/api/health/", "/api/schema/", "/api/docs/", "/api/v1/auth/", "/api/v1/invite/", "/api/v1/integrations/webhooks/")
     CACHE_TTL = 300  # 5 minutes
 
     def __init__(self, get_response):

@@ -3,6 +3,8 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from clinics.urls import invite_urlpatterns
+from integrations.urls import app_urlpatterns as integrations_urlpatterns
+from integrations.urls import webhook_urlpatterns as integrations_webhook_urlpatterns
 from config.views import (
     dashboard_stats,
     export_all_zip,
@@ -36,6 +38,10 @@ urlpatterns = [
     path("api/v1/auth/", include("users.urls")),
     # Invitations (public endpoints)
     path("api/v1/invite/", include(invite_urlpatterns)),
+    # Ruthva integration (authenticated clinic endpoints)
+    path("api/v1/integrations/", include(integrations_urlpatterns)),
+    # Ruthva integration (webhook — exempt from TenantMiddleware)
+    path("api/v1/integrations/webhooks/", include(integrations_webhook_urlpatterns)),
     # API docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
