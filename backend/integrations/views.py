@@ -234,20 +234,35 @@ def webhook_receiver(request):
     # Update based on event type
     from django.utils import timezone
 
+    # Common fields sent with every webhook event
+    def _sync_common_fields():
+        """Apply shared state fields from webhook data to local ref."""
+        if "riskLevel" in event_data:
+            ref.risk_level = event_data["riskLevel"]
+        if "riskReason" in event_data:
+            ref.risk_reason = event_data["riskReason"] or ""
+        if "missedVisits" in event_data:
+            ref.missed_visits = event_data["missedVisits"]
+        if "nextVisitDate" in event_data and event_data["nextVisitDate"]:
+            ref.next_visit_date = event_data["nextVisitDate"]
+        if "lastVisitDate" in event_data and event_data["lastVisitDate"]:
+            ref.last_visit_date = event_data["lastVisitDate"]
+        if "status" in event_data:
+            ref.status = event_data["status"]
+
     if event_type == "risk_level_changed":
-        ref.risk_level = event_data.get("riskLevel", ref.risk_level)
-        ref.risk_reason = event_data.get("riskReason", "")
-        ref.missed_visits = event_data.get("missedVisits", ref.missed_visits)
+        _sync_common_fields()
 
     elif event_type == "visit_missed":
-        ref.missed_visits = event_data.get("missedVisits", ref.missed_visits + 1)
-        ref.risk_level = event_data.get("riskLevel", ref.risk_level)
+        _sync_common_fields()
 
     elif event_type == "journey_completed":
         ref.status = RuthvaJourneyRef.STATUS_COMPLETED
+        _sync_common_fields()
 
     elif event_type == "journey_dropped":
         ref.status = RuthvaJourneyRef.STATUS_DROPPED
+        _sync_common_fields()
 
     ref.last_synced_at = timezone.now()
     ref.save()
