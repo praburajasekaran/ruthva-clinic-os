@@ -2,9 +2,59 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Shared design tokens — aligned with Ruthva */
+:root {
+  --color-brand-50: #eff6f1;
+  --color-brand-100: #deede2;
+  --color-brand-200: #bfd7c5;
+  --color-brand-500: #5f8f71;
+  --color-brand-600: #467858;
+  --color-brand-700: #2f5f44;
+  --color-brand-900: #1a3c2a;
+  --color-brand-950: #102418;
+
+  --color-risk-stable: #4d8b66;
+  --color-risk-watch: #d49a2a;
+  --color-risk-at-risk: #c56b3d;
+  --color-risk-critical: #ae5442;
+
+  --color-success: #4d8b66;
+  --color-warning: #d49a2a;
+  --color-danger: #ae5442;
+
+  --color-canvas: #f2efe8;
+  --color-surface: #fffdf8;
+  --color-surface-raised: #f7f3ec;
+  --color-border: #ddd5c8;
+  --color-border-strong: #c8bcab;
+  --color-text-primary: #1d261f;
+  --color-text-secondary: #546156;
+  --color-text-muted: #7a8479;
+}
+
 @layer base {
+  html {
+    color-scheme: light;
+  }
+
   body {
-    @apply bg-gray-50 text-gray-900;
+    background-color: var(--color-canvas);
+    background-image:
+      radial-gradient(circle at top left, rgb(223 237 226 / 0.85), transparent 26rem),
+      radial-gradient(circle at top right, rgb(255 255 255 / 0.75), transparent 24rem);
+    color: var(--color-text-primary);
+    @apply antialiased;
+  }
+
+  ::selection {
+    background: rgb(47 95 68 / 0.18);
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    letter-spacing: -0.02em;
   }
 }
 
@@ -12,6 +62,17 @@
   .text-balance {
     text-wrap: balance;
   }
+}
+
+/* Modal animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Print styles */

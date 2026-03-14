@@ -26,7 +26,7 @@ export default function ConsultationsPage() {
         api
             .get("/consultations/")
             .then((res) => setConsultations(res.data.results ?? res.data))
-            .catch((err) => setError(err.message || "Failed to load consultations"))
+            .catch((err) => setError(err.message || "Failed to load visits"))
             .finally(() => setLoading(false));
     }, []);
 
@@ -50,9 +50,9 @@ export default function ConsultationsPage() {
         <div>
             <div className="mb-6 flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Consultations</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Visits</h1>
                     <p className="mt-1 text-sm text-gray-500">
-                        {consultations.length} consultation{consultations.length !== 1 ? "s" : ""} recorded
+                        {consultations.length} visit{consultations.length !== 1 ? "s" : ""} recorded in the care flow
                     </p>
                 </div>
             </div>
@@ -60,9 +60,9 @@ export default function ConsultationsPage() {
             {consultations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-16">
                     <Stethoscope className="mb-3 h-12 w-12 text-gray-400" />
-                    <p className="text-lg font-medium text-gray-600">No consultations yet</p>
+                    <p className="text-lg font-medium text-gray-600">No visits yet</p>
                     <p className="mt-1 text-sm text-gray-400">
-                        Consultations will appear here once created
+                        Visits will appear here once clinical assessments are recorded
                     </p>
                 </div>
             ) : (

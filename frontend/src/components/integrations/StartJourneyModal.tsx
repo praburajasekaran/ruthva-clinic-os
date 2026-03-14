@@ -74,7 +74,7 @@ export function StartJourneyModal({
         <div className="flex flex-col items-center gap-3 py-4">
           <CheckCircle className="h-12 w-12 text-emerald-500" />
           <p className="text-sm text-gray-600">
-            WhatsApp follow-ups will begin automatically.
+            Ruthva will now track treatment continuity over WhatsApp.
           </p>
         </div>
       </Modal>
@@ -171,13 +171,13 @@ export function StartJourneyModal({
             onClick={handleSubmit}
             disabled={!consentGiven || isLoading || !patientPhone}
           >
-            {isLoading ? "Starting…" : "Start Journey"}
+            {isLoading ? "Starting…" : "Start Treatment Journey"}
           </Button>
         </div>
 
         {!patientPhone && (
           <p className="text-xs text-amber-600">
-            Patient has no phone number on file. Add one before starting a journey.
+            Patient has no phone number on file. Add one before starting a treatment journey.
           </p>
         )}
       </div>

@@ -49,6 +49,8 @@ class MedicationSerializer(serializers.ModelSerializer):
             "dosage",
             "frequency",
             "frequency_tamil",
+            "timing",
+            "timing_tamil",
             "duration",
             "instructions",
             "instructions_ta",

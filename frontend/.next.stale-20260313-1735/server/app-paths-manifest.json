@@ -1,0 +1,9 @@
+{
+  "/_not-found/page": "app/_not-found/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/(dashboard)/consultations/[id]/page": "app/(dashboard)/consultations/[id]/page.js",
+  "/(dashboard)/consultations/[id]/edit/page": "app/(dashboard)/consultations/[id]/edit/page.js",
+  "/(dashboard)/prescriptions/[id]/page": "app/(dashboard)/prescriptions/[id]/page.js",
+  "/(dashboard)/prescriptions/[id]/edit/page": "app/(dashboard)/prescriptions/[id]/edit/page.js",
+  "/(dashboard)/treatments/plans/[id]/page": "app/(dashboard)/treatments/plans/[id]/page.js"
+}

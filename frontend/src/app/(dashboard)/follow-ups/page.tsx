@@ -7,6 +7,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
+import { JourneysOverview } from "./components/JourneysOverview";
 import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
 import type {
   DoctorActionItem,
@@ -445,66 +446,19 @@ export default function FollowUpsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Follow-ups</h1>
-          <p className="mt-1 text-sm text-gray-600">Treatment execution queue and doctor planning actions.</p>
-        </div>
-        {data?.meta?.counts && (
-          <div className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-600">
-            Total open items: <span className="font-semibold text-gray-900">{data.meta.counts.total}</span>
-          </div>
-        )}
-      </div>
-
-      <div className="rounded-lg border border-gray-200 bg-white p-2">
-        <div className="flex flex-wrap gap-2">
-          {canSeeTherapist && (
-            <button
-              type="button"
-              onClick={() => setTab("therapist")}
-              className={`rounded-md px-3 py-2 text-sm ${
-                tab === "therapist" ? "bg-emerald-100 font-medium text-emerald-800" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              Therapist Worklist
-            </button>
-          )}
-          {canSeeDoctor && (
-            <button
-              type="button"
-              onClick={() => setTab("doctor")}
-              className={`rounded-md px-3 py-2 text-sm ${
-                tab === "doctor" ? "bg-blue-100 font-medium text-blue-800" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              Doctor Actions
-            </button>
-          )}
-          {user?.role === "admin" && (
-            <button
-              type="button"
-              onClick={() => setTab("all")}
-              className={`rounded-md px-3 py-2 text-sm ${
-                tab === "all" ? "bg-violet-100 font-medium text-violet-800" : "text-gray-600 hover:bg-gray-100"
-              }`}
-            >
-              All Queues
-            </button>
-          )}
-
-          {tab === "doctor" && (
-            <select
-              value={doctorStatus}
-              onChange={(e) => setDoctorStatus(e.target.value as DoctorStatus)}
-              className="ml-auto rounded-md border border-gray-300 px-2 py-1 text-sm"
-            >
-              <option value="open">Open</option>
-              <option value="resolved">Resolved</option>
-            </select>
-          )}
-        </div>
-      </div>
+      <JourneysOverview
+        total={data?.meta?.counts?.total ?? 0}
+        therapistCount={data?.meta?.counts?.therapist ?? 0}
+        doctorCount={data?.meta?.counts?.doctor ?? 0}
+        legacyCount={data?.meta?.counts?.legacy ?? 0}
+        tab={tab}
+        canSeeTherapist={canSeeTherapist}
+        canSeeDoctor={canSeeDoctor}
+        isAdmin={user?.role === "admin"}
+        doctorStatus={doctorStatus}
+        onTabChange={setTab}
+        onDoctorStatusChange={setDoctorStatus}
+      />
 
       {errorMessage && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errorMessage}</div>}
       {error?.detail && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error.detail}</div>}
@@ -518,10 +472,10 @@ export default function FollowUpsPage() {
           {/* Therapist Worklist */}
           {(tab === "therapist" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Therapist Worklist</h2>}
+              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Therapist execution</h2>}
               {therapistItems.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
-                  No treatment sessions pending in this tab.
+                <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
+                  No treatment sessions need recording in this view.
                 </div>
               ) : (
                 therapistItems.map((item) => {
@@ -532,87 +486,102 @@ export default function FollowUpsPage() {
                     review_requested: false,
                   };
                   return (
-                    <div key={item.treatment_session_id} className="rounded-lg border border-gray-200 bg-white p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div key={item.treatment_session_id} className="rounded-[28px] border border-border bg-surface p-5 shadow-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <Link href={`/patients/${item.patient_id}`} className="font-semibold text-gray-900 hover:text-emerald-700 hover:underline">
-                            {item.patient_name}
-                          </Link>
-                          <p className="text-sm text-gray-600">
-                            <Link href={`/patients/${item.patient_id}`} className="hover:underline">{item.patient_record_id}</Link>
-                            {" "}· Block {item.block_number} · Day {item.day_number}
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link href={`/patients/${item.patient_id}`} className="text-lg font-semibold text-text-primary hover:text-brand-700 hover:underline">
+                              {item.patient_name}
+                            </Link>
+                            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">
+                              {item.patient_record_id}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm font-medium text-text-primary">
+                            {item.procedure_name} needs today&apos;s session outcome.
                           </p>
-                          <p className="text-sm text-gray-500">{item.procedure_name} ({item.medium_type})</p>
-                          <p className="text-xs text-gray-500">
-                            Timeline: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
+                          <p className="mt-1 text-sm text-text-secondary">
+                            Block {item.block_number} · Day {item.day_number} · {item.medium_type}
+                          </p>
+                          <p className="mt-1 text-xs text-text-muted">
+                            Treatment window Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
                           </p>
                         </div>
-                        <span className="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-700">
-                          {item.follow_up_date ?? "No date"}
+                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-800">
+                          {item.follow_up_date ? `Due ${item.follow_up_date}` : "Needs review"}
                         </span>
                       </div>
 
-                      <div className="mt-3 grid gap-3 md:grid-cols-4">
-                        <select
-                          value={draft.completion_status}
-                          onChange={(e) =>
-                            upsertFeedbackDraft(item.treatment_session_id, {
-                              completion_status: e.target.value as "done" | "not_done",
-                            })
-                          }
-                          className="rounded-md border border-gray-300 px-2 py-2 text-sm"
-                        >
-                          <option value="done">Done</option>
-                          <option value="not_done">Not done</option>
-                        </select>
-                        <select
-                          value={draft.response_score}
-                          onChange={(e) =>
-                            upsertFeedbackDraft(item.treatment_session_id, {
-                              response_score: Number(e.target.value),
-                            })
-                          }
-                          className="rounded-md border border-gray-300 px-2 py-2 text-sm"
-                        >
-                          {[1, 2, 3, 4, 5].map((score) => (
-                            <option key={score} value={score}>
-                              {score} — {SCORE_LABELS[score]}
-                            </option>
-                          ))}
-                        </select>
-                        <input
-                          type="text"
-                          value={draft.notes}
-                          onChange={(e) =>
-                            upsertFeedbackDraft(item.treatment_session_id, {
-                              notes: e.target.value,
-                            })
-                          }
-                          placeholder="Session notes"
-                          className="rounded-md border border-gray-300 px-3 py-2 text-sm"
-                        />
-                        <label className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700">
-                          <input
-                            type="checkbox"
-                            checked={draft.review_requested}
+                      <div className="mt-4 rounded-3xl border border-border bg-surface-raised p-4">
+                        <div className="mb-3 flex items-center justify-between gap-3">
+                          <p className="text-sm font-semibold text-text-primary">Record session outcome</p>
+                          <Link href={`/patients/${item.patient_id}`} className="text-sm font-medium text-brand-700 hover:underline">
+                            Open patient
+                          </Link>
+                        </div>
+
+                        <div className="grid gap-3 md:grid-cols-4">
+                          <select
+                            value={draft.completion_status}
                             onChange={(e) =>
                               upsertFeedbackDraft(item.treatment_session_id, {
-                                review_requested: e.target.checked,
+                                completion_status: e.target.value as "done" | "not_done",
                               })
                             }
+                            className="rounded-md border border-gray-300 px-2 py-2 text-sm"
+                          >
+                            <option value="done">Done</option>
+                            <option value="not_done">Not done</option>
+                          </select>
+                          <select
+                            value={draft.response_score}
+                            onChange={(e) =>
+                              upsertFeedbackDraft(item.treatment_session_id, {
+                                response_score: Number(e.target.value),
+                              })
+                            }
+                            className="rounded-md border border-gray-300 px-2 py-2 text-sm"
+                          >
+                            {[1, 2, 3, 4, 5].map((score) => (
+                              <option key={score} value={score}>
+                                {score} — {SCORE_LABELS[score]}
+                              </option>
+                            ))}
+                          </select>
+                          <input
+                            type="text"
+                            value={draft.notes}
+                            onChange={(e) =>
+                              upsertFeedbackDraft(item.treatment_session_id, {
+                                notes: e.target.value,
+                              })
+                            }
+                            placeholder="Session notes"
+                            className="rounded-md border border-gray-300 px-3 py-2 text-sm"
                           />
-                          Request doctor review
-                        </label>
-                      </div>
+                          <label className="flex items-center gap-2 rounded-md border border-gray-300 px-3 py-2 text-sm text-gray-700">
+                            <input
+                              type="checkbox"
+                              checked={draft.review_requested}
+                              onChange={(e) =>
+                                upsertFeedbackDraft(item.treatment_session_id, {
+                                  review_requested: e.target.checked,
+                                })
+                              }
+                            />
+                            Request doctor review
+                          </label>
+                        </div>
 
-                      <div className="mt-3">
-                        <Button
-                          type="button"
-                          isLoading={submittingSessionId === item.treatment_session_id}
-                          onClick={() => submitFeedback(item)}
-                        >
-                          Submit Feedback
-                        </Button>
+                        <div className="mt-4">
+                          <Button
+                            type="button"
+                            isLoading={submittingSessionId === item.treatment_session_id}
+                            onClick={() => submitFeedback(item)}
+                          >
+                            Submit Feedback
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -624,10 +593,10 @@ export default function FollowUpsPage() {
           {/* Doctor Actions */}
           {(tab === "doctor" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Doctor Actions</h2>}
+              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Doctor review</h2>}
               {doctorItems.length === 0 ? (
-                <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-6 text-sm text-gray-600">
-                  No doctor actions for this filter.
+                <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
+                  No doctor review items match this view.
                 </div>
               ) : (
                 doctorItems.map((item) => {
@@ -640,32 +609,34 @@ export default function FollowUpsPage() {
                         ? "Treatment plan completed"
                         : "Therapist requested review";
                   return (
-                    <div key={item.doctor_action_task_id} className="rounded-lg border border-gray-200 bg-white p-4">
-                      <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div key={item.doctor_action_task_id} className="rounded-[28px] border border-border bg-surface p-5 shadow-sm">
+                      <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
-                          <Link href={`/patients/${item.patient_id}`} className="font-semibold text-gray-900 hover:text-emerald-700 hover:underline">
-                            {item.patient_name}
-                          </Link>
-                          <p className="text-sm text-gray-600">
-                            <Link href={`/patients/${item.patient_id}`} className="hover:underline">{item.patient_record_id}</Link>
-                            {" "}· Block {item.block_number}
-                          </p>
-                          <p className="text-sm text-gray-500">{taskLabel}</p>
-                          <p className="text-xs text-gray-500">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Link href={`/patients/${item.patient_id}`} className="text-lg font-semibold text-text-primary hover:text-brand-700 hover:underline">
+                              {item.patient_name}
+                            </Link>
+                            <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-700">
+                              {item.patient_record_id}
+                            </span>
+                          </div>
+                          <p className="mt-3 text-sm font-medium text-text-primary">{taskLabel}</p>
+                          <p className="mt-1 text-sm text-text-secondary">Block {item.block_number}</p>
+                          <p className="mt-1 text-xs text-text-muted">
                             Timeline: Day {item.block_start_day}-{item.block_end_day} · Completed {item.completed_days} · Pending {item.pending_days}
                           </p>
                           {item.total_days && (
-                            <p className="text-xs text-gray-500">
+                            <p className="mt-1 text-xs text-text-muted">
                               Plan: {item.total_days} total days · Status: {item.plan_status ?? "active"}
                             </p>
                           )}
                         </div>
                         <span
-                          className={`rounded-full px-2 py-1 text-xs font-medium ${
-                            item.task_status === "open" ? "bg-amber-50 text-amber-700" : "bg-gray-100 text-gray-600"
+                          className={`rounded-full px-3 py-1 text-xs font-semibold ${
+                            item.task_status === "open" ? "bg-amber-50 text-amber-800" : "bg-gray-100 text-gray-700"
                           }`}
                         >
-                          {item.task_status}
+                          {item.task_status === "open" ? "Needs attention" : "Resolved"}
                         </span>
                       </div>
 
@@ -848,17 +819,17 @@ export default function FollowUpsPage() {
             </section>
           )}
 
-          {/* Legacy Follow-ups */}
+          {/* Legacy journeys */}
           {(tab === "therapist" || tab === "all") && legacyItems.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-gray-900">Legacy Follow-ups</h2>
+              <h2 className="text-base font-semibold text-gray-900">Legacy Journey Items</h2>
               {legacyItems.map((item, idx) => (
-                <div key={`${item.legacy_type}-${item.patient_id}-${idx}`} className="rounded-lg border border-gray-200 bg-white p-4">
-                  <Link href={`/patients/${item.patient_id}`} className="font-medium text-gray-900 hover:text-emerald-700 hover:underline">
+                <div key={`${item.legacy_type}-${item.patient_id}-${idx}`} className="rounded-[28px] border border-border bg-surface p-5 shadow-sm">
+                  <Link href={`/patients/${item.patient_id}`} className="text-lg font-semibold text-text-primary hover:text-brand-700 hover:underline">
                     {item.patient_name}
                   </Link>
-                  <p className="text-sm text-gray-600">{item.legacy_type} · {item.patient_record_id}</p>
-                  <p className="text-sm text-gray-500">{item.notes || "No notes"}</p>
+                  <p className="mt-2 text-sm text-text-secondary">{item.legacy_type} · {item.patient_record_id}</p>
+                  <p className="mt-2 text-sm text-text-secondary">{item.notes || "No notes"}</p>
                 </div>
               ))}
             </section>

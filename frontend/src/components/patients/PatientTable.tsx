@@ -3,7 +3,7 @@
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Phone, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
@@ -19,6 +19,10 @@ export function PatientTable({ initialData }: PatientTableProps) {
   const [paginatedData, setPaginatedData] = useState(initialData);
   const [paginatingDir, setPaginatingDir] = useState<"next" | "prev" | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+
+  useEffect(() => {
+    setPaginatedData(initialData);
+  }, [initialData]);
 
   const paginate = useCallback(async (url: string | null, dir: "next" | "prev") => {
     if (!url) return;
