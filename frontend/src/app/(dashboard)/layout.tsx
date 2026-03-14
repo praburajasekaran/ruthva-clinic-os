@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { KeyboardProvider } from "@/components/layout/KeyboardProvider";
 import { AuthGuard } from "@/components/auth/AuthGuard";
@@ -9,12 +10,25 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const [mobileOpen, setMobileOpen] = useState(false);
+
   return (
     <AuthGuard>
       <KeyboardProvider>
+        {/* Skip to main content — visually hidden until focused by keyboard */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[100] focus:rounded-md focus:bg-emerald-800 focus:px-4 focus:py-2 focus:text-white focus:ring-2 focus:ring-white focus:outline-none"
+        >
+          Skip to main content
+        </a>
         <div className="flex h-screen">
-          <Sidebar />
-          <main className="flex min-h-screen flex-1 flex-col overflow-auto bg-[color:var(--color-canvas)] p-6 pt-16 md:p-8 md:pt-8">
+          <Sidebar onMobileOpenChange={setMobileOpen} />
+          <main
+            id="main-content"
+            inert={mobileOpen || undefined}
+            className="flex min-h-screen flex-1 flex-col overflow-auto bg-[color:var(--color-canvas)] p-6 pt-16 md:p-8 md:pt-8"
+          >
             <div className="flex-1">{children}</div>
             <footer className="no-print mt-12 border-t border-gray-100 py-4 text-center text-xs text-gray-400">
               <a

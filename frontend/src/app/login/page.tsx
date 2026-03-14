@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -12,12 +12,20 @@ export default function LoginPage() {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  // Task 5: Cooldown timer effect
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = setTimeout(() => setResendCooldown(c => c - 1), 1000);
+    return () => clearTimeout(timer);
+  }, [resendCooldown]);
 
   async function handleRequestOTP(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError(null);
     setLoading(true);
 
     try {
@@ -37,7 +45,7 @@ export default function LoginPage() {
 
   async function handleVerifyOTP(e: React.FormEvent) {
     e.preventDefault();
-    setError("");
+    setError(null);
     setLoading(true);
 
     try {
@@ -54,6 +62,23 @@ export default function LoginPage() {
     }
   }
 
+  // Task 5: Dedicated resend handler — calls requestOTP without needing a form event
+  async function handleResendOTP() {
+    if (resendCooldown > 0) return;
+    setError(null);
+    try {
+      await requestOTP({ email: email.trim().toLowerCase() });
+      setResendCooldown(60);
+    } catch (err: unknown) {
+      const msg =
+        err && typeof err === "object" && "response" in err
+          ? (err as { response?: { data?: { detail?: string } } }).response
+              ?.data?.detail
+          : null;
+      setError(msg || "Failed to resend code. Please try again.");
+    }
+  }
+
   function handleCodeChange(value: string) {
     setCode(value.replace(/\D/g, "").slice(0, 6));
   }
@@ -61,6 +86,11 @@ export default function LoginPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
+        {/* Task 4: Always-rendered live region for step transition announcements */}
+        <div aria-live="polite" className="sr-only" aria-atomic="true">
+          {step === "otp" ? "A verification code has been sent to your email." : ""}
+        </div>
+
         <div className="mb-8 text-center">
           <img
             src="/ruthva-logo.png"
@@ -86,11 +116,14 @@ export default function LoginPage() {
 
         {step === "email" ? (
           <form onSubmit={handleRequestOTP} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+            {/* Task 2: Always-rendered alert region — content change triggers announcement */}
+            <div
+              id="login-error"
+              role="alert"
+              className={`rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700${!error ? " hidden" : ""}`}
+            >
+              {error?.slice(0, 200)}
+            </div>
 
             <div>
               <label
@@ -99,6 +132,7 @@ export default function LoginPage() {
               >
                 Email
               </label>
+              {/* Task 1: focus-visible ring / Task 3: aria-invalid + aria-describedby */}
               <input
                 id="email"
                 type="email"
@@ -107,7 +141,9 @@ export default function LoginPage() {
                 required
                 autoFocus
                 placeholder="doctor@clinic.com"
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                aria-invalid={!!error}
+                aria-describedby={error ? "login-error" : undefined}
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               />
             </div>
 
@@ -121,11 +157,14 @@ export default function LoginPage() {
           </form>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
-            {error && (
-              <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
-                {error}
-              </div>
-            )}
+            {/* Task 2: Always-rendered alert region — content change triggers announcement */}
+            <div
+              id="login-error"
+              role="alert"
+              className={`rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700${!error ? " hidden" : ""}`}
+            >
+              {error?.slice(0, 200)}
+            </div>
 
             <div>
               <label
@@ -134,6 +173,7 @@ export default function LoginPage() {
               >
                 Verification code
               </label>
+              {/* Task 1: focus-visible ring / Task 3: aria-invalid + aria-describedby */}
               <input
                 id="code"
                 type="text"
@@ -145,7 +185,9 @@ export default function LoginPage() {
                 autoFocus
                 maxLength={6}
                 placeholder="000000"
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                aria-invalid={!!error}
+                aria-describedby={error ? "login-error" : undefined}
+                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               />
             </div>
 
@@ -162,7 +204,7 @@ export default function LoginPage() {
               onClick={() => {
                 setStep("email");
                 setCode("");
-                setError("");
+                setError(null);
               }}
               className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
             >
@@ -172,12 +214,14 @@ export default function LoginPage() {
 
             <p className="text-center text-xs text-gray-400">
               Didn&apos;t receive the code? Check your spam folder or{" "}
+              {/* Task 5: Dedicated resend handler with cooldown */}
               <button
                 type="button"
-                onClick={handleRequestOTP as () => void}
-                className="text-emerald-600 hover:text-emerald-700"
+                onClick={handleResendOTP}
+                disabled={resendCooldown > 0}
+                className="text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
               >
-                resend
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "resend"}
               </button>
             </p>
           </form>

@@ -181,6 +181,11 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
         <p className="text-sm text-red-600">{errors._general}</p>
       )}
 
+      {/* Pre-rendered for screen reader announcement — content changes trigger polite announcement */}
+      <div role="status" aria-live="polite" className="sr-only" aria-atomic="true">
+        {success ? 'Changes saved successfully.' : ''}
+      </div>
+
       <div className="flex items-center gap-4">
         <Button type="submit" isLoading={isLoading}>
           Save profile
@@ -407,6 +412,11 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
         <p className="text-sm text-red-600">{errors._general}</p>
       )}
 
+      {/* Pre-rendered for screen reader announcement — content changes trigger polite announcement */}
+      <div role="status" aria-live="polite" className="sr-only" aria-atomic="true">
+        {success ? 'Changes saved successfully.' : ''}
+      </div>
+
       <div className="flex items-center gap-4">
         <Button type="submit" isLoading={isLoading}>
           Save clinic settings
@@ -424,22 +434,25 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
 
 function FileUploadField({
   label,
+  labelId,
   file,
   onFileChange,
   inputRef,
 }: {
   label: string;
+  labelId: string;
   file: File | null;
   onFileChange: (f: File | null) => void;
-  inputRef: React.RefObject<HTMLInputElement | null>;
+  inputRef: React.RefObject<HTMLInputElement>;
 }) {
   return (
     <div>
-      <p className="mb-2 text-sm font-medium text-gray-700">{label}</p>
+      <p id={labelId} className="mb-2 text-sm font-medium text-gray-700">{label}</p>
       <input
         ref={inputRef}
         type="file"
         accept=".csv"
+        aria-labelledby={labelId}
         onChange={(e) => onFileChange(e.target.files?.[0] || null)}
         className="hidden"
       />
@@ -609,6 +622,7 @@ function DataPortabilitySection() {
           <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-5">
             <FileUploadField
               label="Consultations"
+              labelId="file-upload-label-consultations"
               file={consultationFile}
               onFileChange={setConsultationFile}
               inputRef={consultationInputRef}
@@ -657,6 +671,7 @@ function DataPortabilitySection() {
           <div className="rounded-lg border border-gray-200 bg-gray-50/40 p-5">
             <FileUploadField
               label="Prescriptions"
+              labelId="file-upload-label-prescriptions"
               file={prescriptionFile}
               onFileChange={setPrescriptionFile}
               inputRef={prescriptionInputRef}
@@ -740,6 +755,25 @@ export default function SettingsPage() {
   const { user, isLoading, refreshUser } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [localUser, setLocalUser] = useState<UserType | null>(null);
+  const tabRefs = useRef<Partial<Record<Tab, HTMLButtonElement>>>({});
+
+  function handleTabKeyDown(e: React.KeyboardEvent, currentTab: Tab) {
+    const visibleTabs = (Object.keys(tabRefs.current) as Tab[]).filter(
+      (t) => !!tabRefs.current[t]
+    );
+    if (!visibleTabs.length) return;
+    const idx = visibleTabs.indexOf(currentTab);
+    let nextTab: Tab | undefined;
+    if (e.key === 'ArrowRight') nextTab = visibleTabs[(idx + 1) % visibleTabs.length];
+    else if (e.key === 'ArrowLeft') nextTab = visibleTabs[(idx - 1 + visibleTabs.length) % visibleTabs.length];
+    else if (e.key === 'Home') nextTab = visibleTabs[0];
+    else if (e.key === 'End') nextTab = visibleTabs[visibleTabs.length - 1];
+    if (!nextTab) return;
+    e.preventDefault();
+    setActiveTab(nextTab);
+    // Tab buttons are always in the DOM — safe to focus immediately
+    tabRefs.current[nextTab]?.focus();
+  }
 
   if (isLoading) {
     return (
@@ -768,12 +802,19 @@ export default function SettingsPage() {
       </div>
 
       {/* Tab nav */}
-      <div className="mb-6 flex gap-1 border-b border-gray-200">
+      <div role="tablist" aria-label="Settings sections" className="mb-6 flex gap-1 border-b border-gray-200">
         {tabs.filter((t) => t.show).map((tab) => (
           <button
             key={tab.id}
+            ref={(el) => { if (el) tabRefs.current[tab.id] = el; }}
             type="button"
+            role="tab"
+            id={`tab-${tab.id}`}
+            aria-selected={activeTab === tab.id}
+            aria-controls={`tabpanel-${tab.id}`}
+            tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
+            onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
             className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
               activeTab === tab.id
                 ? "border-emerald-600 text-emerald-700"
@@ -786,17 +827,49 @@ export default function SettingsPage() {
         ))}
       </div>
 
-      {activeTab === "profile" && (
+      <div
+        role="tabpanel"
+        id="tabpanel-profile"
+        aria-labelledby="tab-profile"
+        tabIndex={0}
+        hidden={activeTab !== "profile"}
+      >
         <ProfileSection user={displayUser} onSaved={setLocalUser} />
+      </div>
+
+      {user.is_clinic_owner && user.clinic && (
+        <div
+          role="tabpanel"
+          id="tabpanel-clinic"
+          aria-labelledby="tab-clinic"
+          tabIndex={0}
+          hidden={activeTab !== "clinic"}
+        >
+          <ClinicSection clinic={user.clinic} onSaved={refreshUser} />
+        </div>
       )}
-      {activeTab === "clinic" && user.is_clinic_owner && user.clinic && (
-        <ClinicSection clinic={user.clinic} onSaved={refreshUser} />
-      )}
+
       {activeTab === "usage" && user.is_clinic_owner && (
-        <UsageDashboard />
+        <div
+          role="tabpanel"
+          id="tabpanel-usage"
+          aria-labelledby="tab-usage"
+          tabIndex={0}
+        >
+          <UsageDashboard />
+        </div>
       )}
-      {activeTab === "portability" && user.is_clinic_owner && (
-        <DataPortabilitySection />
+
+      {user.is_clinic_owner && (
+        <div
+          role="tabpanel"
+          id="tabpanel-portability"
+          aria-labelledby="tab-portability"
+          tabIndex={0}
+          hidden={activeTab !== "portability"}
+        >
+          <DataPortabilitySection />
+        </div>
       )}
     </div>
   );

@@ -102,7 +102,7 @@ function AcceptInviteContent() {
   if (isLoadingInvite) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+        <Loader2 aria-hidden="true" className="h-8 w-8 motion-safe:animate-spin text-emerald-600" />
       </div>
     );
   }
@@ -260,7 +260,7 @@ export default function AcceptInvitePage() {
     <Suspense
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-gray-50">
-          <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+          <Loader2 aria-hidden="true" className="h-8 w-8 motion-safe:animate-spin text-emerald-600" />
         </div>
       }
     >

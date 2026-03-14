@@ -143,7 +143,7 @@ export default function SignupPage() {
     const s = availability[field];
     if (s === "idle") return null;
     if (s === "checking")
-      return <Loader2 className="h-4 w-4 animate-spin text-gray-400" />;
+      return <Loader2 aria-hidden="true" className="h-4 w-4 motion-safe:animate-spin text-gray-400" />;
     if (s === "available")
       return <CircleCheck className="h-4 w-4 text-emerald-500" />;
     return <CircleX className="h-4 w-4 text-red-500" />;
@@ -191,7 +191,7 @@ export default function SignupPage() {
                 required
                 autoFocus
                 placeholder="e.g. Sivanethram Siddha Clinic"
-                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.clinic_name ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${errors.clinic_name ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"}`}
               />
               {errors.clinic_name && <p className="mt-1 text-xs text-red-600">{errors.clinic_name}</p>}
             </div>
@@ -212,7 +212,7 @@ export default function SignupPage() {
                     onChange={(e) => update("subdomain", e.target.value)}
                     required
                     pattern="[a-z0-9\-]+"
-                    className={`w-full rounded-l-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.subdomain ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.subdomain === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                    className={`w-full rounded-l-lg border px-3 py-2 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${errors.subdomain ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500" : availability.subdomain === "available" ? "border-emerald-400 focus-visible:border-emerald-500 focus-visible:ring-emerald-500" : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"}`}
                   />
                   <span className="absolute right-2 top-1/2 -translate-y-1/2">
                     <AvailabilityIndicator field="subdomain" />
@@ -236,7 +236,7 @@ export default function SignupPage() {
                 id="discipline"
                 value={form.discipline}
                 onChange={(e) => update("discipline", e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
               >
                 {DISCIPLINES.map((d) => (
                   <option key={d.value} value={d.value}>
@@ -266,7 +266,7 @@ export default function SignupPage() {
                   value={form.first_name}
                   onChange={(e) => update("first_name", e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
                 />
               </div>
               <div>
@@ -282,7 +282,7 @@ export default function SignupPage() {
                   value={form.last_name}
                   onChange={(e) => update("last_name", e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
                 />
               </div>
             </div>
@@ -301,7 +301,7 @@ export default function SignupPage() {
                   value={form.username}
                   onChange={(e) => update("username", e.target.value)}
                   required
-                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.username ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.username === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${errors.username ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500" : availability.username === "available" ? "border-emerald-400 focus-visible:border-emerald-500 focus-visible:ring-emerald-500" : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"}`}
                 />
                 <span className="absolute right-2 top-1/2 -translate-y-1/2">
                   <AvailabilityIndicator field="username" />
@@ -333,7 +333,7 @@ export default function SignupPage() {
                   value={form.email}
                   onChange={(e) => update("email", e.target.value)}
                   required
-                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.email ? "border-red-400 focus:border-red-500 focus:ring-red-500" : availability.email === "available" ? "border-emerald-400 focus:border-emerald-500 focus:ring-emerald-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                  className={`w-full rounded-lg border px-3 py-2 pr-8 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${errors.email ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500" : availability.email === "available" ? "border-emerald-400 focus-visible:border-emerald-500 focus-visible:ring-emerald-500" : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"}`}
                 />
                 <span className="absolute right-2 top-1/2 -translate-y-1/2">
                   <AvailabilityIndicator field="email" />
@@ -365,7 +365,7 @@ export default function SignupPage() {
                 onChange={(e) => update("password", e.target.value)}
                 required
                 minLength={8}
-                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 ${errors.password ? "border-red-400 focus:border-red-500 focus:ring-red-500" : "border-gray-300 focus:border-emerald-500 focus:ring-emerald-500"}`}
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${errors.password ? "border-red-400 focus-visible:border-red-500 focus-visible:ring-red-500" : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"}`}
               />
               {errors.password && <p className="mt-1 text-xs text-red-600">{errors.password}</p>}
             </div>
@@ -374,7 +374,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {loading ? "Creating clinic..." : "Create clinic & account"}
           </button>

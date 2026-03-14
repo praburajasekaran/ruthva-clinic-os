@@ -1,4 +1,5 @@
 "use client";
+import { Spinner } from "@/components/ui/Spinner";
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
@@ -465,7 +466,7 @@ export default function FollowUpsPage() {
 
       {isLoading ? (
         <div className="flex items-center justify-center py-16">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+          <Spinner />
         </div>
       ) : (
         <div className="space-y-4">

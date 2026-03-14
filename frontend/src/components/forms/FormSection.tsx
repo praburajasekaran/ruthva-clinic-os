@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDown, ChevronRight } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useId, useState } from "react";
 
 type FormSectionProps = {
   title: ReactNode;
@@ -17,12 +17,15 @@ export function FormSection({
   id,
 }: FormSectionProps) {
   const [isOpen, setIsOpen] = useState(defaultOpen);
+  const generatedId = useId();
+  const panelId = id ?? `form-section-${generatedId}`;
 
   return (
     <section id={id} className="rounded-lg border border-gray-200 bg-white">
       <button
         type="button"
         aria-expanded={isOpen}
+        aria-controls={panelId}
         onClick={() => setIsOpen(!isOpen)}
         className="flex w-full items-center justify-between px-6 py-4 text-left"
       >
@@ -33,7 +36,7 @@ export function FormSection({
           <ChevronRight className="h-5 w-5 text-gray-400" />
         )}
       </button>
-      {isOpen && <div className="border-t border-gray-200 px-6 py-4">{children}</div>}
+      <div id={panelId} hidden={!isOpen} aria-hidden={!isOpen} className="border-t border-gray-200 px-6 py-4">{children}</div>
     </section>
   );
 }
