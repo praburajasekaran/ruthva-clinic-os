@@ -37,6 +37,15 @@ export type LoginRequest = {
   password: string;
 };
 
+export type RequestOTPRequest = {
+  email: string;
+};
+
+export type VerifyOTPRequest = {
+  email: string;
+  code: string;
+};
+
 export type SignupRequest = {
   clinic_name: string;
   subdomain: string;

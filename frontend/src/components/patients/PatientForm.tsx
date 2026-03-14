@@ -42,11 +42,24 @@ const emptyForm: PatientFormState = {
   family_history: [],
 };
 
-export function PatientForm() {
+type PatientFormProps = {
+  mode?: "create" | "edit";
+  patientId?: number;
+  initialData?: Partial<PatientFormState>;
+};
+
+export function PatientForm({ mode = "create", patientId, initialData }: PatientFormProps) {
   const router = useRouter();
-  const [form, setForm] = useState<PatientFormState>(emptyForm);
+  const [form, setForm] = useState<PatientFormState>(() => ({
+    ...emptyForm,
+    ...initialData,
+  }));
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { mutate, isLoading } = useMutation<unknown, Patient>("post", "/patients/");
+  const isEdit = mode === "edit";
+  const { mutate, isLoading } = useMutation<unknown, Patient>(
+    isEdit ? "patch" : "post",
+    isEdit ? `/patients/${patientId}/` : "/patients/",
+  );
 
   function updateField<K extends keyof PatientFormState>(
     field: K,
@@ -96,7 +109,7 @@ export function PatientForm() {
 
     const result = await mutate(payload);
     if (result) {
-      router.push(`/patients/${result.id}`);
+      router.push(`/patients/${isEdit ? patientId : result.id}`);
     }
   }
 
@@ -409,7 +422,7 @@ export function PatientForm() {
           Cancel
         </Button>
         <Button type="submit" isLoading={isLoading}>
-          Register Patient
+          {isEdit ? "Save" : "Register Patient"}
         </Button>
       </div>
     </form>

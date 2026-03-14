@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { User, LoginRequest, SignupRequest } from "@/lib/types";
+import type { User, SignupRequest, RequestOTPRequest, VerifyOTPRequest } from "@/lib/types";
 
 type AuthState = {
   user: User | null;
@@ -18,7 +18,8 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
-  login: (data: LoginRequest) => Promise<void>;
+  requestOTP: (data: RequestOTPRequest) => Promise<void>;
+  verifyOTP: (data: VerifyOTPRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -80,9 +81,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [fetchUser],
   );
 
-  const login = useCallback(
-    async (data: LoginRequest) => {
-      const res = await api.post("/auth/token/", data);
+  const requestOTP = useCallback(
+    async (data: RequestOTPRequest) => {
+      await api.post("/auth/request-otp/", data);
+    },
+    [],
+  );
+
+  const verifyOTP = useCallback(
+    async (data: VerifyOTPRequest) => {
+      const res = await api.post("/auth/verify-otp/", data);
       await setTokens({
         access: res.data.access,
         refresh: res.data.refresh,
@@ -116,7 +124,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, login, signup, logout, refreshUser: fetchUser, setTokens }}
+      value={{ ...state, requestOTP, verifyOTP, signup, logout, refreshUser: fetchUser, setTokens }}
     >
       {children}
     </AuthContext.Provider>

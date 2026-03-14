@@ -253,12 +253,10 @@ export function PrescriptionBuilder({
 
     const result = await mutate(payload);
     if (result) {
-      if (isEdit) {
-        router.push(`/prescriptions/${prescriptionId}`);
-      } else if (andPrint) {
+      if (andPrint) {
         router.push(`/prescriptions/${result.id}/print`);
       } else {
-        router.push(`/patients/${patientId}`);
+        router.push(`/prescriptions/${isEdit ? prescriptionId : result.id}`);
       }
     }
   }
@@ -527,7 +525,7 @@ export function PrescriptionBuilder({
         ) : (
           <>
             <Button type="submit" variant="secondary" isLoading={isLoading}>
-              Save Draft
+              Save
             </Button>
             <Button
               type="button"

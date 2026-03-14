@@ -11,6 +11,7 @@ import {
   ArchiveRestore,
   Calendar,
   FileText,
+  Pencil,
   Plus,
   Stethoscope,
   User,
@@ -72,6 +73,13 @@ export default function PatientDetailPage() {
 
       {/* Quick Actions */}
       <div className="flex flex-wrap gap-3">
+        <Link
+          href={`/patients/${params.id}/edit`}
+          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        >
+          <Pencil className="h-4 w-4" />
+          Edit Patient
+        </Link>
         <Link
           href={`/patients/${params.id}/consultations/new`}
           className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
@@ -163,12 +171,54 @@ export default function PatientDetailPage() {
                 </dd>
               </div>
             )}
+            {patient.whatsapp_number && (
+              <div>
+                <dt className="text-gray-500">WhatsApp</dt>
+                <dd className="font-medium text-gray-900">{patient.whatsapp_number}</dd>
+              </div>
+            )}
+            {patient.marital_status && (
+              <div>
+                <dt className="text-gray-500">Marital Status</dt>
+                <dd className="font-medium capitalize text-gray-900">{patient.marital_status}</dd>
+              </div>
+            )}
+            {patient.referred_by && (
+              <div>
+                <dt className="text-gray-500">Referred By</dt>
+                <dd className="font-medium text-gray-900">{patient.referred_by}</dd>
+              </div>
+            )}
+            {patient.activity_level && (
+              <div>
+                <dt className="text-gray-500">Activity Level</dt>
+                <dd className="font-medium capitalize text-gray-900">{patient.activity_level}</dd>
+              </div>
+            )}
             {patient.allergies && (
               <div>
                 <dt className="text-gray-500">Allergies</dt>
                 <dd className="font-medium text-red-700">
                   {patient.allergies}
                 </dd>
+              </div>
+            )}
+            {patient.menstrual_history && (
+              <div>
+                <dt className="text-gray-500">Menstrual History</dt>
+                <dd className="font-medium text-gray-900">{patient.menstrual_history}</dd>
+              </div>
+            )}
+            {patient.number_of_children != null && (
+              <div>
+                <dt className="text-gray-500">Number of Children</dt>
+                <dd className="font-medium text-gray-900">{patient.number_of_children}</dd>
+              </div>
+            )}
+            {patient.vaccination_records && (
+              <div>
+                <dt className="text-gray-500">Vaccination Records</dt>
+                <dd className="font-medium text-gray-900">{patient.vaccination_records}</dd>
               </div>
             )}
             {patient.address && (
