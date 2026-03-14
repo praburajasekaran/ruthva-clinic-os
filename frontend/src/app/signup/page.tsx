@@ -150,11 +150,11 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
-            <Leaf className="h-6 w-6 text-emerald-600" />
+            <Leaf className="h-6 w-6 text-emerald-700" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900">
             Register your clinic
@@ -311,7 +311,7 @@ export default function SignupPage() {
                 <p className="mt-1 text-xs text-red-600">
                   {errors.username}{" "}
                   {availability.username === "taken" && (
-                    <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700 underline">
+                    <Link href="/login" className="font-medium text-emerald-700 hover:text-emerald-700 underline">
                       Sign in instead?
                     </Link>
                   )}
@@ -343,7 +343,7 @@ export default function SignupPage() {
                 <p className="mt-1 text-xs text-red-600">
                   {errors.email}{" "}
                   {availability.email === "taken" && (
-                    <Link href="/login" className="font-medium text-emerald-600 hover:text-emerald-700 underline">
+                    <Link href="/login" className="font-medium text-emerald-700 hover:text-emerald-700 underline">
                       Sign in instead?
                     </Link>
                   )}
@@ -374,7 +374,7 @@ export default function SignupPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
+            className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             {loading ? "Creating clinic..." : "Create clinic & account"}
           </button>
@@ -384,12 +384,12 @@ export default function SignupPage() {
           Already have an account?{" "}
           <Link
             href="/login"
-            className="font-medium text-emerald-600 hover:text-emerald-700"
+            className="font-medium text-emerald-700 hover:text-emerald-700"
           >
             Sign in
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }

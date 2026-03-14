@@ -84,7 +84,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         {/* Task 4: Always-rendered live region for step transition announcements */}
         <div aria-live="polite" className="sr-only" aria-atomic="true">
@@ -150,7 +150,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Sending code..." : "Send login code"}
             </button>
@@ -185,7 +185,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || code.length !== 6}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Verifying..." : "Verify"}
             </button>
@@ -210,7 +210,7 @@ export default function LoginPage() {
                 type="button"
                 onClick={handleResendOTP}
                 disabled={resendCooldown > 0}
-                className="text-emerald-600 hover:text-emerald-700 disabled:opacity-50"
+                className="text-emerald-700 hover:text-emerald-700 disabled:opacity-50"
               >
                 {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "resend"}
               </button>
@@ -222,12 +222,12 @@ export default function LoginPage() {
           New clinic?{" "}
           <Link
             href="/signup"
-            className="font-medium text-emerald-600 hover:text-emerald-700"
+            className="font-medium text-emerald-700 hover:text-emerald-700"
           >
             Register your clinic
           </Link>
         </p>
       </div>
-    </div>
+    </main>
   );
 }
