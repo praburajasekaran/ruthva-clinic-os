@@ -10,6 +10,14 @@ import {
   TIMING_OPTIONS,
 } from "@/lib/constants/envagai-options";
 import { MEDICATION_LABELS } from "@/lib/constants/bilingual-labels";
+import type { Discipline } from "@/lib/types";
+
+const DILUTION_SCALE_OPTIONS = [
+  { value: "C",  label: "C — Centesimal" },
+  { value: "X",  label: "X — Decimal" },
+  { value: "LM", label: "LM Potency" },
+  { value: "Q",  label: "Q — Mother Tincture" },
+];
 
 type MedicationData = {
   drug_name: string;
@@ -22,6 +30,9 @@ type MedicationData = {
   duration: string;
   instructions: string;
   instructions_ta: string;
+  potency: string;
+  dilution_scale: string;
+  pellet_count: string;
 };
 
 type MedicationRowProps = {
@@ -29,6 +40,7 @@ type MedicationRowProps = {
   data: MedicationData;
   onChange: (field: keyof MedicationData, value: string) => void;
   onRemove: () => void;
+  discipline?: Discipline;
 };
 
 export function MedicationRow({
@@ -36,7 +48,9 @@ export function MedicationRow({
   data,
   onChange,
   onRemove,
+  discipline,
 }: MedicationRowProps) {
+  const isHomeopathy = discipline === "homeopathy";
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -187,6 +201,49 @@ export function MedicationRow({
             />
           </div>
         </div>
+
+        {isHomeopathy && (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Potency
+              </label>
+              <Input
+                value={data.potency}
+                onChange={(e) => onChange("potency", e.target.value)}
+                placeholder="e.g., 30C, 200C, 1M, LM1"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Dilution Scale
+              </label>
+              <Select
+                value={data.dilution_scale}
+                onChange={(e) => onChange("dilution_scale", e.target.value)}
+              >
+                <option value="">Select scale</option>
+                {DILUTION_SCALE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Pellet Count
+              </label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={data.pellet_count}
+                onChange={(e) => onChange("pellet_count", e.target.value)}
+                placeholder="e.g., 4"
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

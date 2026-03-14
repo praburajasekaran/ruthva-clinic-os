@@ -10,9 +10,30 @@ from clinics.mixins import TenantQuerySetMixin
 from clinics.permissions import IsClinicMember, IsDoctorOrReadOnly
 
 from .import_service import PrescriptionImportService
-from .models import Prescription
+from .models import Prescription, RemedyFollowUpResponse
 from .pdf import generate_prescription_pdf
-from .serializers import PrescriptionDetailSerializer, PrescriptionListSerializer
+from .serializers import (
+    PrescriptionDetailSerializer,
+    PrescriptionListSerializer,
+    RemedyFollowUpResponseSerializer,
+)
+
+
+class RemedyFollowUpResponseViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
+    permission_classes = [IsClinicMember, IsDoctorOrReadOnly]
+    queryset = RemedyFollowUpResponse.objects.select_related(
+        "prescription", "previous_prescription", "remedy_evaluated"
+    )
+    serializer_class = RemedyFollowUpResponseSerializer
+    filterset_fields = ["prescription", "prescription__consultation__patient"]
+    ordering = ["-created_at"]
+
+    def perform_create(self, serializer):
+        clinic = getattr(self.request, "clinic", None)
+        if clinic is None:
+            from rest_framework.exceptions import PermissionDenied
+            raise PermissionDenied("No clinic context.")
+        serializer.save(clinic=clinic)
 
 
 class PrescriptionViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):

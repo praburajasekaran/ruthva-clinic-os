@@ -10,6 +10,7 @@ import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { MedicationRow } from "./MedicationRow";
 import { useMutation } from "@/hooks/useMutation";
+import { useAuth } from "@/components/auth/AuthProvider";
 import {
   SECTION_LABELS,
   ADVICE_LABELS,
@@ -27,6 +28,9 @@ type MedicationData = {
   duration: string;
   instructions: string;
   instructions_ta: string;
+  potency: string;
+  dilution_scale: string;
+  pellet_count: string;
 };
 
 type ProcedureData = {
@@ -79,6 +83,9 @@ const emptyMedication: MedicationData = {
   duration: "",
   instructions: "",
   instructions_ta: "",
+  potency: "",
+  dilution_scale: "",
+  pellet_count: "",
 };
 
 const emptyProcedure: ProcedureData = {
@@ -177,6 +184,8 @@ export function PrescriptionBuilder({
   initialData,
 }: PrescriptionBuilderProps) {
   const router = useRouter();
+  const { user } = useAuth();
+  const discipline = user?.clinic?.discipline ?? "siddha";
   const isEdit = mode === "edit";
 
   const [state, dispatch] = useReducer(
@@ -229,6 +238,9 @@ export function PrescriptionBuilder({
           instructions: m.instructions,
           instructions_ta: m.instructions_ta,
           sort_order: i,
+          potency: m.potency || undefined,
+          dilution_scale: m.dilution_scale || undefined,
+          pellet_count: m.pellet_count ? parseInt(m.pellet_count, 10) : undefined,
         })),
       procedures: state.procedures
         .filter((p) => p.name.trim())
@@ -270,6 +282,7 @@ export function PrescriptionBuilder({
               key={idx}
               index={idx}
               data={med}
+              discipline={discipline}
               onChange={(field, value) =>
                 dispatch({
                   type: "UPDATE_MEDICATION",
