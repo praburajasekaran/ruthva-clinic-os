@@ -97,7 +97,16 @@ export default function LoginPage() {
             alt="Ruthva"
             className="mx-auto mb-6 h-10"
           />
-          {step === "email" ? (
+          {/* Single error region — hoisted above both form branches so it persists across step transitions */}
+        <div
+          id="login-error"
+          role="alert"
+          className={`mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700${!error ? " hidden" : ""}`}
+        >
+          {error?.slice(0, 200)}
+        </div>
+
+        {step === "email" ? (
             <>
               <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
               <p className="mt-1 text-sm text-gray-500">
@@ -116,15 +125,6 @@ export default function LoginPage() {
 
         {step === "email" ? (
           <form onSubmit={handleRequestOTP} className="space-y-4">
-            {/* Task 2: Always-rendered alert region — content change triggers announcement */}
-            <div
-              id="login-error"
-              role="alert"
-              className={`rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700${!error ? " hidden" : ""}`}
-            >
-              {error?.slice(0, 200)}
-            </div>
-
             <div>
               <label
                 htmlFor="email"
@@ -150,22 +150,13 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Sending code..." : "Send login code"}
             </button>
           </form>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
-            {/* Task 2: Always-rendered alert region — content change triggers announcement */}
-            <div
-              id="login-error"
-              role="alert"
-              className={`rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700${!error ? " hidden" : ""}`}
-            >
-              {error?.slice(0, 200)}
-            </div>
-
             <div>
               <label
                 htmlFor="code"
@@ -194,7 +185,7 @@ export default function LoginPage() {
             <button
               type="submit"
               disabled={loading || code.length !== 6}
-              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50"
+              className="w-full rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Verifying..." : "Verify"}
             </button>

@@ -1,3 +1,5 @@
+"use client";
+
 type SpinnerSize = "sm" | "md" | "lg";
 
 const sizeStyles: Record<SpinnerSize, string> = {

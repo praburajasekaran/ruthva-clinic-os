@@ -821,7 +821,7 @@ export default function SettingsPage() {
                 : "border-transparent text-gray-600 hover:text-gray-900"
             }`}
           >
-            <tab.icon className="h-4 w-4" />
+            <tab.icon aria-hidden="true" className="h-4 w-4" />
             {tab.label}
           </button>
         ))}
@@ -849,14 +849,15 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {activeTab === "usage" && user.is_clinic_owner && (
+      {user.is_clinic_owner && (
         <div
           role="tabpanel"
           id="tabpanel-usage"
           aria-labelledby="tab-usage"
           tabIndex={0}
+          hidden={activeTab !== "usage"}
         >
-          <UsageDashboard />
+          {activeTab === "usage" && <UsageDashboard />}
         </div>
       )}
 

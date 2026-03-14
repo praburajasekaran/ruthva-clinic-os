@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 type ModalSize = "sm" | "md" | "lg";
@@ -27,21 +27,22 @@ export function Modal({
   size = "md",
 }: ModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
     if (open) {
-      dialog.showModal();
+      if (!dialog.open) dialog.showModal();
     } else {
-      dialog.close();
+      if (dialog.open) dialog.close();
     }
   }, [open]);
 
   return (
     <dialog
       ref={dialogRef}
-      aria-labelledby={title ? "modal-title" : undefined}
+      aria-labelledby={title ? titleId : undefined}
       onClose={onClose}
       onClick={(e) => {
         if (e.target === dialogRef.current) onClose();
@@ -52,7 +53,7 @@ export function Modal({
         {title && (
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2
-              id="modal-title"
+              id={titleId}
               className="text-lg font-semibold text-text-primary"
             >
               {title}

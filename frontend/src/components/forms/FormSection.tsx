@@ -36,7 +36,7 @@ export function FormSection({
           <ChevronRight className="h-5 w-5 text-gray-400" />
         )}
       </button>
-      <div id={panelId} hidden={!isOpen} aria-hidden={!isOpen} className="border-t border-gray-200 px-6 py-4">{children}</div>
+      <div id={panelId} hidden={!isOpen} className="border-t border-gray-200 px-6 py-4">{children}</div>
     </section>
   );
 }

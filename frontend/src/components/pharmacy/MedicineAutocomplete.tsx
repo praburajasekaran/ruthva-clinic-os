@@ -93,7 +93,13 @@ export function MedicineAutocomplete({ value, onChange, placeholder = "Type medi
         className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
       />
 
-      {open && (medicines.length > 0 || isLoading) && (
+      {/* Loading feedback — outside listbox, polite live region */}
+      {open && isLoading && (
+        <div aria-live="polite" aria-atomic="true" className="absolute z-10 mt-1 w-full rounded-lg border bg-white px-3 py-2 text-sm text-gray-500 shadow-lg">
+          Searching…
+        </div>
+      )}
+      {open && medicines.length > 0 && (
         <div
           ref={dropdownRef}
           id="medicine-listbox"
@@ -101,19 +107,16 @@ export function MedicineAutocomplete({ value, onChange, placeholder = "Type medi
           aria-label="Medicine suggestions"
           className="absolute z-10 mt-1 max-h-48 w-full overflow-auto rounded-lg border bg-white shadow-lg"
         >
-          {isLoading && (
-            <div className="px-3 py-2 text-sm text-gray-500">Searching...</div>
-          )}
           {medicines.map((medicine, index) => (
-            <button
+            <div
               key={medicine.id}
               id={`medicine-option-${index}`}
               role="option"
               aria-selected={activeIndex === index}
-              type="button"
-              onMouseDown={(e) => e.preventDefault()}
+              tabIndex={-1}
+              onPointerDown={(e) => e.preventDefault()}
               onClick={() => handleSelect(medicine)}
-              className={`flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-emerald-50${activeIndex === index ? " bg-emerald-50" : ""}`}
+              className={`flex w-full cursor-pointer items-center justify-between px-3 py-2 text-left text-sm hover:bg-emerald-50${activeIndex === index ? " bg-emerald-50" : ""}`}
             >
               <div>
                 <span className="font-medium text-gray-900">{medicine.name}</span>
@@ -125,7 +128,7 @@ export function MedicineAutocomplete({ value, onChange, placeholder = "Type medi
               <span className={`text-xs ${medicine.is_low_stock ? "text-amber-600" : "text-gray-400"}`}>
                 Stock: {medicine.current_stock}
               </span>
-            </button>
+            </div>
           ))}
         </div>
       )}
