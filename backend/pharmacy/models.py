@@ -4,31 +4,41 @@ from django.db import models
 
 class Medicine(models.Model):
     CATEGORY_CHOICES = [
-        ("kashayam", "Kashayam / கஷாயம்"),
-        ("choornam", "Choornam / சூரணம்"),
-        ("lehyam", "Lehyam / லேகியம்"),
-        ("tailam", "Tailam / தைலம்"),
-        ("arishtam", "Arishtam / அரிஷ்டம்"),
-        ("asavam", "Asavam / ஆசவம்"),
-        ("gulika", "Gulika / குளிகை"),
-        ("parpam", "Parpam / பற்பம்"),
-        ("chenduram", "Chenduram / செந்தூரம்"),
-        ("nei", "Nei / நெய்"),
-        ("tablet", "Tablet"),
-        ("capsule", "Capsule"),
-        ("syrup", "Syrup"),
-        ("external", "External Application"),
-        ("other", "Other"),
+        # Ayurveda / Siddha categories
+        ("kashayam",  "Kashayam / \u0b95\u0bb7\u0bbe\u0baf\u0bae\u0bcd"),
+        ("choornam",  "Choornam / \u0b9a\u0bc2\u0bb0\u0ba3\u0bae\u0bcd"),
+        ("lehyam",    "Lehyam / \u0bb2\u0bc7\u0b95\u0bbf\u0baf\u0bae\u0bcd"),
+        ("tailam",    "Tailam / \u0ba4\u0bc8\u0bb2\u0bae\u0bcd"),
+        ("arishtam",  "Arishtam / \u0b85\u0bb0\u0bbf\u0bb7\u0bcd\u0b9f\u0bae\u0bcd"),
+        ("asavam",    "Asavam / \u0b86\u0b9a\u0bb5\u0bae\u0bcd"),
+        ("gulika",    "Gulika / \u0b95\u0bc1\u0bb3\u0bbf\u0b95\u0bc8"),
+        ("parpam",    "Parpam / \u0baa\u0bb1\u0bcd\u0baa\u0bae\u0bcd"),
+        ("chenduram", "Chenduram / \u0b9a\u0bc6\u0ba8\u0bcd\u0ba4\u0bc2\u0bb0\u0bae\u0bcd"),
+        ("nei",       "Nei / \u0ba8\u0bc6\u0baf\u0bcd"),
+        # Generic
+        ("tablet",    "Tablet"),
+        ("capsule",   "Capsule"),
+        ("syrup",     "Syrup"),
+        ("external",  "External Application"),
+        ("other",     "Other"),
+        # Homeopathic categories
+        ("mother_tincture", "Mother Tincture (Q)"),
+        ("trituration",     "Trituration (3X / 6X)"),
+        ("centesimal",      "Centesimal Potency (C)"),
+        ("lm_potency",      "LM Potency"),
+        ("biochemic",       "Biochemic Tissue Salt"),
     ]
+
     DOSAGE_FORM_CHOICES = [
-        ("ml", "Millilitres (ml)"),
-        ("g", "Grams (g)"),
+        ("ml",      "Millilitres (ml)"),
+        ("g",       "Grams (g)"),
         ("tablets", "Tablets"),
-        ("capsules", "Capsules"),
-        ("drops", "Drops"),
-        ("pinch", "Pinch / சிட்டிகை"),
-        ("spoon", "Spoon / கரண்டி"),
-        ("other", "Other"),
+        ("capsules","Capsules"),
+        ("drops",   "Drops"),
+        ("pinch",   "Pinch / \u0b9a\u0bbf\u0b9f\u0bcd\u0b9f\u0bbf\u0b95\u0bc8"),
+        ("spoon",   "Spoon / \u0b95\u0bb0\u0ba3\u0bcd\u0b9f\u0bbf"),
+        ("pellets", "Pellets / Globules"),
+        ("other",   "Other"),
     ]
 
     clinic = models.ForeignKey(
@@ -94,7 +104,7 @@ class StockEntry(models.Model):
         verbose_name_plural = "Stock entries"
 
     def __str__(self):
-        return f"{self.get_entry_type_display()} {self.quantity_change:+d} → {self.medicine.name}"
+        return f"{self.get_entry_type_display()} {self.quantity_change:+d} \u2192 {self.medicine.name}"
 
 
 class DispensingRecord(models.Model):

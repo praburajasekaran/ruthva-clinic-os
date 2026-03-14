@@ -11,7 +11,14 @@ import {
   TIMING_OPTIONS,
 } from "@/lib/constants/envagai-options";
 import { MEDICATION_LABELS } from "@/lib/constants/bilingual-labels";
-import type { Medicine } from "@/lib/types";
+import type { Medicine, Discipline } from "@/lib/types";
+
+const DILUTION_SCALE_OPTIONS = [
+  { value: "C",  label: "C \u2014 Centesimal" },
+  { value: "X",  label: "X \u2014 Decimal" },
+  { value: "LM", label: "LM Potency" },
+  { value: "Q",  label: "Q \u2014 Mother Tincture" },
+];
 
 type MedicationData = {
   medicine: number | null;
@@ -25,6 +32,9 @@ type MedicationData = {
   duration: string;
   instructions: string;
   instructions_ta: string;
+  potency: string;
+  dilution_scale: string;
+  pellet_count: string;
 };
 
 type MedicationRowProps = {
@@ -32,6 +42,7 @@ type MedicationRowProps = {
   data: MedicationData;
   onChange: (field: keyof MedicationData, value: string | number | null) => void;
   onRemove: () => void;
+  discipline?: Discipline;
 };
 
 export function MedicationRow({
@@ -39,7 +50,9 @@ export function MedicationRow({
   data,
   onChange,
   onRemove,
+  discipline,
 }: MedicationRowProps) {
+  const isHomeopathy = discipline === "homeopathy";
   return (
     <div className="rounded-lg border border-gray-200 bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
@@ -188,11 +201,54 @@ export function MedicationRow({
             <Input
               value={data.instructions_ta}
               onChange={(e) => onChange("instructions_ta", e.target.value)}
-              placeholder="e.g., வெந்நீரில் கலந்து சாப்பிடவும்"
+              placeholder="e.g., \u0bb5\u0bc6\u0ba8\u0bcd\u0ba8\u0bc0\u0bb0\u0bbf\u0bb2\u0bcd \u0b95\u0bb2\u0ba8\u0bcd\u0ba4\u0bc1 \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd"
               className="border-emerald-200 bg-emerald-50/30"
             />
           </div>
         </div>
+
+        {isHomeopathy && (
+          <>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Potency
+              </label>
+              <Input
+                value={data.potency}
+                onChange={(e) => onChange("potency", e.target.value)}
+                placeholder="e.g., 30C, 200C, 1M, LM1"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Dilution Scale
+              </label>
+              <Select
+                value={data.dilution_scale}
+                onChange={(e) => onChange("dilution_scale", e.target.value)}
+              >
+                <option value="">Select scale</option>
+                {DILUTION_SCALE_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </Select>
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">
+                Pellet Count
+              </label>
+              <Input
+                type="number"
+                inputMode="numeric"
+                value={data.pellet_count}
+                onChange={(e) => onChange("pellet_count", e.target.value)}
+                placeholder="e.g., 4"
+              />
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

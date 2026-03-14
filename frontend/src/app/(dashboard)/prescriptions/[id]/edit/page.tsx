@@ -84,6 +84,9 @@ export default function EditPrescriptionPage() {
         duration: med.duration,
         instructions: med.instructions,
         instructions_ta: med.instructions_ta ?? "",
+        potency: (med as Record<string, unknown>).potency as string ?? "",
+        dilution_scale: (med as Record<string, unknown>).dilution_scale as string ?? "",
+        pellet_count: String((med as Record<string, unknown>).pellet_count ?? ""),
       };
     }),
     procedures: (prescription.procedures ?? []).map((proc) => ({

@@ -1,6 +1,24 @@
 from rest_framework import serializers
 
-from .models import Medication, Prescription, ProcedureEntry
+from .models import Medication, Prescription, ProcedureEntry, RemedyFollowUpResponse
+
+
+class RemedyFollowUpResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RemedyFollowUpResponse
+        fields = [
+            "id",
+            "prescription",
+            "previous_prescription",
+            "remedy_evaluated",
+            "response_type",
+            "action_taken",
+            "new_potency",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class PrescriptionImportRowSerializer(serializers.Serializer):
@@ -39,12 +57,10 @@ class MedicationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medication
         fields = [
-<<<<<<< HEAD
-            "id", "medicine", "medicine_id", "medicine_name",
-            "drug_name", "dosage", "frequency", "frequency_tamil",
-            "duration", "instructions", "instructions_ta", "sort_order",
-=======
             "id",
+            "medicine",
+            "medicine_id",
+            "medicine_name",
             "drug_name",
             "dosage",
             "frequency",
@@ -55,7 +71,9 @@ class MedicationSerializer(serializers.ModelSerializer):
             "instructions",
             "instructions_ta",
             "sort_order",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
+            "potency",
+            "dilution_scale",
+            "pellet_count",
         ]
         extra_kwargs = {"medicine": {"required": False, "allow_null": True}}
 

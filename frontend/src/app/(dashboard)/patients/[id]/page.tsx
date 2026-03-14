@@ -17,6 +17,9 @@ import {
 } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
 import { pharmacyApi } from "@/lib/api";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { RemedyHistoryTimeline } from "@/components/patients/RemedyHistoryTimeline";
+import { FlaskConical } from "lucide-react";
 import type { Patient, PaginatedResponse } from "@/lib/types";
 
 type ConsultationListItem = {
@@ -29,6 +32,8 @@ type ConsultationListItem = {
 
 export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
+  const { user } = useAuth();
+  const discipline = user?.clinic?.discipline;
   const { data: patient, isLoading, refetch } = useApi<Patient>(
     `/patients/${params.id}/`,
   );
@@ -301,6 +306,17 @@ export default function PatientDetailPage() {
               </tbody>
             </table>
           </div>
+        </div>
+      )}
+
+      {/* Homeopathy: Constitutional Remedy History */}
+      {discipline === "homeopathy" && (
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+            <FlaskConical className="h-4 w-4" />
+            Constitutional Remedy History
+          </h2>
+          <RemedyHistoryTimeline patientId={patient.id} />
         </div>
       )}
     </div>

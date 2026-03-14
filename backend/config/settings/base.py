@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "consultations",
     "prescriptions",
     "treatments",
+    "pharmacy",
     "reminders",
     "pharmacy",
 ]

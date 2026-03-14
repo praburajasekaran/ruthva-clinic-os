@@ -38,6 +38,13 @@ class Prescription(models.Model):
 
 
 class Medication(models.Model):
+    DILUTION_SCALE_CHOICES = [
+        ("C",  "Centesimal (C)"),
+        ("X",  "Decimal (X)"),
+        ("LM", "LM Potency"),
+        ("Q",  "Mother Tincture (Q)"),
+    ]
+
     FREQUENCY_CHOICES = [
         ("OD", "Once daily / ஒரு முறை"),
         ("BD", "Twice daily / காலை-மாலை"),
@@ -67,12 +74,85 @@ class Medication(models.Model):
     instructions = models.TextField(blank=True, default="")
     instructions_ta = models.TextField(blank=True, default="")
     sort_order = models.PositiveSmallIntegerField(default=0)
+    # Homeopathy-specific fields (blank/null for all other disciplines)
+    potency = models.CharField(max_length=20, blank=True, default="")
+    dilution_scale = models.CharField(
+        max_length=5, choices=DILUTION_SCALE_CHOICES, blank=True, default=""
+    )
+    pellet_count = models.PositiveSmallIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["sort_order", "id"]
 
     def __str__(self):
         return f"{self.drug_name} - {self.dosage}"
+
+
+class RemedyFollowUpResponse(models.Model):
+    RESPONSE_TYPE_CHOICES = [
+        ("amelioration",           "Amelioration"),
+        ("aggravation",            "Aggravation"),
+        ("partial_response",       "Partial Response"),
+        ("no_change",              "No Change"),
+        ("return_of_old_symptoms", "Return of Old Symptoms"),
+        ("new_symptoms",           "New Symptoms"),
+    ]
+    ACTION_TAKEN_CHOICES = [
+        ("continue_same",    "Continue Same Remedy & Potency"),
+        ("increase_potency", "Increase Potency"),
+        ("decrease_potency", "Decrease Potency"),
+        ("change_remedy",    "Change Remedy"),
+        ("wait_and_watch",   "Wait and Watch"),
+        ("antidote",         "Antidote"),
+    ]
+
+    clinic                = models.ForeignKey(
+        "clinics.Clinic",
+        on_delete=models.CASCADE,
+        related_name="remedy_followup_responses",
+    )
+    prescription          = models.ForeignKey(
+        Prescription,
+        on_delete=models.CASCADE,
+        related_name="remedy_followup_responses",
+    )
+    previous_prescription = models.ForeignKey(
+        Prescription,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="next_followup_responses",
+    )
+    remedy_evaluated      = models.ForeignKey(
+        Medication,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="followup_responses",
+    )
+    response_type         = models.CharField(max_length=30, choices=RESPONSE_TYPE_CHOICES)
+    action_taken          = models.CharField(max_length=20, choices=ACTION_TAKEN_CHOICES)
+    new_potency           = models.CharField(max_length=20, blank=True, default="")
+    notes                 = models.TextField(blank=True, default="")
+    created_at            = models.DateTimeField(auto_now_add=True)
+    updated_at            = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(
+                fields=["clinic", "-created_at"], name="remedy_followup_clinic_date"
+            ),
+            models.Index(
+                fields=["prescription"], name="remedy_followup_prescription"
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"RemedyFollowUp for Rx#{self.prescription_id} "
+            f"— {self.response_type}"
+        )
 
 
 class ProcedureEntry(models.Model):
