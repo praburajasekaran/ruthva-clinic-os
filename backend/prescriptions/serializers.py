@@ -1,6 +1,24 @@
 from rest_framework import serializers
 
-from .models import Medication, Prescription, ProcedureEntry
+from .models import Medication, Prescription, ProcedureEntry, RemedyFollowUpResponse
+
+
+class RemedyFollowUpResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RemedyFollowUpResponse
+        fields = [
+            "id",
+            "prescription",
+            "previous_prescription",
+            "remedy_evaluated",
+            "response_type",
+            "action_taken",
+            "new_potency",
+            "notes",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
 
 class PrescriptionImportRowSerializer(serializers.Serializer):
@@ -41,6 +59,9 @@ class MedicationSerializer(serializers.ModelSerializer):
             "instructions",
             "instructions_ta",
             "sort_order",
+            "potency",
+            "dilution_scale",
+            "pellet_count",
         ]
 
 

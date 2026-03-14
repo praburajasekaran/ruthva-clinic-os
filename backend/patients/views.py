@@ -36,6 +36,59 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
         serializer = ConsultationListSerializer(consultations, many=True)
         return Response(serializer.data)
 
+    @action(detail=True, methods=["get"], url_path="remedy-history")
+    def remedy_history(self, request, pk=None):
+        """Return chronological homeopathic remedy timeline for a patient."""
+        from prescriptions.models import Prescription
+        from prescriptions.serializers import RemedyFollowUpResponseSerializer
+
+        patient = self.get_object()
+        prescriptions = (
+            Prescription.objects.filter(
+                clinic=request.clinic,
+                consultation__patient=patient,
+            )
+            .prefetch_related("medications", "remedy_followup_responses")
+            .select_related("consultation")
+            .order_by("consultation__consultation_date")
+        )
+
+        timeline = []
+        for rx in prescriptions:
+            homeo_meds = [
+                m for m in rx.medications.all()
+                if m.potency or m.dilution_scale or m.pellet_count
+            ]
+            if not homeo_meds:
+                continue
+
+            first_response = rx.remedy_followup_responses.first()
+            timeline.append({
+                "date": rx.consultation.consultation_date,
+                "prescription_id": rx.id,
+                "consultation_id": rx.consultation_id,
+                "medications": [
+                    {
+                        "drug_name": m.drug_name,
+                        "potency": m.potency,
+                        "dilution_scale": m.dilution_scale,
+                        "pellet_count": m.pellet_count,
+                    }
+                    for m in homeo_meds
+                ],
+                "response_at_next_visit": (
+                    RemedyFollowUpResponseSerializer(first_response).data
+                    if first_response
+                    else None
+                ),
+            })
+
+        return Response({
+            "patient_id": patient.id,
+            "patient_name": patient.name,
+            "remedy_timeline": timeline,
+        })
+
     @action(detail=False, methods=["get"])
     def check_phone(self, request):
         phone = request.query_params.get("phone", "")
