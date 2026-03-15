@@ -7,10 +7,10 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | AYUSH Clinic",
-    default: "AYUSH Clinic Platform",
+    template: "%s | Ruthva",
+    default: "Ruthva — Clinic Management",
   },
-  description: "Digital clinic management for AYUSH practitioners",
+  description: "Clinic management OS powered by Ruthva",
 };
 
 export default function RootLayout({

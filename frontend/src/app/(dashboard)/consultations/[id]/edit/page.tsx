@@ -1,4 +1,5 @@
 "use client";
+import { Spinner } from "@/components/ui/Spinner";
 
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -36,7 +37,7 @@ export default function EditConsultationPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+        <Spinner />
       </div>
     );
   }

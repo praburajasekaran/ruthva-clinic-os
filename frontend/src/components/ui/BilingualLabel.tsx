@@ -20,7 +20,7 @@ export function BilingualLabel({
   return (
     <Tag {...baseProps} className={`block ${className}`}>
       <span className="text-sm font-medium text-gray-700">{english}</span>
-      <span className="ml-1.5 font-tamil text-xs text-gray-500">{tamil}</span>
+      <span lang="ta" className="ml-1.5 font-tamil text-xs text-gray-500">{tamil}</span>
       {required && (
         <>
           <span className="text-red-600" aria-hidden="true">

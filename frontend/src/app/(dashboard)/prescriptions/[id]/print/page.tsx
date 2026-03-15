@@ -1,4 +1,5 @@
 "use client";
+import { Spinner } from "@/components/ui/Spinner";
 
 import { useParams } from "next/navigation";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
@@ -51,7 +52,7 @@ export default function PrintPrescriptionPage() {
   if (isLoading || !prescription) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-200 border-t-emerald-600" />
+        <Spinner />
       </div>
     );
   }

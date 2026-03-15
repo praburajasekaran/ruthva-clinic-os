@@ -1,4 +1,5 @@
 "use client";
+import { Spinner } from "@/components/ui/Spinner";
 
 import { ChevronLeft, ChevronRight, Eye, EyeOff, Phone, Plus, Search } from "lucide-react";
 import Link from "next/link";
@@ -58,7 +59,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 sm:max-w-sm">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+            <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
@@ -97,7 +98,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
       <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-emerald-600 border-t-transparent" />
+            <Spinner size="sm" />
           </div>
         ) : patients.length === 0 ? (
           <div className="px-6 py-12 text-center">
@@ -116,23 +117,23 @@ export function PatientTable({ initialData }: PatientTableProps) {
             )}
           </div>
         ) : (
-          <table className="w-full text-left text-sm">
+          <table aria-label="Patients" className="w-full text-left text-sm">
             <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
-                <th className="px-4 py-3 font-medium text-gray-700">
+                <th scope="col" className="px-4 py-3 font-medium text-gray-700">
                   Record ID
                 </th>
-                <th className="px-4 py-3 font-medium text-gray-700">Name</th>
-                <th className="hidden px-4 py-3 font-medium text-gray-700 sm:table-cell">
+                <th scope="col" className="px-4 py-3 font-medium text-gray-700">Name</th>
+                <th scope="col" className="hidden px-4 py-3 font-medium text-gray-700 sm:table-cell">
                   Age/Gender
                 </th>
-                <th className="hidden px-4 py-3 font-medium text-gray-700 md:table-cell">
+                <th scope="col" className="hidden px-4 py-3 font-medium text-gray-700 md:table-cell">
                   Phone
                 </th>
-                <th className="hidden px-4 py-3 font-medium text-gray-700 lg:table-cell">
+                <th scope="col" className="hidden px-4 py-3 font-medium text-gray-700 lg:table-cell">
                   Visits
                 </th>
-                <th className="hidden px-4 py-3 font-medium text-gray-700 lg:table-cell">
+                <th scope="col" className="hidden px-4 py-3 font-medium text-gray-700 lg:table-cell">
                   Last Visit
                 </th>
               </tr>
@@ -142,13 +143,22 @@ export function PatientTable({ initialData }: PatientTableProps) {
                 <tr
                   key={patient.id}
                   onClick={() => router.push(`/patients/${patient.id}`)}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push(`/patients/${patient.id}`);
+                    }
+                  }}
                   className="cursor-pointer transition-colors hover:bg-gray-50"
                 >
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">
                     {patient.record_id}
                   </td>
                   <td className="px-4 py-3 font-medium text-gray-900">
-                    {patient.name}
+                    <Link href={`/patients/${patient.id}`}>
+                      {patient.name}
+                    </Link>
                     {patient.is_active === false && (
                       <span className="ml-2 inline-flex rounded bg-gray-100 px-1.5 py-0.5 text-xs font-normal text-gray-500">
                         Archived

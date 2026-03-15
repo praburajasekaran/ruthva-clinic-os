@@ -27,3 +27,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 # Frontend URL for invite links
 FRONTEND_URL = "http://localhost:3000"
+
+# Allow unauthenticated API access during development (no login page yet)
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,  # noqa: F405
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}

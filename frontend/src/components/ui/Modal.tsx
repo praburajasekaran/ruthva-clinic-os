@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, type ReactNode } from "react";
+import { useEffect, useId, useRef, type ReactNode } from "react";
 import { X } from "lucide-react";
 
 type ModalSize = "sm" | "md" | "lg";
@@ -26,61 +26,34 @@ export function Modal({
   children,
   size = "md",
 }: ModalProps) {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const previousFocusRef = useRef<HTMLElement | null>(null);
-
-  const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    },
-    [onClose],
-  );
+  const dialogRef = useRef<HTMLDialogElement>(null);
+  const titleId = useId();
 
   useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
     if (open) {
-      previousFocusRef.current = document.activeElement as HTMLElement;
-      document.addEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "hidden";
-
-      // Focus first focusable element
-      requestAnimationFrame(() => {
-        const focusable = dialogRef.current?.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        );
-        focusable?.focus();
-      });
+      if (!dialog.open) dialog.showModal();
+    } else {
+      if (dialog.open) dialog.close();
     }
-
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = "";
-      previousFocusRef.current?.focus();
-    };
-  }, [open, handleKeyDown]);
-
-  if (!open) return null;
+  }, [open]);
 
   return (
-    <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 animate-[fadeIn_150ms_ease-out]"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Dialog */}
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={title ? "modal-title" : undefined}
-        className={`relative w-full rounded-xl bg-white shadow-2xl ring-1 ring-border animate-[scaleIn_150ms_ease-out] ${sizeStyles[size]}`}
-      >
+    <dialog
+      ref={dialogRef}
+      aria-labelledby={title ? titleId : undefined}
+      onClose={onClose}
+      onClick={(e) => {
+        if (e.target === dialogRef.current) onClose();
+      }}
+      className={`w-full rounded-xl bg-white shadow-2xl ring-1 ring-border p-0 backdrop:bg-black/40 backdrop:animate-[fadeIn_150ms_ease-out] ${sizeStyles[size]}`}
+    >
+      <div className="animate-[scaleIn_150ms_ease-out]">
         {title && (
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
             <h2
-              id="modal-title"
+              id={titleId}
               className="text-lg font-semibold text-text-primary"
             >
               {title}
@@ -96,6 +69,6 @@ export function Modal({
         )}
         <div className="p-5">{children}</div>
       </div>
-    </div>
+    </dialog>
   );
 }

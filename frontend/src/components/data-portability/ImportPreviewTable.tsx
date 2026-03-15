@@ -17,9 +17,9 @@ export function ImportPreviewTable({ rows, title }: ImportPreviewTableProps) {
         <table className="w-full min-w-[520px] text-sm">
           <thead className="bg-white text-left text-xs uppercase tracking-wide text-gray-500">
             <tr>
-              <th className="px-4 py-2">Line</th>
-              <th className="px-4 py-2">Errors</th>
-              <th className="px-4 py-2">Raw Row</th>
+              <th scope="col" className="px-4 py-2">Line</th>
+              <th scope="col" className="px-4 py-2">Errors</th>
+              <th scope="col" className="px-4 py-2">Raw Row</th>
             </tr>
           </thead>
           <tbody>

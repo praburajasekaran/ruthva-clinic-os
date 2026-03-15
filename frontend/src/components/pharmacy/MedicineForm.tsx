@@ -108,7 +108,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             required
             value={form.name}
             onChange={(e) => update("name", e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
         <div>
@@ -117,7 +117,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             type="text"
             value={form.name_ta}
             onChange={(e) => update("name_ta", e.target.value)}
-            className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
         <div>
@@ -126,7 +126,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             required
             value={form.category}
             onChange={(e) => update("category", e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           >
             {CATEGORY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -139,7 +139,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             required
             value={form.dosage_form}
             onChange={(e) => update("dosage_form", e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           >
             {DOSAGE_FORM_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -154,7 +154,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             step="0.01"
             value={form.unit_price}
             onChange={(e) => update("unit_price", e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
         <div>
@@ -164,7 +164,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             min="0"
             value={form.reorder_level}
             onChange={(e) => update("reorder_level", e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
 

@@ -1,7 +1,9 @@
 "use client";
+import { Spinner } from "@/components/ui/Spinner";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import api from "@/lib/api";
 import { Stethoscope } from "lucide-react";
 
@@ -33,7 +35,7 @@ export default function ConsultationsPage() {
     if (loading) {
         return (
             <div className="flex items-center justify-center py-20">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-emerald-600 border-t-transparent" />
+                <Spinner />
             </div>
         );
     }
@@ -67,22 +69,22 @@ export default function ConsultationsPage() {
                 </div>
             ) : (
                 <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
-                    <table className="min-w-full divide-y divide-gray-200">
+                    <table aria-label="Consultations" className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                     Date
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                     Patient
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                     Record ID
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                     Diagnosis
                                 </th>
-                                <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
+                                <th scope="col" className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-gray-500">
                                     Prescription
                                 </th>
                             </tr>
@@ -92,10 +94,19 @@ export default function ConsultationsPage() {
                                 <tr
                                     key={c.id}
                                     onClick={() => router.push(`/consultations/${c.id}`)}
+                                    tabIndex={0}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            router.push(`/consultations/${c.id}`);
+                                        }
+                                    }}
                                     className="cursor-pointer transition-colors hover:bg-gray-50"
                                 >
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
-                                        {c.consultation_date}
+                                        <Link href={`/consultations/${c.id}`}>
+                                            {c.consultation_date}
+                                        </Link>
                                     </td>
                                     <td className="whitespace-nowrap px-6 py-4 text-sm text-gray-900">
                                         {c.patient_name}
