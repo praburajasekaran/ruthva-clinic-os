@@ -1,8 +1,9 @@
 import html as html_mod
 import logging
 
-import resend
 from django.conf import settings
+
+from utils.ses import send_email
 
 logger = logging.getLogger(__name__)
 
@@ -14,9 +15,7 @@ FRONTEND_URL = _frontend_url
 
 
 def send_invite_email(*, invitation) -> str | None:
-    """Send a clinic invitation email. Returns Resend email ID or None."""
-    resend.api_key = settings.RESEND_API_KEY
-
+    """Send a clinic invitation email. Returns SES message ID or None."""
     accept_url = f"{FRONTEND_URL}/invite/accept?token={invitation.token}"
     clinic_name = html_mod.escape(invitation.clinic.name)
     inviter_name = html_mod.escape(
@@ -60,14 +59,4 @@ def send_invite_email(*, invitation) -> str | None:
   </div>
 </div>"""
 
-    try:
-        resp = resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [invitation.email],
-            "subject": subject,
-            "html": html,
-        })
-        return resp.get("id", "")
-    except Exception:
-        logger.exception("Failed to send invite email to %s", invitation.email)
-        return None
+    return send_email(to=invitation.email, subject=subject, html=html)

@@ -3,9 +3,9 @@ import hmac
 import secrets
 import string
 
-import resend
 from django.conf import settings
-from django.utils import timezone
+
+from utils.ses import send_email
 
 
 def generate_otp(length=6):
@@ -28,18 +28,14 @@ def verify_otp_hash(code: str, hashed: str) -> bool:
 
 
 def send_otp_email(email: str, code: str):
-    """Send OTP via Resend."""
-    resend.api_key = settings.RESEND_API_KEY
-    resend.Emails.send(
-        {
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [email],
-            "subject": f"Your login code is {code}",
-            "html": (
-                f"<p>Your verification code is:</p>"
-                f"<h1 style='font-size:36px;letter-spacing:8px;font-family:monospace'>{code}</h1>"
-                f"<p>This code expires in 10 minutes.</p>"
-                f"<p>If you didn't request this, you can safely ignore this email.</p>"
-            ),
-        }
+    """Send OTP via Amazon SES."""
+    send_email(
+        to=email,
+        subject=f"Your login code is {code}",
+        html=(
+            f"<p>Your verification code is:</p>"
+            f"<h1 style='font-size:36px;letter-spacing:8px;font-family:monospace'>{code}</h1>"
+            f"<p>This code expires in 10 minutes.</p>"
+            f"<p>If you didn't request this, you can safely ignore this email.</p>"
+        ),
     )

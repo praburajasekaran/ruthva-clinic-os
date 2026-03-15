@@ -124,11 +124,13 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# Resend (email)
-RESEND_API_KEY = config("RESEND_API_KEY", default="")
-RESEND_FROM_EMAIL = config(
-    "RESEND_FROM_EMAIL",
-    default="AYUSH Clinic Platform <onboarding@resend.dev>",
+# Amazon SES (email)
+AWS_SES_REGION = config("AWS_SES_REGION", default="ap-south-1")
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default="Ruthva <noreply@ruthva.com>",
 )
 CLINIC_NAME = "Sivanethram Siddha Clinic"
 CLINIC_DOCTOR_NAME = config("CLINIC_DOCTOR_NAME", default="Dr. Subashini")
