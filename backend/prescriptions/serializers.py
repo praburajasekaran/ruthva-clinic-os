@@ -99,8 +99,14 @@ class PrescriptionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prescription
         fields = [
-            "id", "consultation", "patient_name", "patient_record_id",
-            "consultation_date", "follow_up_date", "medication_count", "created_at",
+            "id",
+            "consultation",
+            "patient_name",
+            "patient_record_id",
+            "consultation_date",
+            "follow_up_date",
+            "medication_count",
+            "created_at",
         ]
 
 

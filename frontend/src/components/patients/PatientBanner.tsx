@@ -29,7 +29,7 @@ export function PatientBanner({ patient }: PatientBannerProps) {
           {age} years · {patient.gender.charAt(0).toUpperCase()}
         </span>
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-white px-3 py-1.5 text-sm text-text-secondary">
-          <Phone className="h-3.5 w-3.5 text-brand-700" />
+          <Phone aria-hidden="true" className="h-3.5 w-3.5 text-brand-700" />
           {patient.phone}
         </span>
         {patient.whatsapp_number && patient.whatsapp_number !== patient.phone && (
@@ -39,7 +39,7 @@ export function PatientBanner({ patient }: PatientBannerProps) {
         )}
         {patient.allergies && (
           <span className="inline-flex items-center gap-2 rounded-full border border-amber-200 bg-amber-50 px-3 py-1.5 text-sm text-amber-800">
-            <AlertTriangle className="h-3.5 w-3.5" />
+            <AlertTriangle aria-hidden="true" className="h-3.5 w-3.5" />
             Allergies: {patient.allergies}
           </span>
         )}

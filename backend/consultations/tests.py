@@ -92,16 +92,22 @@ class ConsultationAPITest(TestCase):
 
     def test_create_consultation(self):
         data = {
-            "patient": self.patient.pk,
-            "consultation_date": "2026-02-17",
-            "chief_complaints": "Joint pain",
-            "naa": "Normal tongue",
-            "nadi": "Vatha predominant",
+            "patient": self.patient.id,
+            "consultation_date": str(date.today()),
+            "weight": 70,
+            "pulse_rate": 72,
+            "bp_systolic": 120,
+            "bp_diastolic": 80,
+            "appetite": "normal",
+            "naa": "Pink, moist",
+            "nadi": "Vatham dominant",
+            "chief_complaints": "Headache",
         }
         response = self.client.post(
             "/api/v1/consultations/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["patient"], self.patient.id)
 
     def test_list_consultations(self):
         Consultation.objects.create(
@@ -112,6 +118,7 @@ class ConsultationAPITest(TestCase):
         response = self.client.get("/api/v1/consultations/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
+        self.assertIn("has_prescription", response.data["results"][0])
 
     def test_filter_by_patient(self):
         other_patient = Patient.objects.create(
@@ -130,7 +137,7 @@ class ConsultationAPITest(TestCase):
             patient=other_patient, consultation_date=date.today()
         )
         response = self.client.get(
-            f"/api/v1/consultations/?patient={self.patient.pk}"
+            f"/api/v1/consultations/?patient={self.patient.id}"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
@@ -161,7 +168,7 @@ class ConsultationAPITest(TestCase):
             diagnosis="Test diagnosis",
         )
         response = self.client.get(
-            f"/api/v1/patients/{self.patient.pk}/consultations/"
+            f"/api/v1/patients/{self.patient.id}/consultations/"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 1)

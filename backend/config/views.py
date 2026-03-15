@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from django.db.models import Count, Q
+from django.db.models import Count, F, Q
 from django.http import HttpResponse
 from django.utils import timezone
 from drf_spectacular.utils import extend_schema, inline_serializer
@@ -9,8 +9,6 @@ from rest_framework.decorators import api_view, permission_classes, throttle_cla
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.throttling import UserRateThrottle
 from rest_framework.response import Response
-
-from django.db.models import F
 
 from clinics.export_service import DataExportService
 from clinics.models import DataExportAudit
@@ -22,12 +20,6 @@ from prescriptions.models import ProcedureEntry, Prescription
 from treatments.models import DoctorActionTask, TreatmentSession
 
 
-@extend_schema(
-    responses={200: inline_serializer(
-        "HealthCheck",
-        fields={"status": serializers.CharField(), "app": serializers.CharField()},
-    )},
-)
 @api_view(["GET"])
 @permission_classes([AllowAny])
 def health_check(request):

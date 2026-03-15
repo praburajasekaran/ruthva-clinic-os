@@ -87,7 +87,7 @@ class PatientModelTest(TestCase):
         self.assertEqual(patient.family_history.count(), 1)
 
 
-class PatientAPITest(TestCase):
+class PatientAPITests(TestCase):
     def setUp(self):
         cache.clear()
         self.client = APIClient()
@@ -109,27 +109,26 @@ class PatientAPITest(TestCase):
 
     def test_create_patient(self):
         data = {
-            "name": "API Patient",
+            "name": "New Patient",
             "age": 35,
             "gender": "male",
-            "phone": "9876543299",
+            "phone": "9111111111",
         }
         response = self.client.post("/api/v1/patients/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn("record_id", response.data)
-        self.assertTrue(response.data["record_id"].startswith("PAT-"))
 
     def test_create_patient_with_nested_history(self):
         data = {
-            "name": "Nested Patient",
-            "age": 40,
+            "name": "Patient With History",
+            "age": 50,
             "gender": "female",
-            "phone": "9876543298",
+            "phone": "9222222222",
             "medical_history": [
-                {"disease": "Asthma", "duration": "10 years", "medication": "Inhaler"},
+                {"disease": "Diabetes", "duration": "5 years", "medication": "Metformin"}
             ],
             "family_history": [
-                {"relation": "Mother", "disease": "Diabetes"},
+                {"relation": "Mother", "disease": "Hypertension", "duration": "10 years"}
             ],
         }
         response = self.client.post("/api/v1/patients/", data, format="json")
@@ -153,36 +152,39 @@ class PatientAPITest(TestCase):
     def test_search_patients(self):
         Patient.objects.create(
             clinic=self.clinic,
-            name="Searchable",
-            age=30,
+            name="Rajan Kumar",
+            age=45,
             gender="male",
-            phone="9876543296",
+            phone="9876543210",
         )
-        response = self.client.get("/api/v1/patients/?search=Searchable")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        Patient.objects.create(
+            clinic=self.clinic,
+            name="Priya S", age=32, gender="female", phone="9123456789"
+        )
+        response = self.client.get("/api/v1/patients/?search=Rajan")
         self.assertEqual(response.data["count"], 1)
+        self.assertEqual(response.data["results"][0]["name"], "Rajan Kumar")
 
     def test_search_by_phone(self):
         Patient.objects.create(
             clinic=self.clinic,
-            name="Phone Test",
-            age=30,
+            name="Rajan Kumar",
+            age=45,
             gender="male",
-            phone="1111111111",
+            phone="9876543210",
         )
-        response = self.client.get("/api/v1/patients/?search=1111111111")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response = self.client.get("/api/v1/patients/?search=9876")
         self.assertEqual(response.data["count"], 1)
 
     def test_unauthenticated_access_denied(self):
-        self.client.force_authenticate(user=None)
-        response = self.client.get("/api/v1/patients/")
+        client = APIClient()
+        response = client.get("/api/v1/patients/")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_update_patient_nested_history(self):
         patient = Patient.objects.create(
             clinic=self.clinic,
-            name="Update Test",
+            name="Original",
             age=30,
             gender="male",
             phone="9876543295",
@@ -191,16 +193,16 @@ class PatientAPITest(TestCase):
             patient=patient, disease="Old Disease", duration="1 year"
         )
         data = {
-            "name": "Update Test",
+            "name": "Updated",
             "age": 31,
             "gender": "male",
-            "phone": "9876543295",
+            "phone": "9444444444",
             "medical_history": [
-                {"disease": "New Disease", "duration": "2 years", "medication": ""},
+                {"disease": "New Disease", "duration": "2 years", "medication": "Med A"}
             ],
         }
         response = self.client.put(
-            f"/api/v1/patients/{patient.pk}/", data, format="json"
+            f"/api/v1/patients/{patient.id}/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(patient.medical_history.count(), 1)

@@ -1,13 +1,10 @@
 import logging
 
-import resend
-from django.conf import settings
+from utils.ses import send_email
 
 logger = logging.getLogger(__name__)
 
 
-def _init_resend():
-    resend.api_key = settings.RESEND_API_KEY
 
 
 def send_prescription_followup_email(
@@ -19,8 +16,7 @@ def send_prescription_followup_email(
     follow_up_notes: str,
     consultation_date,
 ) -> str | None:
-    """Send a prescription follow-up reminder. Returns Resend email ID or None."""
-    _init_resend()
+    """Send a prescription follow-up reminder. Returns SES message ID or None."""
 
     formatted_date = follow_up_date.strftime("%d %B %Y")
     subject = f"Follow-up Reminder - {formatted_date} | {settings.CLINIC_NAME}"
@@ -69,17 +65,7 @@ def send_prescription_followup_email(
   </p>
 </div>"""
 
-    try:
-        resp = resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [patient_email],
-            "subject": subject,
-            "html": html,
-        })
-        return resp.get("id", "")
-    except Exception:
-        logger.exception("Failed to send prescription follow-up email to %s", patient_email)
-        return None
+    return send_email(to=patient_email, subject=subject, html=html)
 
 
 def send_procedure_followup_email(
@@ -90,8 +76,7 @@ def send_procedure_followup_email(
     procedure_name: str,
     consultation_date,
 ) -> str | None:
-    """Send a procedure follow-up reminder. Returns Resend email ID or None."""
-    _init_resend()
+    """Send a procedure follow-up reminder. Returns SES message ID or None."""
 
     formatted_date = follow_up_date.strftime("%d %B %Y")
     subject = f"Procedure Follow-up Reminder - {formatted_date} | {settings.CLINIC_NAME}"
@@ -132,14 +117,4 @@ def send_procedure_followup_email(
   </p>
 </div>"""
 
-    try:
-        resp = resend.Emails.send({
-            "from": settings.RESEND_FROM_EMAIL,
-            "to": [patient_email],
-            "subject": subject,
-            "html": html,
-        })
-        return resp.get("id", "")
-    except Exception:
-        logger.exception("Failed to send procedure follow-up email to %s", patient_email)
-        return None
+    return send_email(to=patient_email, subject=subject, html=html)

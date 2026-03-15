@@ -50,10 +50,10 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
 
     @action(detail=True, methods=["get"])
     def consultations(self, request, pk=None):
-        from consultations.serializers import ConsultationListSerializer
-
         patient = self.get_object()
         consultations = patient.consultations.all().order_by("-consultation_date")
+        from consultations.serializers import ConsultationListSerializer
+
         serializer = ConsultationListSerializer(consultations, many=True)
         return Response(serializer.data)
 

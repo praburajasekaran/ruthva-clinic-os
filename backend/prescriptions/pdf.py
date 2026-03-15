@@ -83,6 +83,7 @@ def _safe_url_fetcher(
 
 
 def generate_prescription_pdf(prescription: Prescription) -> bytes:
+    """Render prescription as bilingual PDF (Tamil + English)."""
     clinic = prescription.clinic
 
     # Pre-fetch the logo at the application layer so WeasyPrint never

@@ -37,6 +37,15 @@ export type LoginRequest = {
   password: string;
 };
 
+export type RequestOTPRequest = {
+  email: string;
+};
+
+export type VerifyOTPRequest = {
+  email: string;
+  code: string;
+};
+
 export type SignupRequest = {
   clinic_name: string;
   subdomain: string;
@@ -325,6 +334,7 @@ export type TherapistWorklistItem = {
   block_start_day: number;
   block_end_day: number;
   day_number: number;
+  sequence_number: number;
   completed_days: number;
   pending_days: number;
   procedure_name: string;
@@ -347,8 +357,10 @@ export type DoctorActionItem = {
   block_end_day: number;
   completed_days: number;
   pending_days: number;
-  task_type: "block_completed" | "review_requested";
+  task_type: "block_completed" | "review_requested" | "plan_completed";
   task_status: "open" | "resolved";
+  total_days: number;
+  plan_status: "draft" | "active" | "completed" | "cancelled";
   replan_required: boolean;
 };
 
@@ -393,6 +405,95 @@ export type ImportConfirmResult = {
   skipped: number;
   errors: ImportPreviewRow[];
 };
+
+// ── Treatment Plans ──
+export type MediumType = "oil" | "powder" | "other";
+
+export type SessionFeedbackRead = {
+  readonly id: number;
+  completion_status: "done" | "not_done";
+  response_score: number;
+  notes: string;
+  review_requested: boolean;
+  created_at: string;
+};
+
+export type TreatmentSession = {
+  readonly id: number;
+  day_number: number;
+  sequence_number: number;
+  session_date: string;
+  procedure_name: string;
+  medium_type: MediumType;
+  medium_name: string;
+  instructions: string;
+  execution_status: "planned" | "done" | "not_done";
+};
+
+export type TreatmentSessionWithFeedback = TreatmentSession & {
+  feedback: SessionFeedbackRead | null;
+};
+
+export type TreatmentBlock = {
+  readonly id: number;
+  block_number: number;
+  start_day_number: number;
+  end_day_number: number;
+  start_date: string;
+  end_date: string;
+  status: "planned" | "in_progress" | "completed";
+  replan_required: boolean;
+  completed_at: string | null;
+  sessions: TreatmentSession[];
+};
+
+export type TreatmentPlanStatus = "draft" | "active" | "completed" | "cancelled";
+
+export type TreatmentPlan = {
+  readonly id: number;
+  prescription: number;
+  total_days: number;
+  status: TreatmentPlanStatus;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  blocks: TreatmentBlock[];
+  readonly created_at: string;
+  readonly updated_at: string;
+};
+
+export type TreatmentPlanListItem = {
+  readonly id: number;
+  prescription: number;
+  total_days: number;
+  status: TreatmentPlanStatus;
+  patient_name: string;
+  patient_record_id: string;
+  patient_id: number;
+  block_count: number;
+  readonly created_at: string;
+};
+
+export type SessionPlanEntry = {
+  entry_type: "single_day" | "day_range";
+  day_number?: number;
+  start_day_number?: number;
+  end_day_number?: number;
+  procedure_name: string;
+  medium_type: MediumType;
+  medium_name: string;
+  instructions: string;
+};
+
+export type TreatmentPlanCreatePayload = {
+  prescription: number;
+  total_days: number;
+  block: {
+    start_day_number: number;
+    end_day_number: number;
+    start_date: string;
+    entries: SessionPlanEntry[];
+  };
 
 // ── Pharmacy ──
 export type MedicineCategory =
@@ -454,4 +555,5 @@ export type UsageDashboard = {
   usage_percentage: number;
   medicines_count: number;
   low_stock_count: number;
+
 };

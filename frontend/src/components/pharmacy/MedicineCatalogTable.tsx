@@ -40,7 +40,7 @@ export function MedicineCatalogTable({ data }: Props) {
       {/* Filters */}
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+          <Search aria-hidden="true" className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
           <input
             type="text"
             placeholder="Search medicines..."
@@ -72,16 +72,16 @@ export function MedicineCatalogTable({ data }: Props) {
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border bg-white">
-        <table className="w-full text-sm">
+        <table aria-label="Medicine catalog" className="w-full text-sm">
           <thead>
             <tr className="border-b bg-gray-50 text-left text-gray-500">
-              <th className="px-4 py-3">Name</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Form</th>
-              <th className="px-4 py-3 text-right">Stock</th>
-              <th className="px-4 py-3 text-right">Reorder</th>
-              <th className="px-4 py-3 text-right">Price</th>
-              <th className="px-4 py-3">Status</th>
+              <th scope="col" className="px-4 py-3">Name</th>
+              <th scope="col" className="px-4 py-3">Category</th>
+              <th scope="col" className="px-4 py-3">Form</th>
+              <th scope="col" className="px-4 py-3 text-right">Stock</th>
+              <th scope="col" className="px-4 py-3 text-right">Reorder</th>
+              <th scope="col" className="px-4 py-3 text-right">Price</th>
+              <th scope="col" className="px-4 py-3">Status</th>
             </tr>
           </thead>
           <tbody>
@@ -96,6 +96,13 @@ export function MedicineCatalogTable({ data }: Props) {
                 <tr
                   key={med.id}
                   onClick={() => router.push(`/pharmacy/${med.id}`)}
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      router.push(`/pharmacy/${med.id}`);
+                    }
+                  }}
                   className={`cursor-pointer border-b last:border-0 transition-colors hover:bg-gray-50 ${
                     med.is_low_stock ? "bg-amber-50/50" : ""
                   } ${!med.is_active ? "opacity-60" : ""}`}
@@ -104,7 +111,7 @@ export function MedicineCatalogTable({ data }: Props) {
                     <div className="flex items-center gap-2">
                       <span className="font-medium text-gray-900">{med.name}</span>
                       {med.is_low_stock && (
-                        <AlertTriangle className="h-4 w-4 text-amber-500" />
+                        <AlertTriangle aria-label="Low stock" className="h-4 w-4 text-amber-500" />
                       )}
                     </div>
                     {med.name_ta && (

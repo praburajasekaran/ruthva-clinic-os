@@ -10,5 +10,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        # No-op: date_of_birth already exists in 0001_initial
+        migrations.AddField(
+            model_name='patient',
+            name='date_of_birth',
+            field=models.DateField(blank=True, null=True),
+        ),
     ]

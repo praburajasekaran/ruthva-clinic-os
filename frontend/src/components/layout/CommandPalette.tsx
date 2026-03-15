@@ -149,7 +149,7 @@ export function CommandPalette({ open, onClose }: Props) {
   } else if (isLoading) {
     statusContent = (
       <div className="flex items-center justify-center gap-2 py-8 text-sm text-gray-400">
-        <Loader2 className="h-4 w-4 animate-spin" />
+        <Loader2 aria-hidden="true" className="h-4 w-4 motion-safe:animate-spin" />
         Searching…
       </div>
     );
@@ -206,7 +206,7 @@ export function CommandPalette({ open, onClose }: Props) {
               setHasError(false);
             }}
             placeholder="Search patients by name or phone…"
-            className="h-14 w-full bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus:outline-none"
+            className="h-14 w-full bg-transparent text-base text-gray-900 placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
             autoComplete="off"
             spellCheck={false}
           />

@@ -18,7 +18,7 @@ from config.views import (
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    # API endpoints
+    # API v1
     path("api/v1/patients/", include("patients.urls")),
     path("api/v1/consultations/", include("consultations.urls")),
     path("api/v1/prescriptions/", include("prescriptions.urls")),

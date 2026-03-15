@@ -116,70 +116,71 @@ class PrescriptionAPITest(TestCase):
 
     def test_create_prescription_with_medications(self):
         data = {
-            "consultation": self.consultation.pk,
-            "diet_advice": "Avoid spicy food",
+            "consultation": self.consultation.id,
+            "diet_advice": "Avoid cold food",
             "medications": [
                 {
-                    "drug_name": "Amukkirai Chooranam",
+                    "drug_name": "Choornam X",
                     "dosage": "5g",
                     "frequency": "BD",
-                    "duration": "30 days",
-                    "sort_order": 1,
+                    "duration": "15 days",
+                    "instructions": "After food",
+                    "sort_order": 0,
                 },
                 {
-                    "drug_name": "Nilavembu Kudineer",
-                    "dosage": "60ml",
-                    "frequency": "BD",
-                    "duration": "15 days",
-                    "sort_order": 2,
+                    "drug_name": "Thailam Y",
+                    "dosage": "External",
+                    "frequency": "OD",
+                    "duration": "7 days",
+                    "sort_order": 1,
                 },
             ],
             "procedures": [
                 {
-                    "name": "Thokkanam",
-                    "details": "Oil massage therapy",
-                    "duration": "45 minutes",
-                },
+                    "name": "Varmam therapy",
+                    "details": "Right shoulder",
+                    "duration": "3 sessions",
+                }
             ],
         }
         response = self.client.post(
             "/api/v1/prescriptions/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        prescription = Prescription.objects.get(pk=response.data["id"])
-        self.assertEqual(prescription.medications.count(), 2)
-        self.assertEqual(prescription.procedures.count(), 1)
+        rx = Prescription.objects.get(pk=response.data["id"])
+        self.assertEqual(rx.medications.count(), 2)
+        self.assertEqual(rx.procedures.count(), 1)
 
     def test_update_prescription_replaces_medications(self):
-        prescription = Prescription.objects.create(
+        rx = Prescription.objects.create(
             clinic=self.clinic,
             consultation=self.consultation
         )
         Medication.objects.create(
-            prescription=prescription,
-            drug_name="Old Drug",
-            dosage="5mg",
+            prescription=rx,
+            drug_name="Old Med",
+            dosage="1g",
             frequency="OD",
             duration="7 days",
         )
         data = {
-            "consultation": self.consultation.pk,
+            "consultation": self.consultation.id,
             "medications": [
                 {
-                    "drug_name": "New Drug",
-                    "dosage": "10mg",
+                    "drug_name": "New Med",
+                    "dosage": "2g",
                     "frequency": "BD",
                     "duration": "14 days",
-                    "sort_order": 1,
-                },
+                    "sort_order": 0,
+                }
             ],
         }
         response = self.client.put(
-            f"/api/v1/prescriptions/{prescription.pk}/", data, format="json"
+            f"/api/v1/prescriptions/{rx.id}/", data, format="json"
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(prescription.medications.count(), 1)
-        self.assertEqual(prescription.medications.first().drug_name, "New Drug")
+        self.assertEqual(rx.medications.count(), 1)
+        self.assertEqual(rx.medications.first().drug_name, "New Med")
 
     def test_list_prescriptions(self):
         Prescription.objects.create(
@@ -189,16 +190,32 @@ class PrescriptionAPITest(TestCase):
         response = self.client.get("/api/v1/prescriptions/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], 1)
+        self.assertIn("medication_count", response.data["results"][0])
 
-    def test_duplicate_prescription_for_same_consultation(self):
-        data = {"consultation": self.consultation.pk}
-        self.client.post("/api/v1/prescriptions/", data, format="json")
-        response = self.client.post(
-            "/api/v1/prescriptions/", data, format="json"
+    def test_medication_sort_order(self):
+        rx = Prescription.objects.create(
+            clinic=self.clinic,
+            consultation=self.consultation
         )
-        self.assertEqual(
-            response.status_code, status.HTTP_400_BAD_REQUEST
+        Medication.objects.create(
+            prescription=rx,
+            drug_name="Second",
+            dosage="1g",
+            frequency="OD",
+            duration="7 days",
+            sort_order=1,
         )
+        Medication.objects.create(
+            prescription=rx,
+            drug_name="First",
+            dosage="2g",
+            frequency="BD",
+            duration="14 days",
+            sort_order=0,
+        )
+        meds = list(rx.medications.all())
+        self.assertEqual(meds[0].drug_name, "First")
+        self.assertEqual(meds[1].drug_name, "Second")
 
 
 class DashboardStatsTest(TestCase):

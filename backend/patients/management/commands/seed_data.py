@@ -12,6 +12,10 @@ class Command(BaseCommand):
     help = "Create sample data for development"
 
     def handle(self, *args, **options):
+        if Patient.objects.exists():
+            self.stdout.write(self.style.WARNING("Data already exists. Skipping."))
+            return
+
         today = timezone.now().date()
 
         patients_data = [
@@ -135,7 +139,6 @@ class Command(BaseCommand):
                     micturition="normal",
                     sleep_quality="normal" if i % 2 == 0 else "abnormal",
                     sleep_notes="" if i % 2 == 0 else "Difficulty falling asleep",
-<<<<<<< HEAD
                     diagnostic_data={"envagai_thervu": {
                         "naa": "Normal tongue, no coating" if j == 0 else "Slight white coating",
                         "niram": "Normal complexion",
@@ -146,16 +149,6 @@ class Command(BaseCommand):
                         "muthiram": "Clear, normal color",
                         "varmam": "No tender points",
                     }},
-=======
-                    naa="Normal tongue, no coating" if j == 0 else "Slight white coating",
-                    niram="Normal complexion",
-                    mozhi="Clear speech",
-                    vizhi="Normal, no discoloration",
-                    nadi="Vatha-Pitha predominant",
-                    mei="Normal body temperature",
-                    muthiram="Clear, normal color",
-                    varmam="No tender points",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
                     chief_complaints="Joint pain and stiffness" if j == 0 else "Follow-up visit",
                     diagnosis="Vatha disorder - Arthritis" if j == 0 else "Improving",
                     consultation_date=consult_date,
@@ -167,16 +160,6 @@ class Command(BaseCommand):
                     prescription = Prescription.objects.create(
                         consultation=consultation,
                         diet_advice="Avoid cold foods, consume warm soups and rasam",
-<<<<<<< HEAD
-                        diet_advice_ta="குளிர்ச்சியான உணவுகளை தவிர்க்கவும், சூடான சூப் மற்றும் ரசம் சாப்பிடவும்",
-                        lifestyle_advice="Apply warm sesame oil before bath",
-                        lifestyle_advice_ta="குளிப்பதற்கு முன் வெதுவெதுப்பான நல்லெண்ணெய் தடவவும்",
-                        exercise_advice="Gentle yoga, 15 minutes daily",
-                        exercise_advice_ta="எளிய யோகா, தினமும் 15 நிமிடங்கள்",
-                        follow_up_date=today + timedelta(days=7),
-                        follow_up_notes="Review joint mobility",
-                        follow_up_notes_ta="மூட்டு இயக்கத்தை ஆய்வு செய்யவும்",
-=======
                         diet_advice_ta="\u0b95\u0bc1\u0bb3\u0bbf\u0bb0\u0bcd\u0b9a\u0bcd\u0b9a\u0bbf\u0baf\u0bbe\u0ba9 \u0b89\u0ba3\u0bb5\u0bc1\u0b95\u0bb3\u0bc8 \u0ba4\u0bb5\u0bbf\u0bb0\u0bcd\u0b95\u0bcd\u0b95\u0bb5\u0bc1\u0bae\u0bcd, \u0b9a\u0bc2\u0b9f\u0bbe\u0ba9 \u0b9a\u0bc2\u0baa\u0bcd \u0bae\u0bb1\u0bcd\u0bb1\u0bc1\u0bae\u0bcd \u0bb0\u0b9a\u0bae\u0bcd \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd",
                         lifestyle_advice="Apply warm sesame oil before bath",
                         lifestyle_advice_ta="\u0b95\u0bc1\u0bb3\u0bbf\u0baa\u0bcd\u0baa\u0ba4\u0bb1\u0bcd\u0b95\u0bc1 \u0bae\u0bc1\u0ba9\u0bcd \u0bb5\u0bc6\u0ba4\u0bc1\u0bb5\u0bc6\u0ba4\u0bc1\u0baa\u0bcd\u0baa\u0bbe\u0ba9 \u0ba8\u0bb2\u0bcd\u0bb2\u0bc6\u0ba3\u0bcd\u0ba3\u0bc6\u0baf\u0bcd \u0ba4\u0b9f\u0bb5\u0bb5\u0bc1\u0bae\u0bcd",
@@ -185,7 +168,6 @@ class Command(BaseCommand):
                         follow_up_date=today + timedelta(days=7),
                         follow_up_notes="Review joint mobility",
                         follow_up_notes_ta="\u0bae\u0bc2\u0b9f\u0bcd\u0b9f\u0bc1 \u0b87\u0baf\u0b95\u0bcd\u0b95\u0ba4\u0bcd\u0ba4\u0bc8 \u0b86\u0baf\u0bcd\u0bb5\u0bc1 \u0b9a\u0bc6\u0baf\u0bcd\u0baf\u0bb5\u0bc1\u0bae\u0bcd",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
                     )
 
                     Medication.objects.create(
@@ -193,17 +175,10 @@ class Command(BaseCommand):
                         drug_name="Amukkirai Chooranam",
                         dosage="5g",
                         frequency="BD",
-<<<<<<< HEAD
-                        frequency_tamil="காலை-மாலை",
-                        duration="30 days",
-                        instructions="Mix with warm water, take before food",
-                        instructions_ta="வெந்நீரில் கலந்து சாப்பாட்டிற்கு முன் சாப்பிடவும்",
-=======
                         frequency_tamil="\u0b95\u0bbe\u0bb2\u0bc8-\u0bae\u0bbe\u0bb2\u0bc8",
                         duration="30 days",
                         instructions="Mix with warm water, take before food",
                         instructions_ta="\u0bb5\u0bc6\u0ba8\u0bcd\u0ba8\u0bc0\u0bb0\u0bbf\u0bb2\u0bcd \u0b95\u0bb2\u0ba8\u0bcd\u0ba4\u0bc1 \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbe\u0b9f\u0bcd\u0b9f\u0bbf\u0bb1\u0bcd\u0b95\u0bc1 \u0bae\u0bc1\u0ba9\u0bcd \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
                         sort_order=1,
                     )
                     Medication.objects.create(
@@ -211,17 +186,10 @@ class Command(BaseCommand):
                         drug_name="Nilavembu Kudineer",
                         dosage="60ml",
                         frequency="BD",
-<<<<<<< HEAD
-                        frequency_tamil="காலை-மாலை",
-                        duration="15 days",
-                        instructions="Take on empty stomach",
-                        instructions_ta="வெறும் வயிற்றில் சாப்பிடவும்",
-=======
                         frequency_tamil="\u0b95\u0bbe\u0bb2\u0bc8-\u0bae\u0bbe\u0bb2\u0bc8",
                         duration="15 days",
                         instructions="Take on empty stomach",
                         instructions_ta="\u0bb5\u0bc6\u0bb1\u0bc1\u0bae\u0bcd \u0bb5\u0baf\u0bbf\u0bb1\u0bcd\u0bb1\u0bbf\u0bb2\u0bcd \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
                         sort_order=2,
                     )
                     Medication.objects.create(
@@ -229,17 +197,10 @@ class Command(BaseCommand):
                         drug_name="Kottamchukkadi Thailam",
                         dosage="External",
                         frequency="OD",
-<<<<<<< HEAD
-                        frequency_tamil="ஒரு முறை",
-                        duration="30 days",
-                        instructions="Apply on affected joints before bath",
-                        instructions_ta="பாதிக்கப்பட்ட மூட்டுகளில் குளிப்பதற்கு முன் தடவவும்",
-=======
                         frequency_tamil="\u0b92\u0bb0\u0bc1 \u0bae\u0bc1\u0bb1\u0bc8",
                         duration="30 days",
                         instructions="Apply on affected joints before bath",
                         instructions_ta="\u0baa\u0bbe\u0ba4\u0bbf\u0b95\u0bcd\u0b95\u0baa\u0bcd\u0baa\u0b9f\u0bcd\u0b9f \u0bae\u0bc2\u0b9f\u0bcd\u0b9f\u0bc1\u0b95\u0bb3\u0bbf\u0bb2\u0bcd \u0b95\u0bc1\u0bb3\u0bbf\u0baa\u0bcd\u0baa\u0ba4\u0bb1\u0bcd\u0b95\u0bc1 \u0bae\u0bc1\u0ba9\u0bcd \u0ba4\u0b9f\u0bb5\u0bb5\u0bc1\u0bae\u0bcd",
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)
                         sort_order=3,
                     )
 
@@ -253,12 +214,3 @@ class Command(BaseCommand):
         self.stdout.write(
             self.style.SUCCESS(f"Created {consultation_count} consultations with prescriptions")
         )
-<<<<<<< HEAD
-        self.stdout.write(self.style.SUCCESS("\nSeed data created successfully!"))
-
-        # Print record IDs for quick testing
-        self.stdout.write("\nPatient Record IDs:")
-        for p in Patient.objects.all():
-            self.stdout.write(f"  {p.record_id} - {p.name}")
-=======
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)

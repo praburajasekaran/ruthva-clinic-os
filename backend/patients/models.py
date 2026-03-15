@@ -6,8 +6,14 @@ from django.utils import timezone
 class Patient(models.Model):
     GENDER_CHOICES = [("male", "Male"), ("female", "Female"), ("other", "Other")]
     BLOOD_GROUP_CHOICES = [
-        ("A+", "A+"), ("A-", "A-"), ("B+", "B+"), ("B-", "B-"),
-        ("AB+", "AB+"), ("AB-", "AB-"), ("O+", "O+"), ("O-", "O-"),
+        ("A+", "A+"),
+        ("A-", "A-"),
+        ("B+", "B+"),
+        ("B-", "B-"),
+        ("AB+", "AB+"),
+        ("AB-", "AB-"),
+        ("O+", "O+"),
+        ("O-", "O-"),
     ]
     FOOD_HABITS_CHOICES = [
         ("vegetarian", "Vegetarian"),
@@ -20,8 +26,10 @@ class Patient(models.Model):
         ("active", "Active"),
     ]
     MARITAL_STATUS_CHOICES = [
-        ("single", "Single"), ("married", "Married"),
-        ("widowed", "Widowed"), ("divorced", "Divorced"),
+        ("single", "Single"),
+        ("married", "Married"),
+        ("widowed", "Widowed"),
+        ("divorced", "Divorced"),
     ]
 
     clinic = models.ForeignKey(
@@ -56,7 +64,6 @@ class Patient(models.Model):
     menstrual_history = models.TextField(blank=True, default="")
     number_of_children = models.PositiveSmallIntegerField(null=True, blank=True)
     vaccination_records = models.TextField(blank=True, default="")
-    date_of_birth = models.DateField(null=True, blank=True)
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -73,14 +80,6 @@ class Patient(models.Model):
                 name="unique_record_id_per_clinic",
             ),
         ]
-
-    @property
-    def calculated_age(self):
-        if self.date_of_birth:
-            today = timezone.now().date()
-            dob = self.date_of_birth
-            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        return self.age
 
     @property
     def calculated_age(self):
@@ -128,7 +127,7 @@ class MedicalHistory(models.Model):
         verbose_name_plural = "Medical histories"
 
     def __str__(self):
-        return f"{self.disease} ({self.patient.name})"
+        return f"{self.disease} - {self.patient.name}"
 
 
 class FamilyHistory(models.Model):
@@ -144,4 +143,4 @@ class FamilyHistory(models.Model):
         verbose_name_plural = "Family histories"
 
     def __str__(self):
-        return f"{self.relation} - {self.disease} ({self.patient.name})"
+        return f"{self.relation}: {self.disease} - {self.patient.name}"

@@ -22,13 +22,14 @@ DATABASES = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://localhost:3002",
+    "http://localhost:3003",
 ]
 CORS_ALLOW_CREDENTIALS = True
 
-<<<<<<< HEAD
 # Frontend URL for invite links
 FRONTEND_URL = "http://localhost:3000"
-=======
+
 # Allow unauthenticated API access during development (no login page yet)
 REST_FRAMEWORK = {
     **REST_FRAMEWORK,  # noqa: F405
@@ -36,4 +37,3 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
 }
->>>>>>> 67c68e3 (feat: Tamil-primary print layout for pre-printed letterhead)

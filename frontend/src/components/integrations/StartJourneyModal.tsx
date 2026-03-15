@@ -72,7 +72,7 @@ export function StartJourneyModal({
     return (
       <Modal open={open} onClose={handleClose} title="Treatment Journey Started" size="sm">
         <div className="flex flex-col items-center gap-3 py-4">
-          <CheckCircle className="h-12 w-12 text-emerald-500" />
+          <CheckCircle aria-hidden="true" className="h-12 w-12 text-emerald-500" />
           <p className="text-sm text-gray-600">
             Ruthva will now track treatment continuity over WhatsApp.
           </p>
@@ -88,11 +88,11 @@ export function StartJourneyModal({
         <div className="rounded-lg bg-gray-50 p-3">
           <div className="flex items-center gap-4 text-sm">
             <span className="flex items-center gap-1.5 text-gray-700">
-              <User className="h-4 w-4 text-gray-400" />
+              <User aria-hidden="true" className="h-4 w-4 text-gray-400" />
               {patientName}
             </span>
             <span className="flex items-center gap-1.5 text-gray-500">
-              <Phone className="h-4 w-4 text-gray-400" />
+              <Phone aria-hidden="true" className="h-4 w-4 text-gray-400" />
               {patientPhone || "No phone"}
             </span>
           </div>
@@ -155,7 +155,7 @@ export function StartJourneyModal({
         {/* Error */}
         {errorMessage && (
           <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
-            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0" />
             {errorMessage}
           </div>
         )}

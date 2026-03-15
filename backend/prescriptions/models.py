@@ -46,12 +46,12 @@ class Medication(models.Model):
     ]
 
     FREQUENCY_CHOICES = [
-        ("OD", "Once daily / ஒரு முறை"),
-        ("BD", "Twice daily / காலை-மாலை"),
-        ("TDS", "Thrice daily / மூன்று முறை"),
-        ("QID", "Four times daily / நான்கு முறை"),
-        ("SOS", "As needed / தேவைப்படும்போது"),
-        ("HS", "At bedtime / இரவு"),
+        ("OD", "Once daily / \u0b92\u0bb0\u0bc1 \u0bae\u0bc1\u0bb1\u0bc8"),
+        ("BD", "Twice daily / \u0b95\u0bbe\u0bb2\u0bc8-\u0bae\u0bbe\u0bb2\u0bc8"),
+        ("TDS", "Thrice daily / \u0bae\u0bc2\u0ba9\u0bcd\u0bb1\u0bc1 \u0bae\u0bc1\u0bb1\u0bc8"),
+        ("QID", "Four times daily / \u0ba8\u0bbe\u0ba9\u0bcd\u0b95\u0bc1 \u0bae\u0bc1\u0bb1\u0bc8"),
+        ("SOS", "As needed / \u0ba4\u0bc7\u0bb5\u0bc8\u0baa\u0bcd\u0baa\u0b9f\u0bc1\u0bae\u0bcd\u0baa\u0bcb\u0ba4\u0bc1"),
+        ("HS", "At bedtime / \u0b87\u0bb0\u0bb5\u0bc1"),
     ]
 
     prescription = models.ForeignKey(

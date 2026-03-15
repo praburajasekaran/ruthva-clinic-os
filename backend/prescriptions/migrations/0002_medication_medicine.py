@@ -8,7 +8,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ('pharmacy', '0001_initial'),
-        ('prescriptions', '0001_initial'),
+        ('prescriptions', '0002_medication_timing_medication_timing_tamil_and_more'),
     ]
 
     operations = [
