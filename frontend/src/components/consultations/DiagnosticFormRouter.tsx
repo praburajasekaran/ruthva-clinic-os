@@ -3,6 +3,8 @@
 import dynamic from "next/dynamic";
 import type { EnvagaiTool } from "@/lib/constants/envagai-options";
 import type { Discipline, DiagnosticData } from "@/lib/types";
+import type { HomeopathyCaseData } from "./HomeopathyCaseTakingForm";
+import { EMPTY_HOMEOPATHY_CASE } from "./HomeopathyCaseTakingForm";
 
 const EnvagaiThervu = dynamic(() =>
   import("./EnvagaiThervu").then((m) => ({ default: m.EnvagaiThervu })),
@@ -13,6 +15,11 @@ const PrakritiForm = dynamic(() =>
 const GenericDiagnosticForm = dynamic(() =>
   import("./GenericDiagnosticForm").then((m) => ({
     default: m.GenericDiagnosticForm,
+  })),
+);
+const HomeopathyCaseTakingForm = dynamic(() =>
+  import("./HomeopathyCaseTakingForm").then((m) => ({
+    default: m.HomeopathyCaseTakingForm,
   })),
 );
 
@@ -48,9 +55,15 @@ export function DiagnosticFormRouter({
           onChange={(updated) => onChange({ prakriti: updated })}
         />
       );
+    case "homeopathy":
+      return (
+        <HomeopathyCaseTakingForm
+          value={(value.homeopathy_case as HomeopathyCaseData) ?? EMPTY_HOMEOPATHY_CASE}
+          onChange={(updated) => onChange({ homeopathy_case: updated })}
+        />
+      );
     case "yoga_naturopathy":
     case "unani":
-    case "homeopathy":
       return (
         <GenericDiagnosticForm
           value={(value.notes as string) ?? ""}

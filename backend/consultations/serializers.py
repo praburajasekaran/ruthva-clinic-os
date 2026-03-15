@@ -9,7 +9,12 @@ DISCIPLINE_SCHEMA_KEYS = {
     "ayurveda": "prakriti",
     "yoga_naturopathy": "notes",
     "unani": "notes",
-    "homeopathy": "notes",
+    "homeopathy": "homeopathy_case",
+}
+
+MIASMATIC_CHOICES = {
+    "psoric", "sycotic", "syphilitic", "tubercular",
+    "cancer", "mixed", "unknown", "",
 }
 
 # Keys that must never appear in diagnostic_data (prototype pollution defense)
@@ -17,6 +22,30 @@ DENIED_KEYS = {"__proto__", "constructor", "prototype"}
 
 MAX_DIAGNOSTIC_DATA_SIZE = 32_768  # 32KB
 MAX_NESTING_DEPTH = 4
+
+
+def _validate_homeopathy_case(value: dict) -> None:
+    """Validate structure of homeopathy_case diagnostic_data."""
+    case = value.get("homeopathy_case", {})
+    if not isinstance(case, dict):
+        raise serializers.ValidationError(
+            {"diagnostic_data": "homeopathy_case must be a JSON object."}
+        )
+    complaints = case.get("chief_complaints", [])
+    if not isinstance(complaints, list):
+        raise serializers.ValidationError(
+            {"diagnostic_data": "homeopathy_case.chief_complaints must be a list."}
+        )
+    for i, c in enumerate(complaints):
+        if not isinstance(c, dict):
+            raise serializers.ValidationError(
+                {"diagnostic_data": f"homeopathy_case.chief_complaints[{i}] must be an object."}
+            )
+    miasma = case.get("miasmatic_classification", "")
+    if miasma not in MIASMATIC_CHOICES:
+        raise serializers.ValidationError(
+            {"diagnostic_data": f"Invalid miasmatic_classification: {miasma!r}."}
+        )
 
 
 def _validate_diagnostic_structure(obj, depth=0):
@@ -182,5 +211,7 @@ class ConsultationDetailSerializer(serializers.ModelSerializer):
                         f"Unexpected keys for {discipline}: {unexpected}. "
                         f"Expected: '{expected_key}'."
                     )
+            if discipline == "homeopathy":
+                _validate_homeopathy_case(value)
 
         return value

@@ -3,7 +3,7 @@ from rest_framework import serializers
 from .models import DispensingItem, DispensingRecord, Medicine, StockEntry
 
 
-# ── Medicine ──────────────────────────────────────────────────────────────────
+# -- Medicine ------------------------------------------------------------------
 
 class MedicineListSerializer(serializers.ModelSerializer):
     is_low_stock = serializers.SerializerMethodField()
@@ -59,7 +59,7 @@ class StockAdjustmentSerializer(serializers.Serializer):
     notes = serializers.CharField(required=False, allow_blank=True, default="")
 
 
-# ── Dispensing ────────────────────────────────────────────────────────────────
+# -- Dispensing ----------------------------------------------------------------
 
 class DispensingItemSerializer(serializers.ModelSerializer):
     class Meta:
