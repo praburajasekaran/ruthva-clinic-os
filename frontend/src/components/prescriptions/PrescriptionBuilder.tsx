@@ -18,6 +18,7 @@ import {
 import type { Prescription } from "@/lib/types";
 
 type MedicationData = {
+  medicine: number | null;
   drug_name: string;
   dosage_amount: string;
   dosage_unit: string;
@@ -61,7 +62,7 @@ type Action =
       type: "UPDATE_MEDICATION";
       index: number;
       field: keyof MedicationData;
-      value: string;
+      value: string | number | null;
     }
   | { type: "ADD_PROCEDURE" }
   | { type: "REMOVE_PROCEDURE"; index: number }
@@ -73,6 +74,7 @@ type Action =
     };
 
 const emptyMedication: MedicationData = {
+  medicine: null,
   drug_name: "",
   dosage_amount: "",
   dosage_unit: "",
@@ -226,6 +228,7 @@ export function PrescriptionBuilder({
       medications: state.medications
         .filter((m) => m.drug_name.trim())
         .map((m, i) => ({
+          medicine: m.medicine || null,
           drug_name: m.drug_name,
           dosage: m.dosage_amount
             ? `${m.dosage_amount} ${m.dosage_unit}`.trim()

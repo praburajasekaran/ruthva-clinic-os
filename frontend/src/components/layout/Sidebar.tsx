@@ -7,6 +7,7 @@ import {
   Stethoscope,
   FileText,
   CalendarClock,
+  Pill,
   Menu,
   X,
   Search,
@@ -20,7 +21,7 @@ import { KbdBadge } from "@/components/ui/KbdBadge";
 import { useShortcuts } from "@/components/layout/KeyboardProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
-import type { FollowUpsResponse } from "@/lib/types";
+import type { FollowUpsResponse, Medicine } from "@/lib/types";
 
 const navItems = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -28,6 +29,7 @@ const navItems = [
   { href: "/consultations", label: "Consultations", icon: Stethoscope },
   { href: "/prescriptions", label: "Prescriptions", icon: FileText },
   { href: "/follow-ups", label: "Follow-ups", icon: CalendarClock },
+  { href: "/pharmacy", label: "Pharmacy", icon: Pill },
   { href: "/team", label: "Team", icon: Users2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -39,6 +41,7 @@ export function Sidebar() {
   const { user, logout } = useAuth();
   const [logoError, setLogoError] = useState(false);
   const { data: followUpsData } = useApi<FollowUpsResponse>("/dashboard/follow-ups/?tab=all");
+  const { data: lowStockData } = useApi<Medicine[]>("/pharmacy/medicines/low-stock/");
 
   const clinicName = user?.clinic?.name ?? "Clinic";
   const clinicLogoUrl = user?.clinic?.logo_url ?? "";
@@ -125,6 +128,11 @@ export function Sidebar() {
                 {item.href === "/follow-ups" && (followUpsData?.meta?.counts?.total ?? 0) > 0 && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
                     {followUpsData?.meta?.counts?.total}
+                  </span>
+                )}
+                {item.href === "/pharmacy" && (lowStockData?.length ?? 0) > 0 && (
+                  <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-700">
+                    {lowStockData?.length}
                   </span>
                 )}
               </Link>

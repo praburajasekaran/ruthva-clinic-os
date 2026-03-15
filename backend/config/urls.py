@@ -3,6 +3,8 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
 from clinics.urls import invite_urlpatterns
+from integrations.urls import app_urlpatterns as integrations_urlpatterns
+from integrations.urls import webhook_urlpatterns as integrations_webhook_urlpatterns
 from config.views import (
     dashboard_stats,
     export_all_zip,
@@ -11,6 +13,7 @@ from config.views import (
     export_prescriptions_csv,
     follow_ups_list,
     health_check,
+    usage_dashboard,
 )
 
 urlpatterns = [
@@ -25,6 +28,7 @@ urlpatterns = [
     # Dashboard
     path("api/v1/dashboard/stats/", dashboard_stats, name="dashboard-stats"),
     path("api/v1/dashboard/follow-ups/", follow_ups_list, name="follow-ups-list"),
+    path("api/v1/usage/", usage_dashboard, name="usage-dashboard"),
     # Data portability exports
     path("api/v1/export/patients/", export_patients_csv, name="export-patients"),
     path("api/v1/export/consultations/", export_consultations_csv, name="export-consultations"),
@@ -34,6 +38,10 @@ urlpatterns = [
     path("api/v1/auth/", include("users.urls")),
     # Invitations (public endpoints)
     path("api/v1/invite/", include(invite_urlpatterns)),
+    # Ruthva integration (authenticated clinic endpoints)
+    path("api/v1/integrations/", include(integrations_urlpatterns)),
+    # Ruthva integration (webhook — exempt from TenantMiddleware)
+    path("api/v1/integrations/webhooks/", include(integrations_webhook_urlpatterns)),
     # API docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

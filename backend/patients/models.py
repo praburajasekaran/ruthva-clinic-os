@@ -64,7 +64,7 @@ class Patient(models.Model):
     menstrual_history = models.TextField(blank=True, default="")
     number_of_children = models.PositiveSmallIntegerField(null=True, blank=True)
     vaccination_records = models.TextField(blank=True, default="")
-    date_of_birth = models.DateField(null=True, blank=True)
+    is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -82,13 +82,6 @@ class Patient(models.Model):
         ]
 
     @property
-    def calculated_age(self):
-        if self.date_of_birth:
-            today = timezone.now().date()
-            dob = self.date_of_birth
-            return today.year - dob.year - ((today.month, today.day) < (dob.month, dob.day))
-        return self.age
-
     @property
     def calculated_age(self):
         if self.date_of_birth:

@@ -491,7 +491,7 @@ export function ConsultationForm({
                 )}
               </FormField>
             </div>
-            <FormField label="Consultation Date" required>
+            <FormField label="Visit Date" required>
               {(props) => (
                 <Input
                   {...props}
@@ -517,12 +517,12 @@ export function ConsultationForm({
           </Button>
           {isEdit ? (
             <Button type="submit" isLoading={isLoading}>
-              Update Consultation
+              Update Visit
             </Button>
           ) : (
             <>
               <Button type="submit" variant="secondary" isLoading={isLoading}>
-                Save Consultation
+                Save Visit
               </Button>
               <Button
                 type="button"

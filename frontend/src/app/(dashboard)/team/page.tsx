@@ -435,7 +435,7 @@ function InviteModal({
     mutate: invite,
     isLoading,
     error,
-  } = useMutation<InviteMemberRequest, Invitation>("post", "/team/invite/");
+  } = useMutation<InviteMemberRequest, Invitation>("post", "/team/invitations/");
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

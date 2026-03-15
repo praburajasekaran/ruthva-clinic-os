@@ -1,19 +1,22 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import {
+  Archive,
+  ArchiveRestore,
   Calendar,
   FileText,
-  Pencil,
   Plus,
   Stethoscope,
   User,
 } from "lucide-react";
 import { useApi } from "@/hooks/useApi";
+import { pharmacyApi } from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { RemedyHistoryTimeline } from "@/components/patients/RemedyHistoryTimeline";
 import { FlaskConical } from "lucide-react";
@@ -31,13 +34,25 @@ export default function PatientDetailPage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   const discipline = user?.clinic?.discipline;
-  const { data: patient, isLoading } = useApi<Patient>(
+  const { data: patient, isLoading, refetch } = useApi<Patient>(
     `/patients/${params.id}/`,
   );
   const { data: consultationsData } =
     useApi<PaginatedResponse<ConsultationListItem>>(
       `/consultations/?patient=${params.id}`,
     );
+  const [toggling, setToggling] = useState(false);
+
+  const handleToggleActive = async () => {
+    if (!patient) return;
+    setToggling(true);
+    try {
+      await pharmacyApi.togglePatientActive(patient.id);
+      refetch();
+    } finally {
+      setToggling(false);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -73,14 +88,30 @@ export default function PatientDetailPage() {
             aria-label="Press C to start a new consultation"
           />
         </Link>
-        <Link
-          href={`/patients/${params.id}/edit`}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        <button
+          type="button"
+          onClick={handleToggleActive}
+          disabled={toggling}
+          className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${
+            patient.is_active
+              ? "border-gray-300 text-gray-700 hover:bg-gray-50"
+              : "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+          }`}
         >
-          <Pencil className="h-4 w-4" />
-          Edit
-        </Link>
+          {patient.is_active ? (
+            <><Archive className="h-4 w-4" /> Archive Patient</>
+          ) : (
+            <><ArchiveRestore className="h-4 w-4" /> Reactivate Patient</>
+          )}
+        </button>
       </div>
+
+      {/* Archived banner */}
+      {!patient.is_active && (
+        <div className="rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-600">
+          This patient is archived and does not count toward your active patient limit.
+        </div>
+      )}
 
       {/* Patient Details */}
       <div className="grid gap-6 lg:grid-cols-3">
@@ -100,12 +131,7 @@ export default function PatientDetailPage() {
             <div>
               <dt className="text-gray-500">Age</dt>
               <dd className="font-medium text-gray-900">
-                {patient.calculated_age ?? patient.age} years
-                {patient.date_of_birth && (
-                  <span className="ml-1 text-xs text-gray-500">
-                    (DOB: {new Date(patient.date_of_birth).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })})
-                  </span>
-                )}
+                {patient.age} years
               </dd>
             </div>
             <div>

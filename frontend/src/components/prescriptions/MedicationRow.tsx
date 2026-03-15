@@ -4,22 +4,24 @@ import { GripVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
+import { MedicineAutocomplete } from "@/components/pharmacy/MedicineAutocomplete";
 import {
   FREQUENCY_OPTIONS,
   DOSAGE_UNITS,
   TIMING_OPTIONS,
 } from "@/lib/constants/envagai-options";
 import { MEDICATION_LABELS } from "@/lib/constants/bilingual-labels";
-import type { Discipline } from "@/lib/types";
+import type { Medicine, Discipline } from "@/lib/types";
 
 const DILUTION_SCALE_OPTIONS = [
-  { value: "C",  label: "C — Centesimal" },
-  { value: "X",  label: "X — Decimal" },
+  { value: "C",  label: "C \u2014 Centesimal" },
+  { value: "X",  label: "X \u2014 Decimal" },
   { value: "LM", label: "LM Potency" },
-  { value: "Q",  label: "Q — Mother Tincture" },
+  { value: "Q",  label: "Q \u2014 Mother Tincture" },
 ];
 
 type MedicationData = {
+  medicine: number | null;
   drug_name: string;
   dosage_amount: string;
   dosage_unit: string;
@@ -38,7 +40,7 @@ type MedicationData = {
 type MedicationRowProps = {
   index: number;
   data: MedicationData;
-  onChange: (field: keyof MedicationData, value: string) => void;
+  onChange: (field: keyof MedicationData, value: string | number | null) => void;
   onRemove: () => void;
   discipline?: Discipline;
 };
@@ -76,9 +78,12 @@ export function MedicationRow({
             english={MEDICATION_LABELS.drugName.en}
             tamil={MEDICATION_LABELS.drugName.ta}
           />
-          <Input
+          <MedicineAutocomplete
             value={data.drug_name}
-            onChange={(e) => onChange("drug_name", e.target.value)}
+            onChange={(val: string, medicine?: Medicine) => {
+              onChange("drug_name", val);
+              onChange("medicine", medicine?.id ?? null);
+            }}
             placeholder="e.g., Nilavembu Kudineer"
           />
         </div>
@@ -196,7 +201,7 @@ export function MedicationRow({
             <Input
               value={data.instructions_ta}
               onChange={(e) => onChange("instructions_ta", e.target.value)}
-              placeholder="e.g., வெந்நீரில் கலந்து சாப்பிடவும்"
+              placeholder="e.g., \u0bb5\u0bc6\u0ba8\u0bcd\u0ba8\u0bc0\u0bb0\u0bbf\u0bb2\u0bcd \u0b95\u0bb2\u0ba8\u0bcd\u0ba4\u0bc1 \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd"
               className="border-emerald-200 bg-emerald-50/30"
             />
           </div>

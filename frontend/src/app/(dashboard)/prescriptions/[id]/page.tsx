@@ -5,19 +5,16 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
-import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
+import { DispenseModal } from "@/components/pharmacy/DispenseModal";
 import { KbdBadge } from "@/components/ui/KbdBadge";
-import { Button } from "@/components/ui/Button";
-import { Calendar, ClipboardList, Pencil, Printer } from "lucide-react";
+import { Calendar, Package, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
 import { useApi } from "@/hooks/useApi";
-import { useAuth } from "@/components/auth/AuthProvider";
-import type { Prescription, Consultation, Patient, TreatmentPlanListItem } from "@/lib/types";
+import type { Prescription, Consultation, Patient, DispensingRecord } from "@/lib/types";
 
 export default function PrescriptionDetailPage() {
   const params = useParams<{ id: string }>();
-  const { user } = useAuth();
-  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [showDispense, setShowDispense] = useState(false);
   const { data: prescription, isLoading } = useApi<Prescription>(
     `/prescriptions/${params.id}/`,
   );
@@ -27,11 +24,11 @@ export default function PrescriptionDetailPage() {
   const { data: patient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
-  const { data: plans, refetch: refetchPlans } = useApi<TreatmentPlanListItem[]>(
-    prescription ? `/treatments/plans/?status=active` : null,
+  const { data: dispensingRecords, refetch: refreshDispensing } = useApi<DispensingRecord[]>(
+    prescription ? `/pharmacy/dispensing/?prescription=${prescription.id}` : null,
   );
-  const activePlan = plans?.find((p) => p.prescription === prescription?.id) ?? null;
-  const isDoctor = user?.role === "doctor" || user?.role === "admin";
+
+  const hasLinkedMeds = prescription?.medications?.some((m) => m.medicine_id || m.medicine) ?? false;
 
   if (isLoading) {
     return (
@@ -85,6 +82,16 @@ export default function PrescriptionDetailPage() {
                 aria-label="Press H to go to patient detail"
               />
             </Link>
+          )}
+          {hasLinkedMeds && (
+            <button
+              type="button"
+              onClick={() => setShowDispense(true)}
+              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
+            >
+              <Package className="h-4 w-4" />
+              Dispense
+            </button>
           )}
           <Link
             href={`/prescriptions/${params.id}/edit`}
@@ -233,50 +240,6 @@ export default function PrescriptionDetailPage() {
         </div>
       )}
 
-      {/* Treatment Plan */}
-      {activePlan ? (
-        <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <ClipboardList className="h-5 w-5 text-emerald-600" />
-              <div>
-                <h3 className="text-sm font-semibold text-gray-900">
-                  Active Treatment Plan
-                </h3>
-                <p className="text-sm text-gray-600">
-                  {activePlan.total_days} days &middot; {activePlan.block_count} block{activePlan.block_count !== 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/follow-ups"
-              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-white px-3 py-2 text-sm font-medium text-emerald-700 hover:bg-emerald-50"
-            >
-              View in Follow-ups
-            </Link>
-          </div>
-        </div>
-      ) : showPlanForm && prescription ? (
-        <TreatmentPlanCreateForm
-          prescriptionId={prescription.id}
-          onCreated={() => {
-            setShowPlanForm(false);
-            refetchPlans();
-          }}
-          onCancel={() => setShowPlanForm(false)}
-        />
-      ) : isDoctor && prescription ? (
-        <div className="flex">
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setShowPlanForm(true)}
-          >
-            <ClipboardList className="h-4 w-4" />
-            Start Treatment Plan
-          </Button>
-        </div>
-      ) : null}
 
       {/* Follow-up */}
       {prescription.follow_up_date && (
@@ -300,6 +263,58 @@ export default function PrescriptionDetailPage() {
             </p>
           )}
         </div>
+      )}
+
+      {/* Dispensing History */}
+      {dispensingRecords && dispensingRecords.length > 0 && (
+        <div className="rounded-lg border border-gray-200 bg-white p-6">
+          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+            <Package className="h-4 w-4" />
+            Dispensing History
+          </h2>
+          <div className="space-y-3">
+            {dispensingRecords.map((record) => (
+              <div key={record.id} className="rounded-lg border border-gray-100 p-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-500">
+                    {new Date(record.created_at).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "short",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                  <span className="text-gray-500">by {record.dispensed_by_name}</span>
+                </div>
+                <div className="mt-2 space-y-1">
+                  {record.items.map((item) => (
+                    <div key={item.id} className="flex justify-between text-sm">
+                      <span className="text-gray-700">{item.drug_name_snapshot}</span>
+                      <span className="text-gray-500">x{item.quantity_dispensed}</span>
+                    </div>
+                  ))}
+                </div>
+                {record.notes && (
+                  <p className="mt-1 text-xs text-gray-400">{record.notes}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Dispense Modal */}
+      {showDispense && (
+        <DispenseModal
+          prescriptionId={prescription.id}
+          medications={medications}
+          onClose={() => setShowDispense(false)}
+          onDispensed={() => {
+            setShowDispense(false);
+            refreshDispensing();
+          }}
+        />
       )}
     </div>
   );

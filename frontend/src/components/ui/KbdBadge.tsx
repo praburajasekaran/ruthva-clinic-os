@@ -18,7 +18,7 @@ export function KbdBadge({ keys, "aria-label": ariaLabel }: KbdBadgeProps) {
       {keys.map((key, i) => (
         <kbd
           key={i}
-          className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs font-mono leading-none text-gray-500"
+          className="rounded-md border border-border-strong bg-surface-raised px-1.5 py-0.5 text-xs font-mono leading-none text-text-muted"
         >
           {key}
         </kbd>

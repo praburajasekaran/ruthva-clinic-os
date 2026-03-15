@@ -34,6 +34,7 @@ INSTALLED_APPS = [
     "treatments",
     "pharmacy",
     "reminders",
+    "integrations",
 ]
 
 MIDDLEWARE = [

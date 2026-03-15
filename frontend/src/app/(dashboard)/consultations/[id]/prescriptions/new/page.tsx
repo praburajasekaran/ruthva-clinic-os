@@ -26,7 +26,7 @@ export default function NewPrescriptionPage() {
   if (!consultation) {
     return (
       <div className="py-20 text-center text-gray-500">
-        Consultation not found.
+        Visit not found.
       </div>
     );
   }
@@ -37,7 +37,7 @@ export default function NewPrescriptionPage() {
       <div>
         <h1 className="text-2xl font-bold text-gray-900">New Prescription</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Consultation on{" "}
+          Visit on{" "}
           {new Date(consultation.consultation_date).toLocaleDateString("en-IN")}
           {consultation.diagnosis && (
             <> &mdash; Dx: {consultation.diagnosis}</>

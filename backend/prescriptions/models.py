@@ -57,11 +57,20 @@ class Medication(models.Model):
     prescription = models.ForeignKey(
         Prescription, on_delete=models.CASCADE, related_name="medications"
     )
+    medicine = models.ForeignKey(
+        "pharmacy.Medicine",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="medication_usages",
+    )
     drug_name = models.CharField(max_length=255)
-    dosage = models.CharField(max_length=100)
-    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES)
+    dosage = models.CharField(max_length=100, blank=True, default="")
+    frequency = models.CharField(max_length=10, choices=FREQUENCY_CHOICES, blank=True, default="")
     frequency_tamil = models.CharField(max_length=100, blank=True, default="")
-    duration = models.CharField(max_length=100)
+    timing = models.CharField(max_length=50, blank=True, default="")
+    timing_tamil = models.CharField(max_length=100, blank=True, default="")
+    duration = models.CharField(max_length=100, blank=True, default="")
     instructions = models.TextField(blank=True, default="")
     instructions_ta = models.TextField(blank=True, default="")
     sort_order = models.PositiveSmallIntegerField(default=0)

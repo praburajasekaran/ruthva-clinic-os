@@ -1,6 +1,7 @@
 from django.db.models import Count, Max
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 
 from clinics.mixins import TenantQuerySetMixin
@@ -17,7 +18,7 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
         consultation_count=Count("consultations"),
         last_visit=Max("consultations__consultation_date"),
     )
-    filterset_fields = ["gender", "blood_group"]
+    filterset_fields = ["gender", "blood_group", "is_active"]
     search_fields = ["name", "phone", "record_id"]
     ordering_fields = ["name", "created_at", "age"]
     ordering = ["-created_at"]
@@ -26,6 +27,26 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
         if self.action == "list":
             return PatientListSerializer
         return PatientDetailSerializer
+
+    def perform_create(self, serializer):
+        clinic = self.request.clinic
+        if clinic.active_patient_limit:
+            active_count = Patient.objects.filter(
+                clinic=clinic, is_active=True
+            ).count()
+            if active_count >= clinic.active_patient_limit:
+                raise ValidationError(
+                    f"Active patient limit reached ({clinic.active_patient_limit}). "
+                    "Archive inactive patients or contact support to increase your limit."
+                )
+        serializer.save(clinic=clinic)
+
+    @action(detail=True, methods=["post"], url_path="toggle-active")
+    def toggle_active(self, request, pk=None):
+        patient = self.get_object()
+        patient.is_active = not patient.is_active
+        patient.save(update_fields=["is_active", "updated_at"])
+        return Response({"is_active": patient.is_active})
 
     @action(detail=True, methods=["get"])
     def consultations(self, request, pk=None):

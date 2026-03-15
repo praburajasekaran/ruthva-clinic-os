@@ -29,7 +29,7 @@ export default function EditConsultationPage() {
           // Patient banner is optional
         }
       })
-      .catch(() => setError("Failed to load consultation"))
+      .catch(() => setError("Failed to load visit"))
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -45,7 +45,7 @@ export default function EditConsultationPage() {
     return (
       <div className="space-y-4">
         <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-red-700">
-          {error || "Consultation not found"}
+          {error || "Visit not found"}
         </div>
         <button
           type="button"
@@ -88,10 +88,10 @@ export default function EditConsultationPage() {
       {patient && <PatientBanner patient={patient} />}
       <div>
         <h1 className="text-2xl font-bold text-gray-900">
-          Edit Consultation
+          Edit Visit
         </h1>
         <p className="mt-1 text-sm text-gray-500">
-          Update consultation details for {patient?.name ?? "this patient"}
+          Update visit details for {patient?.name ?? "this patient"}
         </p>
       </div>
       <ConsultationForm

@@ -14,13 +14,13 @@ type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary:
-    "bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 active:bg-emerald-800 focus-visible:ring-emerald-500",
+    "bg-brand-700 text-white shadow-[0_10px_30px_rgba(16,36,24,0.14)] hover:bg-brand-900 active:bg-brand-900 focus-visible:ring-brand-500",
   secondary:
-    "border border-gray-300 bg-white text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400 focus-visible:ring-emerald-500",
+    "border border-border bg-surface text-text-primary shadow-sm hover:border-brand-200 hover:bg-brand-50 focus-visible:ring-brand-500",
   ghost:
-    "text-gray-700 hover:bg-gray-100 focus-visible:ring-emerald-500",
+    "text-text-secondary hover:bg-brand-50 hover:text-brand-900 focus-visible:ring-brand-500",
   danger:
-    "bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500",
+    "bg-danger text-white shadow-sm hover:opacity-95 focus-visible:ring-danger",
 };
 
 const sizeStyles: Record<ButtonSize, string> = {
@@ -46,7 +46,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       <button
         ref={ref}
         disabled={disabled || isLoading}
-        className={`inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
+        className={`inline-flex items-center justify-center gap-2 rounded-xl font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 ${variantStyles[variant]} ${sizeStyles[size]} ${className}`}
         {...props}
       >
         {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}

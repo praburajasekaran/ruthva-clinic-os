@@ -1,6 +1,6 @@
-import { Inter, Noto_Sans_Tamil } from "next/font/google";
+import { Manrope, Noto_Sans_Tamil } from "next/font/google";
 
-export const inter = Inter({
+export const inter = Manrope({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-inter",
