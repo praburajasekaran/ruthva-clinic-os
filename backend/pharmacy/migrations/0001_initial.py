@@ -104,7 +104,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='medicine',
-            constraint=models.CheckConstraint(condition=models.Q(('current_stock__gte', 0)), name='medicine_stock_non_negative'),
+            constraint=models.CheckConstraint(check=models.Q(('current_stock__gte', 0)), name='medicine_stock_non_negative'),
         ),
         migrations.AddIndex(
             model_name='stockentry',
