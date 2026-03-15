@@ -82,7 +82,6 @@ class Patient(models.Model):
         ]
 
     @property
-    @property
     def calculated_age(self):
         if self.date_of_birth:
             today = timezone.now().date()

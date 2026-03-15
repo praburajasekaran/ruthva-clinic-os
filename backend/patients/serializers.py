@@ -40,11 +40,11 @@ class PatientDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Patient
         fields = [
-            "id", "record_id", "name", "age", "gender", "phone",
-            "whatsapp_number", "email", "address", "blood_group",
+            "id", "record_id", "name", "age", "date_of_birth", "calculated_age",
+            "gender", "phone", "whatsapp_number", "email", "address", "blood_group",
             "occupation", "marital_status", "referred_by", "allergies",
             "food_habits", "activity_level", "menstrual_history",
-            "number_of_children", "vaccination_records", "date_of_birth",
+            "number_of_children", "vaccination_records",
             "is_active", "medical_history", "family_history",
             "created_at", "updated_at",
         ]
