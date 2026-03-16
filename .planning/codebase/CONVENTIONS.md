@@ -36,7 +36,7 @@
 **Formatting:**
 - Framework: Next.js (TypeScript by default)
 - Lint tool: ESLint with Next.js config (`eslint-config-next`)
-- Configured via: `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/frontend/.eslintrc.json`
+- Configured via: `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/frontend/.eslintrc.json`
 - Backend: Django with Django REST Framework; no Prettier/Black config detected
 - Line length: Not explicitly configured; codebase shows ~80-100 character lines
 

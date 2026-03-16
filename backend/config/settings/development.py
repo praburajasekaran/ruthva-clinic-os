@@ -13,7 +13,7 @@ DATABASES = {
     "default": dj_database_url.config(
         default=config(
             "DATABASE_URL",
-            default="postgres://postgres:postgres@localhost:5432/sivanethram",
+            default="postgres://postgres:postgres@localhost:5432/ruthva_clinic_os",
         )
     )
 }

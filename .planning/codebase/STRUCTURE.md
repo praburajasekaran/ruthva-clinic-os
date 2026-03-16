@@ -5,7 +5,7 @@
 ## Directory Layout
 
 ```
-sivanethram/
+ruthva-clinic-os/
 ├── frontend/                      # Next.js 15 SaaS frontend
 │   ├── src/
 │   │   ├── app/                   # Next.js App Router pages

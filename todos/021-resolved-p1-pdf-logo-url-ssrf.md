@@ -16,9 +16,9 @@ The system accepts arbitrary clinic logo URLs and injects them into HTML used by
 
 ## Findings
 
-- `logo_url` is editable by clinic owner with no host/scheme allowlist: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py:140)
-- PDF template directly embeds `clinic.logo_url` in `<img src>`: [backend/prescriptions/templates/prescriptions/pdf.html](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/prescriptions/templates/prescriptions/pdf.html:129)
-- PDF generation calls WeasyPrint with default resource fetching behavior: [backend/prescriptions/pdf.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/prescriptions/pdf.py:17)
+- `logo_url` is editable by clinic owner with no host/scheme allowlist: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py:140)
+- PDF template directly embeds `clinic.logo_url` in `<img src>`: [backend/prescriptions/templates/prescriptions/pdf.html](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/prescriptions/templates/prescriptions/pdf.html:129)
+- PDF generation calls WeasyPrint with default resource fetching behavior: [backend/prescriptions/pdf.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/prescriptions/pdf.py:17)
 
 ## Proposed Solutions
 
@@ -81,9 +81,9 @@ To be filled during triage.
 ## Technical Details
 
 **Affected files:**
-- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py)
-- [backend/prescriptions/templates/prescriptions/pdf.html](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/prescriptions/templates/prescriptions/pdf.html)
-- [backend/prescriptions/pdf.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/prescriptions/pdf.py)
+- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py)
+- [backend/prescriptions/templates/prescriptions/pdf.html](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/prescriptions/templates/prescriptions/pdf.html)
+- [backend/prescriptions/pdf.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/prescriptions/pdf.py)
 
 **Related components:**
 - Clinic settings (`/api/v1/auth/clinic/update/`)
@@ -95,7 +95,7 @@ To be filled during triage.
 ## Resources
 
 - Branch under review: `feat/phase3-branding-settings`
-- Related plan context: [2026-02-27-saas-multi-tenant-brainstorm.md](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/plans/2026-02-27-saas-multi-tenant-brainstorm.md)
+- Related plan context: [2026-02-27-saas-multi-tenant-brainstorm.md](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/plans/2026-02-27-saas-multi-tenant-brainstorm.md)
 
 ## Acceptance Criteria
 

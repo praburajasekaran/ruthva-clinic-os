@@ -38,10 +38,10 @@ python manage.py test --keepdb
 **Backend Location:**
 - Django convention: `{app}/tests.py` (e.g., `patients/tests.py`, `users/tests.py`)
 - Test files found at:
-  - `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/patients/tests.py`
-  - `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/tests.py`
-  - `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/consultations/tests.py`
-  - `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/clinics/tests.py`
+  - `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/patients/tests.py`
+  - `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/tests.py`
+  - `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/consultations/tests.py`
+  - `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/clinics/tests.py`
 
 **Test Class Naming:**
 - Model tests: `{ModelName}ModelTest`
@@ -267,7 +267,7 @@ describe('PatientForm', () => {
 
 ## Django Test Utilities
 
-**APIClient Methods (from `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/patients/tests.py`):**
+**APIClient Methods (from `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/patients/tests.py`):**
 - `client.post(url, data, format="json")` - POST request
 - `client.get(url)` - GET request
 - `client.put(url, data)` - PUT request

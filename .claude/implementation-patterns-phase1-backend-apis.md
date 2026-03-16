@@ -433,7 +433,7 @@ def test_prescription_pdf_generation(self):
 
 ## Related Files
 
-- **Models:** `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/patients/models.py`, `consultations/models.py`, `prescriptions/models.py`
+- **Models:** `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/patients/models.py`, `consultations/models.py`, `prescriptions/models.py`
 - **Serializers:** `*/serializers.py` in each app
 - **Views:** `*/views.py` with ViewSets and custom actions
 - **Admin:** `*/admin.py` with inlines and fieldsets

@@ -16,10 +16,10 @@ This change introduces new mutable auth endpoints (profile and clinic updates) p
 
 ## Findings
 
-- New update endpoints added: [backend/users/urls.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/urls.py:12)
-- New endpoint logic and permission branch added: [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/views.py:76)
-- New serializer validations added (email uniqueness/password checks): [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py:92)
-- Users test module remains placeholder only: [backend/users/tests.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/tests.py:1)
+- New update endpoints added: [backend/users/urls.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/urls.py:12)
+- New endpoint logic and permission branch added: [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/views.py:76)
+- New serializer validations added (email uniqueness/password checks): [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py:92)
+- Users test module remains placeholder only: [backend/users/tests.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/tests.py:1)
 
 ## Proposed Solutions
 
@@ -64,9 +64,9 @@ To be filled during triage.
 ## Technical Details
 
 **Affected files:**
-- [backend/users/tests.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/tests.py)
-- [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/views.py)
-- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py)
+- [backend/users/tests.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/tests.py)
+- [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/views.py)
+- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py)
 
 **Related components:**
 - Settings page profile tab and clinic tab save actions
@@ -79,8 +79,8 @@ To be filled during triage.
 
 - Branch under review: `feat/phase3-branding-settings`
 - Frontend caller paths:
-  - [settings/page.tsx](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/frontend/src/app/(dashboard)/settings/page.tsx:62)
-  - [settings/page.tsx](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/frontend/src/app/(dashboard)/settings/page.tsx:215)
+  - [settings/page.tsx](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/frontend/src/app/(dashboard)/settings/page.tsx:62)
+  - [settings/page.tsx](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/frontend/src/app/(dashboard)/settings/page.tsx:215)
 
 ## Acceptance Criteria
 

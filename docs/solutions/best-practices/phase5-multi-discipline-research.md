@@ -602,19 +602,19 @@ class ConsultationJSONMigrationTest(TestCase):
 ## Key Files & References
 
 **Institutional Learnings:**
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/solutions/security-issues/phase2-team-management-security-review.md` — Multi-tenant security rules, permission patterns, transaction safety
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/solutions/security-issues/weasyprint-logo-url-ssrf-allowlist-mitigation.md` — Serializer validation patterns, escaped rendering
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/.claude/implementation-patterns-phase1-backend-apis.md` — Nested serializers, field conventions, optional text patterns
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/solutions/security-issues/phase2-team-management-security-review.md` — Multi-tenant security rules, permission patterns, transaction safety
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/solutions/security-issues/weasyprint-logo-url-ssrf-allowlist-mitigation.md` — Serializer validation patterns, escaped rendering
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/.claude/implementation-patterns-phase1-backend-apis.md` — Nested serializers, field conventions, optional text patterns
 
 **Planning & Architecture:**
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/.planning/ROADMAP.md` — Phase 5 requirements and dependencies
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/.planning/codebase/ARCHITECTURE.md` — Multi-tenant isolation patterns, key abstractions
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/.planning/codebase/CONVENTIONS.md` — Naming, field patterns, error handling
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/.planning/ROADMAP.md` — Phase 5 requirements and dependencies
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/.planning/codebase/ARCHITECTURE.md` — Multi-tenant isolation patterns, key abstractions
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/.planning/codebase/CONVENTIONS.md` — Naming, field patterns, error handling
 
 **Current Implementation:**
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/consultations/models.py` — Current Consultation model with hardcoded Envagai Thervu columns
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/clinics/models.py` — Clinic model (where discipline field should be added)
-- `/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/plans/2026-02-28-feat-phase-4-data-portability-plan.md` — Phase 4 CSV import/export impacts Phase 5
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/consultations/models.py` — Current Consultation model with hardcoded Envagai Thervu columns
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/clinics/models.py` — Clinic model (where discipline field should be added)
+- `/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/plans/2026-02-28-feat-phase-4-data-portability-plan.md` — Phase 4 CSV import/export impacts Phase 5
 
 ---
 

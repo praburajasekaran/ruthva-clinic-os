@@ -16,10 +16,10 @@ The application has global password policy validators in settings, but `update_m
 
 ## Findings
 
-- `new_password` is defined with only `min_length=8`: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py:94)
-- Serializer validation does not call Django password validators before `set_password()`: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py:106)
-- `update_me` endpoint uses this serializer directly: [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/views.py:76)
-- Known pattern exists in project docs highlighting this exact risk: [phase2-team-management-security-review.md](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/solutions/security-issues/phase2-team-management-security-review.md:152)
+- `new_password` is defined with only `min_length=8`: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py:94)
+- Serializer validation does not call Django password validators before `set_password()`: [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py:106)
+- `update_me` endpoint uses this serializer directly: [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/views.py:76)
+- Known pattern exists in project docs highlighting this exact risk: [phase2-team-management-security-review.md](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/solutions/security-issues/phase2-team-management-security-review.md:152)
 
 ## Proposed Solutions
 
@@ -62,8 +62,8 @@ To be filled during triage.
 ## Technical Details
 
 **Affected files:**
-- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/serializers.py)
-- [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/backend/users/views.py)
+- [backend/users/serializers.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/serializers.py)
+- [backend/users/views.py](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/backend/users/views.py)
 
 **Related components:**
 - Profile settings page password update flow
@@ -74,7 +74,7 @@ To be filled during triage.
 
 ## Resources
 
-- Related prior learning: [phase2-team-management-security-review.md](/Users/praburajasekaran/Documents/local-htdocs/sivanethram/docs/solutions/security-issues/phase2-team-management-security-review.md)
+- Related prior learning: [phase2-team-management-security-review.md](/Users/praburajasekaran/Documents/local-htdocs/ruthva-clinic-os/docs/solutions/security-issues/phase2-team-management-security-review.md)
 - Branch under review: `feat/phase3-branding-settings`
 
 ## Acceptance Criteria
