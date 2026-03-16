@@ -5,6 +5,15 @@ import string
 
 from django.conf import settings
 
+from utils.email_templates import (
+    email_code,
+    email_footer,
+    email_header,
+    email_heading,
+    email_muted_text,
+    email_text,
+    email_wrapper,
+)
 from utils.ses import send_email
 
 
@@ -29,13 +38,18 @@ def verify_otp_hash(code: str, hashed: str) -> bool:
 
 def send_otp_email(email: str, code: str):
     """Send OTP via Amazon SES."""
+    content = (
+        email_header("Login Code")
+        + email_heading("Your verification code")
+        + email_code(code)
+        + email_text("This code expires in <strong>10 minutes</strong>.")
+        + email_muted_text(
+            "If you didn't request this code, you can safely ignore this email."
+        )
+        + email_footer()
+    )
     send_email(
         to=email,
         subject=f"Your login code is {code}",
-        html=(
-            f"<p>Your verification code is:</p>"
-            f"<h1 style='font-size:36px;letter-spacing:8px;font-family:monospace'>{code}</h1>"
-            f"<p>This code expires in 10 minutes.</p>"
-            f"<p>If you didn't request this, you can safely ignore this email.</p>"
-        ),
+        html=email_wrapper(content, preview_text=f"Your login code is {code}"),
     )
