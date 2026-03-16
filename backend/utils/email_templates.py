@@ -7,18 +7,18 @@ solid gray background with white content card, emerald brand palette.
 import html as html_mod
 
 # ---------------------------------------------------------------------------
-# Design tokens (inline CSS values)
+# Design tokens — aligned with clinic OS globals.css
 # ---------------------------------------------------------------------------
-_BG = "#f4f4f5"           # zinc-100  – page background
-_CARD = "#ffffff"          # white     – content card
-_PRIMARY = "#047857"       # emerald-700 – CTA, links, emphasis
-_PRIMARY_DARK = "#065f46"  # emerald-800 – hover states, accent bar
-_PRIMARY_LIGHT = "#ecfdf5" # emerald-50 – subtle tinted backgrounds
-_TEXT = "#18181b"          # zinc-900  – headings
-_TEXT_BODY = "#3f3f46"     # zinc-700  – body text
-_TEXT_MUTED = "#71717a"    # zinc-500  – footer, captions (WCAG AA)
-_BORDER = "#e4e4e7"       # zinc-200  – card border, dividers
-_DATA_BG = "#f9fafb"      # gray-50   – structured data card
+_BG = "#f2efe8"           # --color-canvas  – warm page background
+_CARD = "#fffdf8"         # --color-surface  – warm white content card
+_PRIMARY = "#2f5f44"      # --color-brand-700 – CTA, links, emphasis
+_PRIMARY_DARK = "#1a3c2a" # --color-brand-900 – accent bar, bold elements
+_PRIMARY_LIGHT = "#eff6f1" # --color-brand-50 – subtle tinted backgrounds
+_TEXT = "#1d261f"          # --color-text-primary  – headings
+_TEXT_BODY = "#3d4d3f"     # --color-text-secondary – body text
+_TEXT_MUTED = "#555f57"    # --color-text-muted – footer, captions (WCAG AA)
+_BORDER = "#ddd5c8"       # --color-border – card border, dividers
+_DATA_BG = "#f7f3ec"      # --color-surface-raised – structured data card
 _FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 
