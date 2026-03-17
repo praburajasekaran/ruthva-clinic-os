@@ -21,8 +21,6 @@ ENV DJANGO_SETTINGS_MODULE=config.settings.production
 ENV PYTHONUNBUFFERED=1
 
 RUN python manage.py collectstatic --noinput 2>/dev/null || true
-
-COPY entrypoint.sh .
 RUN chmod +x entrypoint.sh
 
 EXPOSE 8000
