@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useState } from "react";
 import { ArrowLeft, Package, Power } from "lucide-react";
 import Link from "next/link";
@@ -21,7 +21,6 @@ const CATEGORY_LABELS: Record<string, string> = {
 
 export default function MedicineDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const { user } = useAuth();
   const id = Number(params.id);
   const { data: medicine, mutate } = useApi<Medicine>(`/pharmacy/medicines/${id}/`);

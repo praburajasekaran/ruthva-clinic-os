@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef } from "react";
 import { CheckCircle, Building2, BarChart3, User, ImageIcon, Upload, Download, ArrowDownUp, FileDown } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UsageDashboard } from "@/components/pharmacy/UsageDashboard";

@@ -494,6 +494,7 @@ export type TreatmentPlanCreatePayload = {
     start_date: string;
     entries: SessionPlanEntry[];
   };
+};
 
 // ── Pharmacy ──
 export type MedicineCategory =

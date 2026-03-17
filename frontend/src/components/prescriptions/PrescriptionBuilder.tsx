@@ -180,7 +180,7 @@ type PrescriptionBuilderProps = {
 
 export function PrescriptionBuilder({
   consultationId,
-  patientId,
+  patientId: _patientId,
   mode = "create",
   prescriptionId,
   initialData,
