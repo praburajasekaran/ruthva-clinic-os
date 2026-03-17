@@ -23,7 +23,7 @@ export default function MedicineDetailPage() {
   const params = useParams();
   const { user } = useAuth();
   const id = Number(params.id);
-  const { data: medicine, mutate } = useApi<Medicine>(`/pharmacy/medicines/${id}/`);
+  const { data: medicine, refetch } = useApi<Medicine>(`/pharmacy/medicines/${id}/`);
   const [editing, setEditing] = useState(false);
   const [showStock, setShowStock] = useState(false);
   const canWrite = user?.role === "doctor" || user?.is_clinic_owner;
@@ -34,7 +34,7 @@ export default function MedicineDetailPage() {
 
   const handleToggleActive = async () => {
     await pharmacyApi.updateMedicine(id, { is_active: !medicine.is_active });
-    mutate();
+    refetch();
   };
 
   return (
@@ -96,7 +96,7 @@ export default function MedicineDetailPage() {
           onClose={() => setEditing(false)}
           onSaved={() => {
             setEditing(false);
-            mutate();
+            refetch();
           }}
         />
       )}
@@ -131,7 +131,7 @@ export default function MedicineDetailPage() {
               onClose={() => setShowStock(false)}
               onSaved={() => {
                 setShowStock(false);
-                mutate();
+                refetch();
               }}
             />
           ) : (
