@@ -18,6 +18,15 @@ DATABASES = {
 CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", default="").split(",")
 CORS_ALLOW_CREDENTIALS = True
 
-SECURE_SSL_REDIRECT = True
+# Railway terminates SSL at the proxy — trust the forwarded header
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = False  # Railway proxy handles HTTPS; internal healthchecks use HTTP
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# WhiteNoise compressed static files
+STORAGES = {
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
