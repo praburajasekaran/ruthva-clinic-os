@@ -7,7 +7,7 @@ from decouple import config
 # Frontend URL for invite links (required in production)
 FRONTEND_URL = config("FRONTEND_URL")
 
-DEBUG = False
+DEBUG = config("DEBUG", default="False", cast=bool)
 
 ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="").split(",")
 
@@ -24,9 +24,9 @@ SECURE_SSL_REDIRECT = False  # Railway proxy handles HTTPS; internal healthcheck
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# WhiteNoise compressed static files
+# WhiteNoise static files (basic storage — no manifest required)
 STORAGES = {
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
