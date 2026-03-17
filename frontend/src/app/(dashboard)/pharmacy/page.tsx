@@ -11,7 +11,7 @@ import type { PaginatedResponse, Medicine } from "@/lib/types";
 export default function PharmacyPage() {
   const [showForm, setShowForm] = useState(false);
   const { user } = useAuth();
-  const { data, mutate } = useApi<PaginatedResponse<Medicine>>("/pharmacy/medicines/");
+  const { data, refetch } = useApi<PaginatedResponse<Medicine>>("/pharmacy/medicines/");
   const canWrite = user?.role === "doctor" || user?.is_clinic_owner;
 
   return (
@@ -35,14 +35,14 @@ export default function PharmacyPage() {
           onClose={() => setShowForm(false)}
           onSaved={() => {
             setShowForm(false);
-            mutate();
+            refetch();
           }}
         />
       )}
 
       <MedicineCatalogTable
         data={data}
-        onRefresh={mutate}
+        onRefresh={refetch}
       />
     </div>
   );
