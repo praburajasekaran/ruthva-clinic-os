@@ -178,10 +178,8 @@ type PrescriptionBuilderProps = {
   };
 };
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function PrescriptionBuilder({
   consultationId,
-  patientId,
   mode = "create",
   prescriptionId,
   initialData,
