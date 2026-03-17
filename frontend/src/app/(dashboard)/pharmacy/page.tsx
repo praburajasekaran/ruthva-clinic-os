@@ -41,7 +41,7 @@ export default function PharmacyPage() {
       )}
 
       <MedicineCatalogTable
-        data={data}
+        data={data ?? undefined}
         onRefresh={refetch}
       />
     </div>
