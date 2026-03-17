@@ -75,6 +75,7 @@ export default function EditPrescriptionPage() {
     medications: (prescription.medications ?? []).map((med) => {
       const { amount, unit } = parseDosage(med.dosage);
       return {
+        medicine: med.medicine ?? med.medicine_id ?? null,
         drug_name: med.drug_name,
         dosage_amount: amount,
         dosage_unit: unit,
