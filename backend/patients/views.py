@@ -55,7 +55,19 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     @action(detail=True, methods=["post"], url_path="toggle-active")
     def toggle_active(self, request, pk=None):
         patient = self.get_object()
-        patient.is_active = not patient.is_active
+        new_status = not patient.is_active
+
+        if new_status and request.clinic.active_patient_limit:
+            active_count = Patient.objects.filter(
+                clinic=request.clinic, is_active=True
+            ).count()
+            if active_count >= request.clinic.active_patient_limit:
+                raise ValidationError(
+                    f"Active patient limit reached ({request.clinic.active_patient_limit}). "
+                    "Archive inactive patients or upgrade to reactivate."
+                )
+
+        patient.is_active = new_status
         patient.save(update_fields=["is_active", "updated_at"])
         return Response({"is_active": patient.is_active})
 
@@ -158,6 +170,24 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
                 {"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST
             )
         content = file.read().decode("utf-8-sig")
+
+        if request.clinic.active_patient_limit:
+            import csv
+            import io
+
+            reader = csv.DictReader(io.StringIO(content))
+            import_count = sum(1 for _ in reader)
+            active_count = Patient.objects.filter(
+                clinic=request.clinic, is_active=True
+            ).count()
+            remaining = request.clinic.active_patient_limit - active_count
+            if import_count > remaining:
+                raise ValidationError(
+                    f"Import has {import_count} patients but only {remaining} slots "
+                    f"remaining (limit: {request.clinic.active_patient_limit}, "
+                    f"active: {active_count}). Reduce the file or upgrade."
+                )
+
         skip_duplicates = request.data.get("skip_duplicates", True)
         svc = PatientImportService(request.clinic)
         result = svc.import_patients(
@@ -236,6 +266,21 @@ class PatientViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         ids = serializer.validated_data["ids"]
         is_active = serializer.validated_data["is_active"]
+
+        if is_active and request.clinic.active_patient_limit:
+            currently_inactive = self.get_queryset().filter(
+                id__in=ids, is_active=False
+            ).count()
+            active_count = Patient.objects.filter(
+                clinic=request.clinic, is_active=True
+            ).count()
+            if active_count + currently_inactive > request.clinic.active_patient_limit:
+                raise ValidationError(
+                    f"Reactivating {currently_inactive} patients would exceed the "
+                    f"active patient limit ({request.clinic.active_patient_limit}). "
+                    f"Currently {active_count} active. "
+                    "Archive some patients or upgrade."
+                )
 
         updated = self.get_queryset().filter(id__in=ids).update(is_active=is_active)
         return Response({"updated": updated})

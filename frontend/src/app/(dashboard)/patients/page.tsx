@@ -1,6 +1,7 @@
 "use client";
 
 import { PatientTable } from "@/components/patients/PatientTable";
+import { PatientUsageIndicator } from "@/components/patients/PatientUsageIndicator";
 import { useApi } from "@/hooks/useApi";
 import type { PaginatedResponse, PatientListItem } from "@/lib/types";
 
@@ -16,6 +17,7 @@ export default function PatientsPage() {
   return (
     <div>
       <h1 className="mb-6 text-2xl font-bold text-gray-900">Patients</h1>
+      <PatientUsageIndicator />
       <PatientTable initialData={initialData} />
     </div>
   );

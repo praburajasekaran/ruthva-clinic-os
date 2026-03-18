@@ -14,8 +14,9 @@ from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from users.serializers import CustomTokenObtainPairSerializer
 
 from .email import send_invite_email
-from .models import ClinicInvitation
+from .models import Clinic, ClinicInvitation
 from .permissions import IsClinicMember, IsClinicOwner
+from .plan_limits import get_role_limit
 from .serializers import (
     AcceptInviteSerializer,
     InvitationSerializer,
@@ -26,10 +27,63 @@ from .serializers import (
 
 User = get_user_model()
 
+
+def _check_role_slot_available(clinic, role):
+    """Check if a role slot is available on the clinic's plan.
+
+    Counts active members + pending (non-expired) invitations for the role.
+    Returns (is_available, used_count, limit).
+    """
+    limit = get_role_limit(clinic.plan, role)
+    member_count = User.objects.filter(clinic=clinic, role=role).count()
+    pending_invite_count = ClinicInvitation.objects.filter(
+        clinic=clinic, role=role, accepted_at__isnull=True, expires_at__gt=timezone.now()
+    ).count()
+    used = member_count + pending_invite_count
+    return used < limit, used, limit
+
+
 _detail_response = inline_serializer(
     name="DetailResponse",
     fields={"detail": drf_serializers.CharField()},
 )
+
+
+@extend_schema(
+    summary="Get team plan limits",
+    description="Get per-role slot usage and availability for the current clinic's plan.",
+    responses={
+        200: inline_serializer(
+            name="TeamLimitsResponse",
+            fields={
+                "plan": drf_serializers.CharField(),
+                "slots": drf_serializers.DictField(),
+                "all_slots_full": drf_serializers.BooleanField(),
+            },
+        )
+    },
+)
+@api_view(["GET"])
+@permission_classes([IsAuthenticated, IsClinicMember])
+@throttle_classes([UserRateThrottle])
+def team_limits(request):
+    """Get per-role slot usage and availability for the current clinic's plan."""
+    clinic = request.clinic
+    roles = ["doctor", "therapist", "admin"]
+    slots = {}
+    all_full = True
+
+    for role in roles:
+        available, used, limit = _check_role_slot_available(clinic, role)
+        slots[role] = {"used": used, "limit": limit, "available": available}
+        if available:
+            all_full = False
+
+    return Response({
+        "plan": clinic.plan,
+        "slots": slots,
+        "all_slots_full": all_full,
+    })
 
 
 @extend_schema(
@@ -64,14 +118,25 @@ def team_invite(request):
     )
     serializer.is_valid(raise_exception=True)
 
-    invitation = ClinicInvitation.objects.create(
-        clinic=request.clinic,
-        email=serializer.validated_data["email"],
-        first_name=serializer.validated_data["first_name"],
-        last_name=serializer.validated_data.get("last_name", ""),
-        role=serializer.validated_data["role"],
-        invited_by=request.user,
-    )
+    role = serializer.validated_data["role"]
+
+    with transaction.atomic():
+        clinic = Clinic.objects.select_for_update().get(pk=request.clinic.pk)
+        available, used, limit = _check_role_slot_available(clinic, role)
+        if not available:
+            return Response(
+                {"detail": f"Free plan: {role} slot is full ({used}/{limit}). Upgrade to add more."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        invitation = ClinicInvitation.objects.create(
+            clinic=clinic,
+            email=serializer.validated_data["email"],
+            first_name=serializer.validated_data["first_name"],
+            last_name=serializer.validated_data.get("last_name", ""),
+            role=role,
+            invited_by=request.user,
+        )
 
     threading.Thread(target=send_invite_email, kwargs={"invitation": invitation}, daemon=True).start()
 
@@ -111,7 +176,17 @@ def team_update_role(request, member_id):
 
     serializer = UpdateMemberRoleSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    member.role = serializer.validated_data["role"]
+
+    new_role = serializer.validated_data["role"]
+    if new_role != member.role:
+        available, used, limit = _check_role_slot_available(request.clinic, new_role)
+        if not available:
+            return Response(
+                {"detail": f"Free plan: {new_role} slot is full ({used}/{limit}). Upgrade to add more."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+    member.role = new_role
     member.save(update_fields=["role"])
 
     return Response(TeamMemberSerializer(member).data)
@@ -295,6 +370,21 @@ def accept_invite(request):
             return Response(
                 {"detail": "This invitation has already been accepted."},
                 status=status.HTTP_409_CONFLICT,
+            )
+
+        # Check role slot is still available (may have filled since invite was sent)
+        available, used, limit = _check_role_slot_available(invitation.clinic, invitation.role)
+        # Subtract 1 from used since this pending invitation is counted but is about to be accepted
+        actual_members = used - 1
+        if actual_members >= limit:
+            return Response(
+                {
+                    "detail": (
+                        f"This clinic's {invitation.role} slot has been filled since your "
+                        "invitation was sent. Please contact the clinic owner."
+                    )
+                },
+                status=status.HTTP_403_FORBIDDEN,
             )
 
         user = User.objects.create_user(
