@@ -74,17 +74,6 @@ def request_otp(request):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def verify_otp(request):
-    try:
-        return _verify_otp_inner(request)
-    except Exception:
-        logger.exception("verify_otp UNHANDLED EXCEPTION")
-        return Response(
-            {"detail": "Verification failed. Please try again."},
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
-
-
-def _verify_otp_inner(request):
     email = (request.data.get("email") or "").strip().lower()
     code = (request.data.get("code") or "").strip()
 
@@ -117,17 +106,6 @@ def _verify_otp_inner(request):
         )
 
     if not verify_otp_hash(code, otp.code_hash):
-        try:
-            from .otp import hash_otp as _dbg_hash
-            computed = _dbg_hash(code)
-            age = int((timezone.now() - otp.created_at).total_seconds())
-            logger.error(
-                "OTP MISMATCH email=%s code_len=%d stored=%s computed=%s attempts=%d age_sec=%d",
-                email, len(code), otp.code_hash[:12], computed[:12],
-                otp.attempts, age,
-            )
-        except Exception:
-            logger.exception("OTP debug logging failed")
         otp.attempts += 1
         otp.save(update_fields=["attempts"])
         return Response(
