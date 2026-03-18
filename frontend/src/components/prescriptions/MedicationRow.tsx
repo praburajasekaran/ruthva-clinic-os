@@ -140,7 +140,7 @@ export function MedicationRow({
             ))}
           </Select>
           {data.frequency_tamil && (
-            <p className="mt-1 font-tamil text-xs text-gray-500">
+            <p lang="ta" className="mt-1 text-xs text-gray-500">
               {data.frequency_tamil}
             </p>
           )}
@@ -169,7 +169,7 @@ export function MedicationRow({
             ))}
           </Select>
           {data.timing_tamil && (
-            <p className="mt-1 font-tamil text-xs text-gray-500">
+            <p lang="ta" className="mt-1 text-xs text-gray-500">
               {data.timing_tamil}
             </p>
           )}

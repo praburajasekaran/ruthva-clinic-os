@@ -44,7 +44,7 @@ export function DoshaChip({ dosha, showTamil = true }: DoshaChipProps) {
       <Icon aria-hidden="true" className="h-3.5 w-3.5" />
       {config.label}
       {showTamil && (
-        <span lang="ta" className="font-tamil text-xs opacity-75">
+        <span lang="ta" className="text-xs opacity-75">
           {config.labelTamil}
         </span>
       )}

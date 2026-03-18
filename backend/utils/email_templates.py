@@ -19,7 +19,7 @@ _TEXT_BODY = "#3d4d3f"     # --color-text-secondary – body text
 _TEXT_MUTED = "#555f57"    # --color-text-muted – footer, captions (WCAG AA)
 _BORDER = "#ddd5c8"       # --color-border – card border, dividers
 _DATA_BG = "#f7f3ec"      # --color-surface-raised – structured data card
-_FONT = "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
+_FONT = "'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 
 def email_header(topic: str) -> str:

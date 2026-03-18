@@ -10,6 +10,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     shared-mime-info \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Google Sans font for WeasyPrint PDF rendering
+COPY fonts/google-sans/ /usr/share/fonts/truetype/google-sans/
+RUN fc-cache -f
+
 WORKDIR /app
 
 COPY requirements.txt .

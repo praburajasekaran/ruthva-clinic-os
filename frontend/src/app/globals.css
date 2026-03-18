@@ -143,9 +143,5 @@
     break-inside: avoid;
   }
 
-  /* Ensure Tamil font renders in print */
-  .font-tamil,
-  [style*="font-tamil"] {
-    font-family: var(--font-tamil), "Noto Sans Tamil", sans-serif !important;
-  }
+
 }
