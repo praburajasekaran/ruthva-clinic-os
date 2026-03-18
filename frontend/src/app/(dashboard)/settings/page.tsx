@@ -41,10 +41,6 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
   const [email, setEmail] = useState(user.email);
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -54,28 +50,16 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
     setErrors({});
     setSuccess(false);
 
-    if (newPassword && newPassword !== confirmPassword) {
-      setErrors({ confirm_password: "Passwords do not match." });
-      return;
-    }
-
     const payload: Record<string, string> = { first_name: firstName, last_name: lastName, email };
-    if (newPassword) {
-      payload.current_password = currentPassword;
-      payload.new_password = newPassword;
-    }
 
     setIsLoading(true);
     try {
       const res = await api.patch<UserType & { clinic: ClinicInfo | null }>("/auth/me/update/", payload);
       onSaved(res.data);
       setSuccess(true);
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
     } catch (err) {
       const fieldErrors: Record<string, string> = {};
-      for (const field of ["first_name", "last_name", "email", "current_password", "new_password"]) {
+      for (const field of ["first_name", "last_name", "email"]) {
         const msg = extractError(err, field);
         if (msg) fieldErrors[field] = msg;
       }
@@ -125,55 +109,6 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
               />
             )}
           </FormField>
-          <FormField label="Username" hint="Username cannot be changed.">
-            {(props) => (
-              <Input {...props} value={user.username} disabled />
-            )}
-          </FormField>
-        </div>
-      </FormSection>
-
-      <FormSection title="Change Password" defaultOpen={false}>
-        <div className="space-y-4">
-          <p className="text-sm text-gray-500">Leave blank to keep your current password.</p>
-          <FormField label="Current password" error={errors.current_password}>
-            {(props) => (
-              <Input
-                {...props}
-                type="password"
-                value={currentPassword}
-                onChange={(e) => setCurrentPassword(e.target.value)}
-                autoComplete="current-password"
-                hasError={!!errors.current_password}
-              />
-            )}
-          </FormField>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="New password" error={errors.new_password}>
-              {(props) => (
-                <Input
-                  {...props}
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  autoComplete="new-password"
-                  hasError={!!errors.new_password}
-                />
-              )}
-            </FormField>
-            <FormField label="Confirm new password" error={errors.confirm_password}>
-              {(props) => (
-                <Input
-                  {...props}
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  autoComplete="new-password"
-                  hasError={!!errors.confirm_password}
-                />
-              )}
-            </FormField>
-          </div>
         </div>
       </FormSection>
 
