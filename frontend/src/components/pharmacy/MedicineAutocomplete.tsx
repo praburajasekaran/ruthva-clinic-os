@@ -120,6 +120,9 @@ export function MedicineAutocomplete({ value, onChange, placeholder = "Type medi
             >
               <div>
                 <span className="font-medium text-gray-900">{medicine.name}</span>
+                {medicine.brand_name && (
+                  <span className="ml-2 text-xs text-gray-400">{medicine.brand_name}</span>
+                )}
                 {medicine.name_ta && (
                   <span lang="ta" className="ml-2 text-xs text-emerald-600">{medicine.name_ta}</span>
                 )}

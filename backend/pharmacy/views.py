@@ -23,9 +23,14 @@ class MedicineViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     permission_classes = [IsClinicMember, IsDoctorOrReadOnly]
     queryset = Medicine.objects.all()
     filterset_fields = ["category", "is_active"]
-    search_fields = ["name", "name_ta"]
+    search_fields = ["name", "name_ta", "brand_name"]
     ordering_fields = ["name", "current_stock", "created_at"]
     ordering = ["name"]
+
+    def get_permissions(self):
+        if self.action == "adjust_stock":
+            return [IsClinicMember()]
+        return super().get_permissions()
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -59,6 +64,8 @@ class MedicineViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
                 entry_type=serializer.validated_data["entry_type"],
                 quantity_change=qty,
                 balance_after=med.current_stock,
+                batch_number=serializer.validated_data.get("batch_number", ""),
+                expiry_date=serializer.validated_data.get("expiry_date"),
                 notes=serializer.validated_data.get("notes", ""),
                 actor=request.user,
             )

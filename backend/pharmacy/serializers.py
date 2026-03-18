@@ -11,7 +11,7 @@ class MedicineListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = [
-            "id", "name", "name_ta", "category", "dosage_form",
+            "id", "name", "name_ta", "brand_name", "category", "dosage_form",
             "unit_price", "current_stock", "reorder_level",
             "is_active", "is_low_stock",
         ]
@@ -27,7 +27,7 @@ class StockEntrySerializer(serializers.ModelSerializer):
         model = StockEntry
         fields = [
             "id", "entry_type", "quantity_change", "balance_after",
-            "notes", "actor_name", "created_at",
+            "batch_number", "expiry_date", "notes", "actor_name", "created_at",
         ]
 
 
@@ -38,7 +38,7 @@ class MedicineDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Medicine
         fields = [
-            "id", "name", "name_ta", "category", "dosage_form",
+            "id", "name", "name_ta", "brand_name", "category", "dosage_form",
             "unit_price", "current_stock", "reorder_level",
             "is_active", "is_low_stock", "recent_stock_entries",
             "created_at", "updated_at",
@@ -57,6 +57,8 @@ class StockAdjustmentSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1)
     entry_type = serializers.ChoiceField(choices=["purchase", "adjustment"])
     notes = serializers.CharField(required=False, allow_blank=True, default="")
+    batch_number = serializers.CharField(required=False, allow_blank=True, default="")
+    expiry_date = serializers.DateField(required=False, allow_null=True, default=None)
 
 
 # -- Dispensing ----------------------------------------------------------------

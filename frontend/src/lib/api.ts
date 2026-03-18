@@ -181,7 +181,7 @@ export const pharmacyApi = {
     api.patch<Medicine>(`/pharmacy/medicines/${id}/`, data),
   lowStock: () =>
     api.get<Medicine[]>("/pharmacy/medicines/low-stock/"),
-  adjustStock: (id: number, data: { quantity: number; entry_type: string; notes?: string }) =>
+  adjustStock: (id: number, data: { quantity: number; entry_type: string; notes?: string; batch_number?: string; expiry_date?: string | null }) =>
     api.post<Medicine>(`/pharmacy/medicines/${id}/adjust-stock/`, data),
   dispense: (data: { prescription_id: number; notes?: string; items: { medicine_id: number; quantity_dispensed: number }[] }) =>
     api.post<DispensingRecord>("/pharmacy/dispensing/", data),
