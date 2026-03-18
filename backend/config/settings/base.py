@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "django_filters",
     "drf_spectacular",
+    "storages",
     # Local apps — users before auth for custom User model
     "users",
     "clinics",
@@ -35,6 +36,7 @@ INSTALLED_APPS = [
     "pharmacy",
     "reminders",
     "integrations",
+    "feedback",
 ]
 
 MIDDLEWARE = [
@@ -124,21 +126,32 @@ SPECTACULAR_SETTINGS = {
     },
 }
 
-# Amazon SES (email)
+# AWS credentials (shared by SES + S3)
 AWS_SES_REGION = config("AWS_SES_REGION", default="ap-south-1")
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID", default="")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
+
+# S3 file storage
+AWS_STORAGE_BUCKET_NAME = config("AWS_S3_BUCKET_NAME", default="ruthva-clinic-uploads")
+AWS_S3_REGION_NAME = config("AWS_S3_REGION", default="us-east-1")
+AWS_S3_FILE_OVERWRITE = False
+AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 DEFAULT_FROM_EMAIL = config(
     "DEFAULT_FROM_EMAIL",
     default="Ruthva <noreply@ruthva.com>",
 )
 CLINIC_NAME = "Sivanethram Siddha Clinic"
 CLINIC_DOCTOR_NAME = config("CLINIC_DOCTOR_NAME", default="Dr. Subashini")
-CLINIC_LOGO_ALLOWED_HOSTS = [
+_extra_logo_hosts = [AWS_S3_CUSTOM_DOMAIN] if AWS_STORAGE_BUCKET_NAME else []
+CLINIC_LOGO_ALLOWED_HOSTS = _extra_logo_hosts + [
     host.strip().lower()
     for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
+
+# GitHub feedback integration
+GITHUB_TOKEN = config("GITHUB_TOKEN", default="")
+GITHUB_FEEDBACK_REPO = config("GITHUB_FEEDBACK_REPO", default="")
 
 # JWT
 SIMPLE_JWT = {

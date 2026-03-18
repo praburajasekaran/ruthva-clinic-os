@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CheckCircle, Building2, BarChart3, User, ImageIcon, Download } from "lucide-react";
+import { CheckCircle, Building2, BarChart3, User, Download, Upload, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UsageDashboard } from "@/components/pharmacy/UsageDashboard";
 import { FormField } from "@/components/forms/FormField";
@@ -9,7 +9,7 @@ import { FormSection } from "@/components/forms/FormSection";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/Select";
 import { Button } from "@/components/ui/Button";
-import api, { dataPortabilityApi } from "@/lib/api";
+import api, { dataPortabilityApi, uploadClinicLogo, deleteClinicLogo } from "@/lib/api";
 import type {
   ApiError,
   User as UserType,
@@ -144,11 +144,56 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
   const [paperSize, setPaperSize] = useState(clinic.paper_size);
   const [logoUrl, setLogoUrl] = useState(clinic.logo_url);
   const [primaryColor, setPrimaryColor] = useState(clinic.primary_color || "#2c5f2d");
+  const [letterheadMode, setLetterheadMode] = useState(clinic.letterhead_mode || "digital");
 
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [logoError, setLogoError] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleLogoFile = async (file: File) => {
+    if (file.size > 2 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, logo_url: "File must be under 2 MB." }));
+      return;
+    }
+    if (!["image/png", "image/jpeg"].includes(file.type)) {
+      setErrors((prev) => ({ ...prev, logo_url: "Only PNG and JPEG files are allowed." }));
+      return;
+    }
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.logo_url;
+      return next;
+    });
+    setIsUploading(true);
+    try {
+      const { logo_url } = await uploadClinicLogo(file);
+      setLogoUrl(logo_url);
+      setLogoError(false);
+      onSaved();
+    } catch {
+      setErrors((prev) => ({ ...prev, logo_url: "Upload failed. Please try again." }));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveLogo = async () => {
+    setIsUploading(true);
+    try {
+      await deleteClinicLogo();
+      setLogoUrl("");
+      setLogoError(false);
+      onSaved();
+    } catch {
+      setErrors((prev) => ({ ...prev, logo_url: "Failed to remove logo." }));
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -166,6 +211,7 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
         paper_size: paperSize,
         logo_url: logoUrl,
         primary_color: primaryColor,
+        letterhead_mode: letterheadMode,
       });
       setSuccess(true);
       onSaved();
@@ -255,42 +301,76 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
 
       <FormSection title="Branding">
         <div className="space-y-4">
-          <FormField label="Logo URL" hint="Paste a URL to your clinic logo (PNG or JPEG)." error={errors.logo_url}>
-            {(props) => (
-              <Input
-                {...props}
-                type="url"
-                value={logoUrl}
-                onChange={(e) => {
-                  setLogoUrl(e.target.value);
-                  setLogoError(false);
-                }}
-                placeholder="https://example.com/logo.png"
-                hasError={!!errors.logo_url}
-              />
+          <div>
+            <p className="mb-1 text-sm font-medium text-gray-700">Clinic logo</p>
+            <p className="mb-2 text-xs text-gray-500">Upload your clinic logo (PNG or JPEG, max 2 MB)</p>
+            {errors.logo_url && (
+              <p className="mb-2 text-sm text-red-600">{errors.logo_url}</p>
             )}
-          </FormField>
-          {logoUrl && (
-            <div className="flex items-center gap-4">
-              <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
-                {logoError ? (
-                  <ImageIcon className="h-6 w-6 text-gray-300" />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
+
+            {logoUrl && !logoError ? (
+              <div className="flex items-center gap-4">
+                <div className="flex h-16 w-16 items-center justify-center rounded-lg border border-gray-200 bg-gray-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={logoUrl}
                     alt="Logo preview"
                     className="max-h-14 max-w-14 object-contain"
                     onError={() => setLogoError(true)}
-                    onLoad={() => setLogoError(false)}
                   />
+                </div>
+                <button
+                  type="button"
+                  onClick={handleRemoveLogo}
+                  disabled={isUploading}
+                  className="flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 hover:bg-red-100 disabled:opacity-50"
+                >
+                  {isUploading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                  Remove
+                </button>
+              </div>
+            ) : (
+              <div
+                onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  const file = e.dataTransfer.files[0];
+                  if (file) handleLogoFile(file);
+                }}
+                onClick={() => fileInputRef.current?.click()}
+                className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-8 transition-colors ${
+                  isDragging
+                    ? "border-emerald-400 bg-emerald-50"
+                    : "border-gray-300 bg-gray-50 hover:border-gray-400 hover:bg-gray-100"
+                }`}
+              >
+                {isUploading ? (
+                  <Loader2 className="h-8 w-8 animate-spin text-emerald-600" />
+                ) : (
+                  <>
+                    <Upload className="mb-2 h-8 w-8 text-gray-400" />
+                    <p className="text-sm text-gray-600">
+                      <span className="font-medium text-emerald-700">Click to upload</span> or drag and drop
+                    </p>
+                    <p className="mt-1 text-xs text-gray-400">PNG or JPEG, max 2 MB</p>
+                  </>
                 )}
               </div>
-              <p className="text-xs text-gray-500">
-                {logoError ? "Could not load image from this URL." : "Logo preview"}
-              </p>
-            </div>
-          )}
+            )}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/png,image/jpeg"
+              className="hidden"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) handleLogoFile(file);
+                e.target.value = "";
+              }}
+            />
+          </div>
 
           <FormField label="Primary color" hint="Used in prescription PDFs and branding." error={errors.primary_color}>
             {(props) => (
@@ -326,6 +406,19 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
               >
                 <option value="A4">A4</option>
                 <option value="A5">A5</option>
+              </Select>
+            )}
+          </FormField>
+          <FormField label="Prescription letterhead" hint="Controls whether your logo and clinic details appear on printed prescriptions.">
+            {(props) => (
+              <Select
+                {...props}
+                value={letterheadMode}
+                onChange={(e) => setLetterheadMode(e.target.value as "digital" | "preprinted")}
+                className="max-w-[320px]"
+              >
+                <option value="digital">Digital — logo + clinic details printed</option>
+                <option value="preprinted">Pre-printed — blank header for stationery</option>
               </Select>
             )}
           </FormField>

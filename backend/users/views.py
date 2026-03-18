@@ -1,6 +1,9 @@
 import logging
+from uuid import uuid4
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
+from django.core.files.storage import default_storage
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
@@ -353,3 +356,79 @@ def update_clinic(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(ClinicSerializer(clinic).data)
+
+
+LOGO_MAX_BYTES = 2 * 1024 * 1024  # 2 MB
+LOGO_ALLOWED_TYPES = {"image/png", "image/jpeg"}
+
+
+def _delete_old_s3_logo(logo_url: str) -> None:
+    """Best-effort deletion of an S3-hosted logo."""
+    s3_domain = getattr(settings, "AWS_S3_CUSTOM_DOMAIN", "")
+    if not s3_domain or not logo_url.startswith(f"https://{s3_domain}"):
+        return
+    old_key = logo_url.split(f"{s3_domain}/", 1)[-1]
+    try:
+        default_storage.delete(old_key)
+    except Exception:
+        pass
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def upload_clinic_logo(request):
+    """Upload clinic logo to storage, update clinic.logo_url, return URL."""
+    if not request.user.is_clinic_owner:
+        return Response(
+            {"detail": "Only clinic owners can upload logos."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    file = request.FILES.get("logo")
+    if not file:
+        return Response(
+            {"detail": "No file provided."}, status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if file.size > LOGO_MAX_BYTES:
+        return Response(
+            {"detail": "File must be under 2 MB."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if file.content_type not in LOGO_ALLOWED_TYPES:
+        return Response(
+            {"detail": "Only PNG and JPEG files are allowed."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    clinic = request.clinic
+    ext = file.name.rsplit(".", 1)[-1].lower() if "." in file.name else "png"
+    path = f"logos/{clinic.id}/{uuid4().hex}.{ext}"
+
+    _delete_old_s3_logo(clinic.logo_url)
+
+    saved_path = default_storage.save(path, file)
+    s3_domain = getattr(settings, "AWS_S3_CUSTOM_DOMAIN", "")
+    url = f"https://{s3_domain}/{saved_path}" if s3_domain else default_storage.url(saved_path)
+
+    clinic.logo_url = url
+    clinic.save(update_fields=["logo_url"])
+    return Response({"logo_url": url})
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_clinic_logo(request):
+    """Remove clinic logo — delete from storage, clear logo_url."""
+    if not request.user.is_clinic_owner:
+        return Response(
+            {"detail": "Only clinic owners can remove logos."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    clinic = request.clinic
+    _delete_old_s3_logo(clinic.logo_url)
+    clinic.logo_url = ""
+    clinic.save(update_fields=["logo_url"])
+    return Response(status=status.HTTP_204_NO_CONTENT)

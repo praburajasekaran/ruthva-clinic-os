@@ -5,12 +5,14 @@ from .views import (
     CustomTokenObtainPairView,
     check_availability,
     complete_onboarding,
+    delete_clinic_logo,
     initiate_signup,
     me,
     request_otp,
     signup,
     update_clinic,
     update_me,
+    upload_clinic_logo,
     verify_otp,
     verify_signup_otp,
 )
@@ -28,4 +30,6 @@ urlpatterns = [
     path("me/", me, name="auth-me"),
     path("me/update/", update_me, name="auth-me-update"),
     path("clinic/update/", update_clinic, name="auth-clinic-update"),
+    path("clinic/logo/upload/", upload_clinic_logo, name="auth-clinic-logo-upload"),
+    path("clinic/logo/", delete_clinic_logo, name="auth-clinic-logo-delete"),
 ]

@@ -72,8 +72,8 @@ export default function PrintPrescriptionPage() {
         }
         @media print {
           @page {
-            size: A4 portrait;
-            margin: 52mm 12mm 20mm 12mm;
+            size: ${user?.clinic?.paper_size || "A4"} portrait;
+            margin: ${user?.clinic?.letterhead_mode === "digital" ? "15mm 12mm 20mm 12mm" : "52mm 12mm 20mm 12mm"};
           }
           body {
             background: white;
@@ -109,15 +109,38 @@ export default function PrintPrescriptionPage() {
         }
       `}</style>
 
-      {/* Screen-only header */}
-      <div className="no-print mb-4 border-b-2 border-gray-300 pb-3 text-center">
-        <h1 className="text-lg font-bold">{clinicName}</h1>
-        <p className="text-xs">
-          {user?.first_name} {user?.last_name}
-        </p>
-        <p className="text-[8pt] italic text-gray-400">
-          This header is hidden when printing — pre-printed letterhead is used
-        </p>
+      {/* Letterhead header — digital mode prints it, preprinted mode hides on print */}
+      <div className={`mb-4 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "border-gray-300" : "no-print border-gray-300"}`}
+        style={user?.clinic?.letterhead_mode === "digital" ? { borderColor: user?.clinic?.primary_color || "#059669" } : undefined}
+      >
+        {user?.clinic?.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.clinic.logo_url}
+            alt=""
+            className="mx-auto mb-1"
+            style={{ maxHeight: "60px", maxWidth: "200px" }}
+          />
+        )}
+        <h1 className="text-lg font-bold" style={user?.clinic?.letterhead_mode === "digital" ? { color: user?.clinic?.primary_color || "#059669" } : undefined}>
+          {clinicName}
+        </h1>
+        {user?.clinic?.tagline && (
+          <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
+        )}
+        {user?.clinic?.address && (
+          <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
+        )}
+        {user?.clinic?.phone && (
+          <p className="text-[8pt] text-gray-500">
+            {user.clinic.phone}{user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
+          </p>
+        )}
+        {user?.clinic?.letterhead_mode !== "digital" && (
+          <p className="text-[8pt] italic text-gray-400">
+            This header is hidden when printing — pre-printed letterhead is used
+          </p>
+        )}
       </div>
 
       {/* Patient Info */}

@@ -320,6 +320,7 @@ def invite_details(request):
         "last_name": invitation.last_name,
         "role": invitation.role,
         "clinic_name": invitation.clinic.name,
+        "logo_url": invitation.clinic.logo_url,
     })
 
 
