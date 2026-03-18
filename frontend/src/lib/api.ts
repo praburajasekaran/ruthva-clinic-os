@@ -63,8 +63,10 @@ api.interceptors.response.use(
     if (
       error.response?.status !== 401 ||
       typeof window === "undefined" ||
+      window.location.pathname === "/" ||
       window.location.pathname.startsWith("/login") ||
       window.location.pathname.startsWith("/signup") ||
+      window.location.pathname.startsWith("/invite") ||
       originalRequest._retry
     ) {
       return Promise.reject(error);
