@@ -4,7 +4,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import axios from "axios";
-import { ArrowLeft, Leaf, Loader2, CircleX } from "lucide-react";
+import Image from "next/image";
+import { ArrowLeft, Loader2, CircleX } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { Discipline } from "@/lib/types";
 
@@ -198,9 +199,13 @@ export default function SignupPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
-            <Leaf className="h-6 w-6 text-emerald-700" />
-          </div>
+          <Image
+            src="/ruthva-logo.png"
+            alt="Ruthva"
+            width={120}
+            height={40}
+            className="mx-auto mb-6 h-10 w-auto"
+          />
 
           {step === "form" ? (
             <>
@@ -325,30 +330,33 @@ export default function SignupPage() {
             </div>
 
             {/* Discipline */}
-            <div>
-              <label
-                htmlFor="discipline"
-                className="mb-1 block text-sm font-medium text-gray-700"
-              >
+            <fieldset>
+              <legend className="mb-1 block text-sm font-medium text-gray-700">
                 Discipline
-              </label>
-              <select
-                id="discipline"
-                value={discipline}
-                onChange={(e) => setDiscipline(e.target.value as Discipline)}
-                required
-                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500 ${!discipline ? "text-gray-400" : ""}`}
-              >
-                <option value="" disabled>
-                  Choose your clinic&apos;s discipline
-                </option>
-                {DISCIPLINES.map((d) => (
-                  <option key={d.value} value={d.value}>
+              </legend>
+              <div className="flex">
+                {DISCIPLINES.map((d, i) => (
+                  <button
+                    key={d.value}
+                    type="button"
+                    onClick={() => setDiscipline(d.value as Discipline)}
+                    className={`flex-1 border px-3 py-2 text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
+                      i === 0
+                        ? "rounded-l-lg border-r-0"
+                        : i === DISCIPLINES.length - 1
+                          ? "rounded-r-lg border-l-0"
+                          : ""
+                    } ${
+                      discipline === d.value
+                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
+                        : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+                    }`}
+                  >
                     {d.label}
-                  </option>
+                  </button>
                 ))}
-              </select>
-            </div>
+              </div>
+            </fieldset>
 
             <button
               type="submit"

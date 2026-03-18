@@ -14,6 +14,7 @@ import {
   LogOut,
   Settings,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -183,6 +184,23 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           <LogOut className="h-4 w-4" aria-hidden="true" />
           <span>Sign out</span>
         </button>
+        <div className="mt-3 text-center text-xs text-gray-400">
+          <a
+            href="https://ruthva.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 text-gray-400 hover:text-emerald-700"
+          >
+            Powered by
+            <Image
+              src="/ruthva-logo.png"
+              alt="Ruthva"
+              width={64}
+              height={16}
+              className="inline-block h-4 w-auto"
+            />
+          </a>
+        </div>
       </div>
     </div>
   );
