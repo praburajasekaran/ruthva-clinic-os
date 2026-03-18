@@ -1,17 +1,19 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { Check } from "lucide-react";
 import Link from "next/link";
 
 export function Pricing() {
+    const prefersReducedMotion = useReducedMotion();
+
     return (
-        <section className="bg-surface py-24 px-6 sm:py-32 relative" id="pricing">
-            <div className="absolute inset-0 bg-brand-50/50 rounded-t-[3rem] sm:rounded-t-[5rem] -z-10"></div>
+        <section className="bg-surface py-24 px-6 sm:py-32 relative" id="pricing" aria-labelledby="pricing-heading">
+            <div className="absolute inset-0 bg-brand-50/50 rounded-t-[3rem] sm:rounded-t-[5rem] -z-10" aria-hidden="true"></div>
 
             <div className="mx-auto max-w-5xl">
                 <div className="text-center mb-16 max-w-2xl mx-auto">
-                    <h2 className="text-3xl font-bold tracking-tight text-brand-950 sm:text-4xl lg:text-5xl text-balance">
+                    <h2 id="pricing-heading" className="text-3xl font-bold tracking-tight text-brand-950 sm:text-4xl lg:text-5xl text-balance">
                         Simple pricing. Clear ROI.
                     </h2>
                     <p className="mt-6 text-lg text-text-secondary leading-relaxed">
@@ -21,9 +23,7 @@ export function Pricing() {
 
                 <div className="mx-auto max-w-lg">
                     <motion.div
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        whileInView={{ opacity: 1, scale: 1 }}
-                        viewport={{ once: true }}
+                        {...(prefersReducedMotion ? {} : { initial: { opacity: 0, scale: 0.95 }, whileInView: { opacity: 1, scale: 1 }, viewport: { once: true } })}
                         className="rounded-[2.5rem] shadow-2xl shadow-brand-900/10 border border-brand-100 bg-white p-8 sm:p-12 relative overflow-hidden"
                     >
                         <div className="absolute top-0 inset-x-0 bg-brand-950 py-3.5 text-center text-sm font-semibold text-brand-100">
@@ -35,8 +35,8 @@ export function Pricing() {
                             <p className="text-text-secondary text-base mt-3 leading-relaxed">Perfect for independent AYUSH practitioners looking for immediate continuity wins.</p>
 
                             <div className="mt-8 flex flex-col gap-1">
-                                <div className="flex items-center gap-2 text-text-muted">
-                                    <span className="text-xl font-medium line-through decoration-brand-500/30">&#8377;1,999</span>
+                                <div className="flex items-center gap-2 text-text-secondary">
+                                    <span className="text-xl font-medium line-through decoration-brand-500/50">&#8377;1,999</span>
                                     <span className="inline-flex items-center rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-bold text-brand-800 tracking-wide uppercase">
                                         Launch Offer
                                     </span>
@@ -74,7 +74,7 @@ export function Pricing() {
                             Start recovering patients today
                         </Link>
 
-                        <p className="text-center text-xs text-text-muted mt-6">
+                        <p className="text-center text-xs text-text-secondary mt-6">
                             *Based on 4-5 average patient recoveries / month
                         </p>
                     </motion.div>
