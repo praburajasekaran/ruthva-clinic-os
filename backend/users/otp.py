@@ -36,10 +36,21 @@ def verify_otp_hash(code: str, hashed: str) -> bool:
     return hmac.compare_digest(hash_otp(code), hashed)
 
 
-def send_otp_email(email: str, code: str):
-    """Send OTP via Amazon SES."""
+def send_otp_email(email: str, code: str, purpose: str = "login"):
+    """Send OTP via Amazon SES.
+
+    Args:
+        purpose: "login" or "signup" — changes the email subject line.
+    """
+    if purpose == "signup":
+        subject = f"Your verification code is {code}"
+        header_title = "Verification Code"
+    else:
+        subject = f"Your login code is {code}"
+        header_title = "Login Code"
+
     content = (
-        email_header("Login Code")
+        email_header(header_title)
         + email_heading("Your verification code")
         + email_code(code)
         + email_text("This code expires in <strong>10 minutes</strong>.")
@@ -50,8 +61,8 @@ def send_otp_email(email: str, code: str):
     )
     result = send_email(
         to=email,
-        subject=f"Your login code is {code}",
-        html=email_wrapper(content, preview_text=f"Your login code is {code}"),
+        subject=subject,
+        html=email_wrapper(content, preview_text=subject),
     )
     if result is None:
         raise RuntimeError("Failed to send OTP email via SES")

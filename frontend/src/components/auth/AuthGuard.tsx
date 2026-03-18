@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "./AuthProvider";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -14,6 +14,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       router.push("/login");
     }
   }, [isLoading, isAuthenticated, router]);
+
+  // Redirect to onboarding if clinic is not set up
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user && !user.onboarding_complete) {
+      router.push("/onboarding");
+    }
+  }, [isLoading, isAuthenticated, user, router]);
 
   if (isLoading) {
     return (
@@ -24,6 +31,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   }
 
   if (!isAuthenticated) return null;
+  if (user && !user.onboarding_complete) return null;
 
   return <>{children}</>;
 }

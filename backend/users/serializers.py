@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
+from django.utils.text import slugify
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
@@ -86,6 +87,61 @@ class ClinicSignupSerializer(serializers.Serializer):
         return {"clinic": clinic, "user": user}
 
 
+class PendingSignupSerializer(serializers.Serializer):
+    """Validates signup initiation data (before OTP verification)."""
+
+    first_name = serializers.CharField(max_length=150)
+    last_name = serializers.CharField(max_length=150, required=False, default="")
+    email = serializers.EmailField()
+    discipline = serializers.ChoiceField(choices=Clinic.DISCIPLINE_CHOICES)
+
+    def validate_email(self, value):
+        value = value.lower()
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError(
+                "This email is already registered. Sign in instead?"
+            )
+        return value
+
+
+class OnboardingSerializer(serializers.Serializer):
+    """Validates clinic onboarding data (post-signup)."""
+
+    clinic_name = serializers.CharField(max_length=255)
+    phone = serializers.CharField(max_length=20, required=False, default="")
+    address = serializers.CharField()
+    registration_number = serializers.CharField(max_length=50)
+    discipline = serializers.ChoiceField(choices=Clinic.DISCIPLINE_CHOICES)
+
+    def validate_clinic_name(self, value):
+        base_slug = slugify(value)[:50]
+        if not base_slug:
+            raise serializers.ValidationError("Clinic name must contain valid characters.")
+        return value
+
+    def create(self, validated_data):
+        user = self.context["user"]
+        base_slug = slugify(validated_data["clinic_name"])[:50]
+        subdomain = base_slug
+        counter = 1
+        while Clinic.objects.filter(subdomain=subdomain).exists():
+            subdomain = f"{base_slug}-{counter}"
+            counter += 1
+
+        with transaction.atomic():
+            clinic = Clinic.objects.create(
+                name=validated_data["clinic_name"],
+                subdomain=subdomain,
+                discipline=validated_data["discipline"],
+                phone=validated_data.get("phone", ""),
+                address=validated_data["address"],
+                registration_number=validated_data["registration_number"],
+            )
+            user.clinic = clinic
+            user.save(update_fields=["clinic"])
+        return clinic
+
+
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -143,7 +199,7 @@ class ClinicSerializer(serializers.ModelSerializer):
         fields = [
             "id", "name", "subdomain", "discipline", "address", "phone",
             "email", "logo_url", "paper_size", "primary_color", "tagline",
-            "active_patient_limit", "is_active", "created_at",
+            "registration_number", "active_patient_limit", "is_active", "created_at",
         ]
 
 

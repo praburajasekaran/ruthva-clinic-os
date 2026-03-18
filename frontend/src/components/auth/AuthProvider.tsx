@@ -9,7 +9,15 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import api from "@/lib/api";
-import type { User, SignupRequest, RequestOTPRequest, VerifyOTPRequest } from "@/lib/types";
+import type {
+  User,
+  SignupRequest,
+  RequestOTPRequest,
+  VerifyOTPRequest,
+  InitiateSignupRequest,
+  VerifySignupOTPRequest,
+  OnboardingRequest,
+} from "@/lib/types";
 
 type AuthState = {
   user: User | null;
@@ -21,6 +29,9 @@ type AuthContextValue = AuthState & {
   requestOTP: (data: RequestOTPRequest) => Promise<void>;
   verifyOTP: (data: VerifyOTPRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
+  initiateSignup: (data: InitiateSignupRequest) => Promise<void>;
+  verifySignupOTP: (data: VerifySignupOTPRequest) => Promise<{ discipline: string }>;
+  completeOnboarding: (data: OnboardingRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
   setTokens: (tokens: {
@@ -114,6 +125,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [setTokens, router],
   );
 
+  const initiateSignup = useCallback(
+    async (data: InitiateSignupRequest) => {
+      await api.post("/auth/initiate-signup/", data);
+    },
+    [],
+  );
+
+  const verifySignupOTP = useCallback(
+    async (data: VerifySignupOTPRequest) => {
+      const res = await api.post("/auth/verify-signup-otp/", data);
+      await setTokens({
+        access: res.data.access,
+        refresh: res.data.refresh,
+      });
+      return { discipline: res.data.discipline };
+    },
+    [setTokens],
+  );
+
+  const completeOnboarding = useCallback(
+    async (data: OnboardingRequest) => {
+      const res = await api.post("/auth/complete-onboarding/", data);
+      await setTokens({
+        access: res.data.access,
+        refresh: res.data.refresh,
+        clinic_slug: res.data.clinic?.subdomain,
+      });
+      router.push("/dashboard");
+    },
+    [setTokens, router],
+  );
+
   const logout = useCallback(() => {
     localStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
@@ -124,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, requestOTP, verifyOTP, signup, logout, refreshUser: fetchUser, setTokens }}
+      value={{ ...state, requestOTP, verifyOTP, signup, initiateSignup, verifySignupOTP, completeOnboarding, logout, refreshUser: fetchUser, setTokens }}
     >
       {children}
     </AuthContext.Provider>

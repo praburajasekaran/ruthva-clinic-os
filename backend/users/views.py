@@ -1,6 +1,7 @@
 import logging
 
 from django.contrib.auth import get_user_model
+from django.db import transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes, throttle_classes
@@ -11,13 +12,15 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from clinics.models import Clinic
 
-from .models import EmailOTP
+from .models import EmailOTP, PendingSignup
 from .otp import generate_otp, hash_otp, send_otp_email, verify_otp_hash
 from .serializers import (
     ClinicSerializer,
     ClinicSignupSerializer,
     ClinicUpdateSerializer,
     CustomTokenObtainPairSerializer,
+    OnboardingSerializer,
+    PendingSignupSerializer,
     UserSerializer,
     UserUpdateSerializer,
 )
@@ -150,6 +153,151 @@ def signup(request):
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+@throttle_classes([OTPRequestThrottle])
+def initiate_signup(request):
+    serializer = PendingSignupSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    data = serializer.validated_data
+    email = data["email"]
+
+    # Delete any existing pending signup for this email
+    PendingSignup.objects.filter(email=email).delete()
+
+    code = generate_otp()
+
+    PendingSignup.objects.create(
+        email=email,
+        first_name=data["first_name"],
+        last_name=data.get("last_name", ""),
+        discipline=data["discipline"],
+        otp_code_hash=hash_otp(code),
+    )
+
+    try:
+        send_otp_email(email, code, purpose="signup")
+    except Exception:
+        logger.exception("Failed to send signup OTP email to %s", email)
+        return Response(
+            {"detail": "Failed to send email. Please try again."},
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
+
+    return Response(
+        {"detail": "Verification code sent to your email."},
+        status=status.HTTP_200_OK,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def verify_signup_otp(request):
+    email = (request.data.get("email") or "").strip().lower()
+    code = (request.data.get("code") or "").strip()
+
+    if not email or not code:
+        return Response(
+            {"detail": "Email and code are required."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    pending = PendingSignup.objects.filter(email=email).first()
+    if not pending:
+        return Response(
+            {"detail": "No pending signup found. Please start registration again."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if pending.is_locked:
+        pending.delete()
+        return Response(
+            {"detail": "Too many attempts. Please start registration again."},
+            status=status.HTTP_429_TOO_MANY_REQUESTS,
+        )
+
+    if pending.is_expired:
+        pending.delete()
+        return Response(
+            {"detail": "Code has expired. Please start registration again."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not verify_otp_hash(code, pending.otp_code_hash):
+        pending.otp_attempts += 1
+        pending.save(update_fields=["otp_attempts"])
+        return Response(
+            {"detail": "Invalid code. Please try again."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # OTP verified — create user account
+    discipline = pending.discipline
+    first_name = pending.first_name
+    last_name = pending.last_name
+
+    # Auto-generate username from email prefix
+    base_username = email.split("@")[0][:140]
+    username = base_username
+    counter = 1
+    while User.objects.filter(username=username).exists():
+        username = f"{base_username}{counter}"
+        counter += 1
+
+    with transaction.atomic():
+        user = User.objects.create(
+            username=username,
+            email=email,
+            first_name=first_name,
+            last_name=last_name,
+            clinic=None,
+            role="doctor",
+            is_clinic_owner=True,
+        )
+        user.set_unusable_password()
+        user.save(update_fields=["password"])
+        pending.delete()
+
+    token = CustomTokenObtainPairSerializer.get_token(user)
+    return Response(
+        {
+            "access": str(token.access_token),
+            "refresh": str(token),
+            "discipline": discipline,
+            "onboarding_required": True,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def complete_onboarding(request):
+    user = request.user
+    if user.clinic is not None:
+        return Response(
+            {"detail": "Onboarding already completed."},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    serializer = OnboardingSerializer(
+        data=request.data, context={"user": user}
+    )
+    serializer.is_valid(raise_exception=True)
+    clinic = serializer.save()
+
+    token = CustomTokenObtainPairSerializer.get_token(user)
+    return Response(
+        {
+            "clinic": ClinicSerializer(clinic).data,
+            "access": str(token.access_token),
+            "refresh": str(token),
+            "onboarding_complete": True,
+        },
+        status=status.HTTP_201_CREATED,
+    )
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
 def check_availability(request):
     field = request.data.get("field")
     value = request.data.get("value", "").strip()
@@ -175,6 +323,7 @@ def me(request):
     data["clinic"] = (
         ClinicSerializer(request.user.clinic).data if request.user.clinic else None
     )
+    data["onboarding_complete"] = request.user.clinic_id is not None
     return Response(data)
 
 
