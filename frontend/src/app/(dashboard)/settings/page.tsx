@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { CheckCircle, Building2, BarChart3, User, ImageIcon, Download, Upload, Trash2, Loader2 } from "lucide-react";
+import { CheckCircle, Building2, BarChart3, User, Download, Upload, Trash2, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { UsageDashboard } from "@/components/pharmacy/UsageDashboard";
 import { FormField } from "@/components/forms/FormField";
@@ -163,7 +163,11 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
       setErrors((prev) => ({ ...prev, logo_url: "Only PNG and JPEG files are allowed." }));
       return;
     }
-    setErrors((prev) => { const { logo_url: _, ...rest } = prev; return rest; });
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.logo_url;
+      return next;
+    });
     setIsUploading(true);
     try {
       const { logo_url } = await uploadClinicLogo(file);
