@@ -395,15 +395,26 @@ export type ImportPreviewResult = {
   valid: boolean;
   total_rows?: number;
   error_count?: number;
+  warning_count?: number;
   preview?: ImportPreviewRow[];
   errors?: ImportPreviewRow[];
+  warnings?: ImportPreviewRow[];
   error?: string;
+};
+
+export type RuthvaSyncResult = {
+  synced: number;
+  failed: number;
+  failed_patient_ids: number[];
 };
 
 export type ImportConfirmResult = {
   created: number;
   skipped: number;
+  consultation_created_count?: number;
   errors: ImportPreviewRow[];
+  warnings?: string[];
+  ruthva_sync?: RuthvaSyncResult;
 };
 
 // ── Treatment Plans ──
