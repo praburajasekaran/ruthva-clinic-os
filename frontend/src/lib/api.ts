@@ -5,6 +5,7 @@ import type {
   ImportPreviewResult,
   Medicine,
   PaginatedResponse,
+  RuthvaSyncResult,
   UsageDashboard,
 } from "@/lib/types";
 
@@ -148,6 +149,21 @@ async function downloadExport(endpoint: string): Promise<Blob> {
 }
 
 export const dataPortabilityApi = {
+  previewPatientImport: (file: File, skipDuplicates = true) =>
+    postCsvImportPreview("/patients/import/preview/", file, skipDuplicates),
+  confirmPatientImport: (file: File, skipDuplicates = true) =>
+    postCsvImportConfirm("/patients/import/confirm/", file, skipDuplicates),
+  retryRuthvaSync: (patientIds: number[]) =>
+    api.post<RuthvaSyncResult>("/patients/import/retry-ruthva-sync/", {
+      patient_ids: patientIds,
+    }),
+  bulkDeletePatients: (ids: number[]) =>
+    api.post<{ deleted: number }>("/patients/bulk-delete/", { ids }),
+  bulkToggleActivePatients: (ids: number[], isActive: boolean) =>
+    api.post<{ updated: number }>("/patients/bulk-toggle-active/", {
+      ids,
+      is_active: isActive,
+    }),
   previewConsultationsImport: (file: File, skipDuplicates = true) =>
     postCsvImportPreview("/consultations/import/preview/", file, skipDuplicates),
   confirmConsultationsImport: (file: File, skipDuplicates = true) =>

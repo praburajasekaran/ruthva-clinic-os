@@ -66,6 +66,10 @@ class Consultation(models.Model):
     icd_code = models.CharField(max_length=20, blank=True, default="")
 
     consultation_date = models.DateField()
+    is_imported = models.BooleanField(
+        default=False,
+        help_text="True if created via CSV import (baseline record)",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,13 +1,15 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { ChevronLeft, ChevronRight, Eye, EyeOff, Phone, Plus, Search } from "lucide-react";
+import { ChevronLeft, ChevronRight, Eye, EyeOff, FileSpreadsheet, Phone, Plus, Search, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
 import { Input } from "@/components/ui/Input";
 import { useDebouncedSearch } from "@/hooks/useDebouncedSearch";
+import { dataPortabilityApi } from "@/lib/api";
 import api from "@/lib/api";
 import type { PaginatedResponse, PatientListItem } from "@/lib/types";
 
@@ -20,6 +22,9 @@ export function PatientTable({ initialData }: PatientTableProps) {
   const [paginatedData, setPaginatedData] = useState(initialData);
   const [paginatingDir, setPaginatingDir] = useState<"next" | "prev" | null>(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
 
   useEffect(() => {
     setPaginatedData(initialData);
@@ -31,10 +36,22 @@ export function PatientTable({ initialData }: PatientTableProps) {
     try {
       const { data } = await api.get<PaginatedResponse<PatientListItem>>(url);
       setPaginatedData(data);
+      setSelectedIds(new Set());
     } finally {
       setPaginatingDir(null);
     }
   }, []);
+
+  const refetch = useCallback(async () => {
+    try {
+      const { data } = await api.get<PaginatedResponse<PatientListItem>>("/patients/");
+      setPaginatedData(data);
+      setSelectedIds(new Set());
+    } catch {
+      // keep existing data
+    }
+  }, []);
+
   const {
     query,
     setQuery,
@@ -52,6 +69,45 @@ export function PatientTable({ initialData }: PatientTableProps) {
   const hasNext = !!data?.next;
   const hasPrev = !!data?.previous;
   const totalCount = data?.count ?? 0;
+
+  const toggleSelect = useCallback((id: number, e: React.MouseEvent | React.ChangeEvent) => {
+    e.stopPropagation();
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === patients.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(patients.map((p) => p.id)));
+    }
+  }, [patients, selectedIds.size]);
+
+  const handleBulkDelete = useCallback(async () => {
+    setBulkActionLoading(true);
+    try {
+      await dataPortabilityApi.bulkDeletePatients(Array.from(selectedIds));
+      setShowDeleteModal(false);
+      await refetch();
+    } finally {
+      setBulkActionLoading(false);
+    }
+  }, [selectedIds, refetch]);
+
+  const handleBulkToggleActive = useCallback(async (isActive: boolean) => {
+    setBulkActionLoading(true);
+    try {
+      await dataPortabilityApi.bulkToggleActivePatients(Array.from(selectedIds), isActive);
+      await refetch();
+    } finally {
+      setBulkActionLoading(false);
+    }
+  }, [selectedIds, refetch]);
 
   return (
     <div className="space-y-4">
@@ -85,6 +141,12 @@ export function PatientTable({ initialData }: PatientTableProps) {
             {showArchived ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
             {showArchived ? "Showing All" : "Active Only"}
           </button>
+          <Link href="/patients/import">
+            <Button variant="secondary">
+              <FileSpreadsheet className="h-4 w-4" />
+              Import
+            </Button>
+          </Link>
           <Link href="/patients/new">
             <Button>
               <Plus className="h-4 w-4" />
@@ -108,18 +170,35 @@ export function PatientTable({ initialData }: PatientTableProps) {
                 : "No patients yet. Register your first patient."}
             </p>
             {!query && (
-              <Link href="/patients/new" className="mt-3 inline-block">
-                <Button variant="secondary" size="sm">
-                  <Plus className="h-4 w-4" />
-                  Register Patient
-                </Button>
-              </Link>
+              <div className="mt-3 flex items-center justify-center gap-3">
+                <Link href="/patients/new">
+                  <Button variant="secondary" size="sm">
+                    <Plus className="h-4 w-4" />
+                    Register Patient
+                  </Button>
+                </Link>
+                <Link href="/patients/import">
+                  <Button variant="secondary" size="sm">
+                    <FileSpreadsheet className="h-4 w-4" />
+                    Import CSV
+                  </Button>
+                </Link>
+              </div>
             )}
           </div>
         ) : (
           <table aria-label="Patients" className="w-full text-left text-sm">
             <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
+                <th scope="col" className="w-10 px-3 py-3">
+                  <input
+                    type="checkbox"
+                    checked={patients.length > 0 && selectedIds.size === patients.length}
+                    onChange={toggleSelectAll}
+                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                    aria-label="Select all patients"
+                  />
+                </th>
                 <th scope="col" className="px-4 py-3 font-medium text-gray-700">
                   Record ID
                 </th>
@@ -150,8 +229,19 @@ export function PatientTable({ initialData }: PatientTableProps) {
                       router.push(`/patients/${patient.id}`);
                     }
                   }}
-                  className="cursor-pointer transition-colors hover:bg-gray-50"
+                  className={`cursor-pointer transition-colors hover:bg-gray-50 ${
+                    selectedIds.has(patient.id) ? "bg-emerald-50" : ""
+                  }`}
                 >
+                  <td className="w-10 px-3 py-3" onClick={(e) => e.stopPropagation()}>
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.has(patient.id)}
+                      onChange={(e) => toggleSelect(patient.id, e)}
+                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
+                      aria-label={`Select ${patient.name}`}
+                    />
+                  </td>
                   <td className="px-4 py-3 font-mono text-xs text-gray-500">
                     {patient.record_id}
                   </td>
@@ -212,6 +302,88 @@ export function PatientTable({ initialData }: PatientTableProps) {
           </div>
         </div>
       )}
+
+      {/* Bulk Action Bar */}
+      {selectedIds.size > 0 && (
+        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-xl">
+          <span className="text-sm font-medium text-gray-700">
+            {selectedIds.size} selected
+          </span>
+          <div className="h-5 w-px bg-gray-200" />
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleBulkToggleActive(false)}
+            isLoading={bulkActionLoading}
+          >
+            <EyeOff className="h-4 w-4" />
+            Archive
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => handleBulkToggleActive(true)}
+            isLoading={bulkActionLoading}
+          >
+            <Eye className="h-4 w-4" />
+            Activate
+          </Button>
+          <Button
+            variant="danger"
+            size="sm"
+            onClick={() => setShowDeleteModal(true)}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+          <button
+            type="button"
+            onClick={() => setSelectedIds(new Set())}
+            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            aria-label="Clear selection"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      <Modal
+        open={showDeleteModal}
+        onClose={() => setShowDeleteModal(false)}
+        title="Delete Patients"
+        size="sm"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-gray-600">
+            Are you sure you want to permanently delete{" "}
+            <span className="font-medium text-gray-900">
+              {selectedIds.size} patient{selectedIds.size !== 1 ? "s" : ""}
+            </span>
+            ? This will also remove their consultations, prescriptions, and treatment data.
+          </p>
+          <p className="text-xs text-amber-600">
+            This action cannot be undone. Consider archiving instead.
+          </p>
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setShowDeleteModal(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              variant="danger"
+              size="sm"
+              onClick={handleBulkDelete}
+              isLoading={bulkActionLoading}
+            >
+              Delete {selectedIds.size} Patient{selectedIds.size !== 1 ? "s" : ""}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
