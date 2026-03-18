@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "pharmacy",
     "reminders",
     "integrations",
+    "feedback",
 ]
 
 MIDDLEWARE = [
@@ -147,6 +148,14 @@ CLINIC_LOGO_ALLOWED_HOSTS = _extra_logo_hosts + [
     for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
+
+# GitHub feedback integration
+GITHUB_TOKEN = config("GITHUB_TOKEN", default="")
+GITHUB_FEEDBACK_REPO = config("GITHUB_FEEDBACK_REPO", default="")
+
+# S3 for feedback screenshots
+AWS_S3_BUCKET_NAME = config("AWS_S3_BUCKET_NAME", default="")
+AWS_S3_REGION = config("AWS_S3_REGION", default="ap-south-1")
 
 # JWT
 SIMPLE_JWT = {

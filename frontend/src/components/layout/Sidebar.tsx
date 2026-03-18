@@ -12,6 +12,7 @@ import {
   X,
   Search,
   LogOut,
+  MessageSquarePlus,
   Settings,
 } from "lucide-react";
 import Image from "next/image";
@@ -22,6 +23,7 @@ import { KbdBadge } from "@/components/ui/KbdBadge";
 import { useShortcuts } from "@/components/layout/KeyboardProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
+import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 import type { FollowUpsResponse, Medicine } from "@/lib/types";
 
 const navItems = [
@@ -45,6 +47,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   const { openSearch } = useShortcuts();
   const { user, logout } = useAuth();
   const [logoError, setLogoError] = useState(false);
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const { data: followUpsData } = useApi<FollowUpsResponse>("/dashboard/follow-ups/?tab=all");
   const { data: lowStockData } = useApi<Medicine[]>("/pharmacy/medicines/low-stock/");
   const triggerRef = useRef<HTMLElement | null>(null);
@@ -168,6 +171,19 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         </nav>
       </div>
 
+      {/* Feedback button */}
+      <button
+        type="button"
+        onClick={() => {
+          closeMobileMenu();
+          setFeedbackOpen(true);
+        }}
+        className="mt-4 flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-emerald-50 hover:text-emerald-700"
+      >
+        <MessageSquarePlus className="h-5 w-5" aria-hidden="true" />
+        <span>Feedback</span>
+      </button>
+
       {/* User info + logout */}
       <div className="mt-auto border-t pt-4">
         <div className="mb-2 px-3">
@@ -241,6 +257,11 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
       <aside className="hidden w-64 shrink-0 border-r bg-white p-4 md:flex md:flex-col">
         {nav}
       </aside>
+
+      <FeedbackModal
+        open={feedbackOpen}
+        onClose={() => setFeedbackOpen(false)}
+      />
     </>
   );
 }

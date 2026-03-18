@@ -632,3 +632,12 @@ export type RuthvaJourneyRef = {
   id: number;
   status: string;
 };
+
+// ── Feedback ──
+
+export type FeedbackCategory = "bug" | "feature";
+
+export type FeedbackResponse = {
+  id: number;
+  status: string;
+};
