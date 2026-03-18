@@ -106,6 +106,14 @@ def verify_otp(request):
         )
 
     if not verify_otp_hash(code, otp.code_hash):
+        from .otp import hash_otp as _dbg_hash
+        logger.error(
+            "OTP MISMATCH for %s: code_len=%d, stored_hash=%.12s, "
+            "computed_hash=%.12s, attempts=%d, age_sec=%s",
+            email, len(code), otp.code_hash, _dbg_hash(code),
+            otp.attempts,
+            (timezone.now() - otp.created_at).total_seconds(),
+        )
         otp.attempts += 1
         otp.save(update_fields=["attempts"])
         return Response(
