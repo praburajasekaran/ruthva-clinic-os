@@ -96,7 +96,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refresh: res.data.refresh,
         clinic_slug: res.data.clinic_slug,
       });
-      router.push("/");
+      router.push("/dashboard");
     },
     [setTokens, router],
   );
@@ -109,7 +109,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refresh: res.data.refresh,
         clinic_slug: res.data.clinic?.subdomain,
       });
-      router.push("/");
+      router.push("/dashboard");
     },
     [setTokens, router],
   );
