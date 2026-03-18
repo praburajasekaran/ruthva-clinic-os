@@ -36,7 +36,6 @@ INSTALLED_APPS = [
     "pharmacy",
     "reminders",
     "integrations",
-    "feedback",
 ]
 
 MIDDLEWARE = [
@@ -148,10 +147,6 @@ CLINIC_LOGO_ALLOWED_HOSTS = _extra_logo_hosts + [
     for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
-
-# GitHub feedback integration
-GITHUB_TOKEN = config("GITHUB_TOKEN", default="")
-GITHUB_FEEDBACK_REPO = config("GITHUB_FEEDBACK_REPO", default="")
 
 # JWT
 SIMPLE_JWT = {
