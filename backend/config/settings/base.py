@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     "pharmacy",
     "reminders",
     "integrations",
+    "feedback",
 ]
 
 MIDDLEWARE = [
@@ -132,7 +133,7 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY", default="")
 
 # S3 file storage
 AWS_STORAGE_BUCKET_NAME = config("AWS_S3_BUCKET_NAME", default="ruthva-clinic-uploads")
-AWS_S3_REGION_NAME = config("AWS_S3_REGION", default="ap-south-1")
+AWS_S3_REGION_NAME = config("AWS_S3_REGION", default="us-east-1")
 AWS_S3_FILE_OVERWRITE = False
 AWS_S3_CUSTOM_DOMAIN = f"{AWS_STORAGE_BUCKET_NAME}.s3.{AWS_S3_REGION_NAME}.amazonaws.com"
 DEFAULT_FROM_EMAIL = config(
@@ -147,6 +148,10 @@ CLINIC_LOGO_ALLOWED_HOSTS = _extra_logo_hosts + [
     for host in config("CLINIC_LOGO_ALLOWED_HOSTS", default="").split(",")
     if host.strip()
 ]
+
+# GitHub feedback integration
+GITHUB_TOKEN = config("GITHUB_TOKEN", default="")
+GITHUB_FEEDBACK_REPO = config("GITHUB_FEEDBACK_REPO", default="")
 
 # JWT
 SIMPLE_JWT = {
