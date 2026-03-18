@@ -1,0 +1,10 @@
+# Only run frontend checks if frontend files are staged
+if git diff --cached --name-only | grep -q '^frontend/'; then
+  cd frontend
+
+  # Full project typecheck (types cascade across files)
+  npm run typecheck
+
+  # Lint only staged files via lint-staged
+  npx lint-staged
+fi
