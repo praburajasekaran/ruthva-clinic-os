@@ -1,7 +1,7 @@
 ---
 title: "feat: Bulk Patient Import with Baseline Consultations and Ruthva Sync"
 type: feat
-status: active
+status: completed
 date: 2026-03-18
 brainstorm: docs/brainstorms/2026-03-18-bulk-patient-import-brainstorm.md
 ---
