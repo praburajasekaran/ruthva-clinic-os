@@ -28,6 +28,7 @@ export type ClinicInfo = {
   primary_color: string;
   tagline: string;
   registration_number: string;
+  letterhead_mode: "digital" | "preprinted";
   plan: ClinicPlan;
   is_active: boolean;
 };
@@ -331,6 +332,7 @@ export type InviteDetails = {
   last_name: string;
   role: UserRole;
   clinic_name: string;
+  logo_url?: string;
 };
 
 // ── Dashboard ──

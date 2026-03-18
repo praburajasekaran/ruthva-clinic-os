@@ -148,6 +148,19 @@ async function downloadExport(endpoint: string): Promise<Blob> {
   return res.data;
 }
 
+export async function uploadClinicLogo(file: File): Promise<{ logo_url: string }> {
+  const formData = new FormData();
+  formData.append("logo", file);
+  const res = await api.post<{ logo_url: string }>("/auth/clinic/logo/upload/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
+
+export async function deleteClinicLogo(): Promise<void> {
+  await api.delete("/auth/clinic/logo/");
+}
+
 export const dataPortabilityApi = {
   previewPatientImport: (file: File, skipDuplicates = true) =>
     postCsvImportPreview("/patients/import/preview/", file, skipDuplicates),

@@ -9,6 +9,20 @@ import type { InviteDetails } from "@/lib/types";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Input } from "@/components/ui/Input";
 
+function InviteLogo({ logoUrl }: { logoUrl?: string }) {
+  const [failed, setFailed] = useState(false);
+  return (
+    <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center overflow-hidden rounded-xl bg-emerald-100">
+      {logoUrl && !failed ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={logoUrl} alt="" className="h-10 w-10 object-contain" onError={() => setFailed(true)} />
+      ) : (
+        <Leaf className="h-6 w-6 text-emerald-600" />
+      )}
+    </div>
+  );
+}
+
 function AcceptInviteContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -133,9 +147,7 @@ function AcceptInviteContent() {
     <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
-            <Leaf className="h-6 w-6 text-emerald-600" />
-          </div>
+          <InviteLogo logoUrl={invite?.logo_url} />
           <h1 className="text-2xl font-bold text-gray-900">
             Join {invite?.clinic_name}
           </h1>
