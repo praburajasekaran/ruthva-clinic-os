@@ -201,7 +201,7 @@ export function MedicationRow({
             <Input
               value={data.instructions_ta}
               onChange={(e) => onChange("instructions_ta", e.target.value)}
-              placeholder="e.g., \u0bb5\u0bc6\u0ba8\u0bcd\u0ba8\u0bc0\u0bb0\u0bbf\u0bb2\u0bcd \u0b95\u0bb2\u0ba8\u0bcd\u0ba4\u0bc1 \u0b9a\u0bbe\u0baa\u0bcd\u0baa\u0bbf\u0b9f\u0bb5\u0bc1\u0bae\u0bcd"
+              placeholder={`e.g., வெந்நீரில் கலந்து சாப்பிடவும்`}
               className="border-emerald-200 bg-emerald-50/30"
             />
           </div>
