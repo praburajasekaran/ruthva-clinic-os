@@ -1,6 +1,8 @@
 import axios from "axios";
 import type {
   DispensingRecord,
+  FeedbackCategory,
+  FeedbackResponse,
   ImportConfirmResult,
   ImportPreviewResult,
   Medicine,
@@ -205,5 +207,28 @@ export const pharmacyApi = {
   togglePatientActive: (patientId: number) =>
     api.post<{ is_active: boolean }>(`/patients/${patientId}/toggle-active/`),
 };
+
+export async function submitFeedback(data: {
+  category: FeedbackCategory;
+  title: string;
+  description: string;
+  screenshot?: File;
+  page_url: string;
+  browser_info: string;
+}): Promise<FeedbackResponse> {
+  const formData = new FormData();
+  formData.append("category", data.category);
+  formData.append("title", data.title);
+  formData.append("description", data.description);
+  formData.append("page_url", data.page_url);
+  formData.append("browser_info", data.browser_info);
+  if (data.screenshot) {
+    formData.append("screenshot", data.screenshot);
+  }
+  const res = await api.post<FeedbackResponse>("/feedback/", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return res.data;
+}
 
 export default api;

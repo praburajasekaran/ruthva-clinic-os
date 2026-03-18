@@ -42,6 +42,8 @@ urlpatterns = [
     path("api/v1/integrations/", include(integrations_urlpatterns)),
     # Ruthva integration (webhook — exempt from TenantMiddleware)
     path("api/v1/integrations/webhooks/", include(integrations_webhook_urlpatterns)),
+    # Feedback
+    path("api/v1/feedback/", include("feedback.urls")),
     # API docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
