@@ -47,10 +47,10 @@ export function OnboardingSimulation() {
     };
 
     return (
-        <section className="bg-surface py-20 px-6 sm:py-32 relative overflow-hidden" id="how-it-works">
+        <section className="bg-surface py-20 px-6 sm:py-32 relative overflow-hidden" id="how-it-works" aria-labelledby="how-it-works-heading">
             <div className="mx-auto max-w-5xl">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl text-balance">
+                    <h2 id="how-it-works-heading" className="text-3xl font-bold tracking-tight text-text-primary sm:text-4xl text-balance">
                         3 steps. Zero extra work.
                     </h2>
                     <p className="mt-4 text-lg text-text-secondary max-w-2xl mx-auto">
@@ -148,16 +148,21 @@ function FeatureStep({
     return (
         <div
             onClick={onClick}
-            className={`cursor-pointer transition-all duration-300 p-4 sm:p-5 rounded-2xl relative overflow-hidden ${isActive
+            onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onClick(); } }}
+            role="button"
+            tabIndex={0}
+            aria-pressed={isActive}
+            aria-label={`Step ${number}: ${title}`}
+            className={`cursor-pointer transition-all duration-300 p-4 sm:p-5 rounded-2xl relative overflow-hidden focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-500 ${isActive
                 ? "bg-brand-50 shadow-sm border border-brand-100 lg:scale-105"
-                : "hover:bg-gray-50 opacity-60 hover:opacity-100 border border-transparent"
+                : "hover:bg-gray-50 border border-transparent"
                 }`}
         >
             <div className="flex gap-4">
                 <div className="flex-shrink-0 mt-1">
                     <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm ring-4 transition-colors ${isActive
                         ? "bg-brand-500 text-white ring-brand-100 border border-brand-600"
-                        : "bg-white text-brand-700 ring-gray-50 border border-brand-200"
+                        : "bg-white text-brand-800 ring-gray-50 border border-brand-200"
                         }`}>
                         {isActive ? <Icon className="w-5 h-5 pointer-events-none" /> : number}
                     </div>
@@ -276,7 +281,7 @@ function StepThreeUI() {
                     </div>
                     <div>
                         <h4 className="font-semibold leading-tight text-sm">Sri Lakshmi Ayurveda Clinic</h4>
-                        <p className="text-[10px] text-white/80">Automated Assistant</p>
+                        <p className="text-[10px] text-white/90">Automated Assistant</p>
                     </div>
                 </div>
                 <div className="p-4 space-y-4 min-h-[250px] flex flex-col justify-end text-sm">
@@ -289,7 +294,7 @@ function StepThreeUI() {
                             <div className="text-center py-2 bg-blue-50 text-blue-600 rounded font-medium text-xs">&#9989; Yes I did</div>
                             <div className="text-center py-2 bg-blue-50 text-blue-600 rounded font-medium text-xs">&#9888;&#65039; Missed today</div>
                         </div>
-                        <p className="text-[10px] text-right text-gray-400 mt-2">10:42 AM</p>
+                        <p className="text-[10px] text-right text-gray-500 mt-2">10:42 AM</p>
                     </div>
                 </div>
             </div>
