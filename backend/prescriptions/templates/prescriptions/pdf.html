@@ -5,7 +5,11 @@
     <style>
         @page {
             size: {{ clinic.paper_size|default:"A4" }};
+            {% if letterhead_mode == "preprinted" %}
+            margin: 52mm 15mm 15mm 15mm;
+            {% else %}
             margin: 15mm;
+            {% endif %}
         }
         body {
             font-family: 'Noto Sans', 'Noto Sans Tamil', sans-serif;
@@ -121,6 +125,7 @@
     </style>
 </head>
 <body>
+    {% if letterhead_mode == "digital" %}
     <div class="header">
         {% if clinic_logo_url %}<img src="{{ clinic_logo_url }}" style="max-height:60px; max-width:200px; margin-bottom:5px;" alt="">{% endif %}
         <h1>{{ clinic.name }}</h1>
@@ -128,6 +133,7 @@
         {% if clinic.address %}<p>{{ clinic.address }}</p>{% endif %}
         {% if clinic.phone %}<p>{{ clinic.phone }}{% if clinic.email %} | {{ clinic.email }}{% endif %}</p>{% endif %}
     </div>
+    {% endif %}
 
     <div class="patient-info">
         <table>

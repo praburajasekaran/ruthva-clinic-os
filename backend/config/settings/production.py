@@ -24,8 +24,11 @@ SECURE_SSL_REDIRECT = False  # Railway proxy handles HTTPS; internal healthcheck
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 
-# WhiteNoise static files (basic storage — no manifest required)
+# Storage backends
 STORAGES = {
+    "default": {
+        "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+    },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },

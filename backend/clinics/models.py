@@ -22,6 +22,10 @@ class Clinic(models.Model):
         ("A4", "A4"),
         ("A5", "A5"),
     ]
+    LETTERHEAD_CHOICES = [
+        ("digital", "Digital Letterhead"),
+        ("preprinted", "Pre-printed Letterhead"),
+    ]
 
     name = models.CharField(max_length=255)
     subdomain = models.SlugField(max_length=63, unique=True)
@@ -36,6 +40,9 @@ class Clinic(models.Model):
     primary_color = models.CharField(max_length=7, default="#2c5f2d")
     tagline = models.CharField(max_length=255, blank=True, default="")
     registration_number = models.CharField(max_length=50, blank=True, default="")
+    letterhead_mode = models.CharField(
+        max_length=10, choices=LETTERHEAD_CHOICES, default="digital"
+    )
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default="free")
     active_patient_limit = models.PositiveIntegerField(default=200)
     is_active = models.BooleanField(default=True)

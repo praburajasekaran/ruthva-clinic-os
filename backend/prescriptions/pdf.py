@@ -92,12 +92,15 @@ def generate_prescription_pdf(prescription: Prescription) -> bytes:
     if clinic.logo_url and is_logo_url_allowed(clinic.logo_url):
         clinic_logo_url = _fetch_logo_as_data_uri(clinic.logo_url)
 
+    letterhead_mode = getattr(clinic, "letterhead_mode", "digital")
+
     context = {
         "prescription": prescription,
         "patient": prescription.consultation.patient,
         "consultation": prescription.consultation,
         "clinic": clinic,
         "clinic_logo_url": clinic_logo_url,
+        "letterhead_mode": letterhead_mode,
         "conducted_by": prescription.consultation.conducted_by,
         "medications": prescription.medications.all(),
         "procedures": prescription.procedures.all(),
