@@ -164,14 +164,6 @@ export const dataPortabilityApi = {
       ids,
       is_active: isActive,
     }),
-  previewConsultationsImport: (file: File, skipDuplicates = true) =>
-    postCsvImportPreview("/consultations/import/preview/", file, skipDuplicates),
-  confirmConsultationsImport: (file: File, skipDuplicates = true) =>
-    postCsvImportConfirm("/consultations/import/confirm/", file, skipDuplicates),
-  previewPrescriptionsImport: (file: File, skipDuplicates = true) =>
-    postCsvImportPreview("/prescriptions/import/preview/", file, skipDuplicates),
-  confirmPrescriptionsImport: (file: File, skipDuplicates = true) =>
-    postCsvImportConfirm("/prescriptions/import/confirm/", file, skipDuplicates),
   exportPatients: () => downloadExport("/export/patients/"),
   exportConsultations: () => downloadExport("/export/consultations/"),
   exportPrescriptions: () => downloadExport("/export/prescriptions/"),
