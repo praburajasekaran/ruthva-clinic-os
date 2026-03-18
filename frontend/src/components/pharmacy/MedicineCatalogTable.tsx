@@ -11,6 +11,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   gulika: "Gulika", parpam: "Parpam", chenduram: "Chenduram",
   nei: "Nei", tablet: "Tablet", capsule: "Capsule",
   syrup: "Syrup", external: "External", other: "Other",
+  mother_tincture: "Mother Tincture (Q)", trituration: "Trituration",
+  centesimal: "Centesimal (C)", lm_potency: "LM Potency", biochemic: "Biochemic",
 };
 
 type Props = {
@@ -30,7 +32,7 @@ export function MedicineCatalogTable({ data }: Props) {
     if (categoryFilter && m.category !== categoryFilter) return false;
     if (search) {
       const q = search.toLowerCase();
-      return m.name.toLowerCase().includes(q) || m.name_ta.toLowerCase().includes(q);
+      return m.name.toLowerCase().includes(q) || m.name_ta.toLowerCase().includes(q) || m.brand_name.toLowerCase().includes(q);
     }
     return true;
   });
@@ -114,6 +116,9 @@ export function MedicineCatalogTable({ data }: Props) {
                         <AlertTriangle aria-label="Low stock" className="h-4 w-4 text-amber-500" />
                       )}
                     </div>
+                    {med.brand_name && (
+                      <span className="text-xs text-gray-400">{med.brand_name}</span>
+                    )}
                     {med.name_ta && (
                       <span className="text-xs text-emerald-600">{med.name_ta}</span>
                     )}

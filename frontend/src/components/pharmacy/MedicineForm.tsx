@@ -21,6 +21,11 @@ const CATEGORY_OPTIONS: { value: MedicineCategory; label: string }[] = [
   { value: "syrup", label: "Syrup" },
   { value: "external", label: "External Application" },
   { value: "other", label: "Other" },
+  { value: "mother_tincture", label: "Mother Tincture (Q)" },
+  { value: "trituration", label: "Trituration (3X / 6X)" },
+  { value: "centesimal", label: "Centesimal Potency (C)" },
+  { value: "lm_potency", label: "LM Potency" },
+  { value: "biochemic", label: "Biochemic Tissue Salt" },
 ];
 
 const DOSAGE_FORM_OPTIONS: { value: DosageForm; label: string }[] = [
@@ -31,6 +36,7 @@ const DOSAGE_FORM_OPTIONS: { value: DosageForm; label: string }[] = [
   { value: "drops", label: "Drops" },
   { value: "pinch", label: "Pinch / சிட்டிகை" },
   { value: "spoon", label: "Spoon / கரண்டி" },
+  { value: "pellets", label: "Pellets / Globules" },
   { value: "other", label: "Other" },
 ];
 
@@ -45,6 +51,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
   const [form, setForm] = useState({
     name: medicine?.name ?? "",
     name_ta: medicine?.name_ta ?? "",
+    brand_name: medicine?.brand_name ?? "",
     category: medicine?.category ?? ("kashayam" as MedicineCategory),
     dosage_form: medicine?.dosage_form ?? ("ml" as DosageForm),
     unit_price: medicine?.unit_price ?? "0",
@@ -118,6 +125,16 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
             value={form.name_ta}
             onChange={(e) => update("name_ta", e.target.value)}
             className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+          />
+        </div>
+        <div className="sm:col-span-2">
+          <label className="mb-1 block text-sm font-medium text-gray-700">Brand / Manufacturer</label>
+          <input
+            type="text"
+            value={form.brand_name}
+            onChange={(e) => update("brand_name", e.target.value)}
+            placeholder="e.g., Kottakkal Arya Vaidya Sala"
+            className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
         <div>

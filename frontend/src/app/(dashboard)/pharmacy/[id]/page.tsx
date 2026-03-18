@@ -17,6 +17,8 @@ const CATEGORY_LABELS: Record<string, string> = {
   gulika: "Gulika", parpam: "Parpam", chenduram: "Chenduram",
   nei: "Nei", tablet: "Tablet", capsule: "Capsule",
   syrup: "Syrup", external: "External", other: "Other",
+  mother_tincture: "Mother Tincture (Q)", trituration: "Trituration",
+  centesimal: "Centesimal (C)", lm_potency: "LM Potency", biochemic: "Biochemic",
 };
 
 export default function MedicineDetailPage() {
@@ -57,6 +59,9 @@ export default function MedicineDetailPage() {
               </span>
             )}
           </h1>
+          {medicine.brand_name && (
+            <p className="text-sm text-gray-400">{medicine.brand_name}</p>
+          )}
           {medicine.name_ta && (
             <p className="text-sm text-emerald-600">{medicine.name_ta}</p>
           )}
@@ -159,6 +164,8 @@ export default function MedicineDetailPage() {
                   <th className="px-4 py-2">Type</th>
                   <th className="px-4 py-2 text-right">Change</th>
                   <th className="px-4 py-2 text-right">Balance</th>
+                  <th className="px-4 py-2">Batch</th>
+                  <th className="px-4 py-2">Expiry</th>
                   <th className="px-4 py-2">By</th>
                   <th className="px-4 py-2">Notes</th>
                 </tr>
@@ -185,6 +192,10 @@ export default function MedicineDetailPage() {
                     </td>
                     <td className="px-4 py-2 text-right font-mono text-gray-700">
                       {entry.balance_after}
+                    </td>
+                    <td className="px-4 py-2 text-gray-600">{entry.batch_number || "—"}</td>
+                    <td className="px-4 py-2 text-gray-600">
+                      {entry.expiry_date ? new Date(entry.expiry_date).toLocaleDateString() : "—"}
                     </td>
                     <td className="px-4 py-2 text-gray-600">{entry.actor_name}</td>
                     <td className="px-4 py-2 text-gray-500">{entry.notes}</td>

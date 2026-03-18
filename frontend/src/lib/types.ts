@@ -539,16 +539,19 @@ export type MedicineCategory =
   | "kashayam" | "choornam" | "lehyam" | "tailam"
   | "arishtam" | "asavam" | "gulika" | "parpam"
   | "chenduram" | "nei" | "tablet" | "capsule"
-  | "syrup" | "external" | "other";
+  | "syrup" | "external" | "other"
+  | "mother_tincture" | "trituration" | "centesimal"
+  | "lm_potency" | "biochemic";
 
 export type DosageForm =
   | "ml" | "g" | "tablets" | "capsules"
-  | "drops" | "pinch" | "spoon" | "other";
+  | "drops" | "pinch" | "spoon" | "pellets" | "other";
 
 export type Medicine = {
   readonly id: number;
   name: string;
   name_ta: string;
+  brand_name: string;
   category: MedicineCategory;
   dosage_form: DosageForm;
   unit_price: string;
@@ -566,6 +569,8 @@ export type StockEntry = {
   entry_type: "purchase" | "adjustment" | "dispense";
   quantity_change: number;
   balance_after: number;
+  batch_number: string;
+  expiry_date: string | null;
   notes: string;
   actor_name: string;
   readonly created_at: string;

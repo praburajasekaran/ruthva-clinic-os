@@ -14,6 +14,8 @@ export function StockAdjustmentForm({ medicineId, onClose, onSaved }: Props) {
   const [quantity, setQuantity] = useState("");
   const [entryType, setEntryType] = useState<"purchase" | "adjustment">("purchase");
   const [notes, setNotes] = useState("");
+  const [batchNumber, setBatchNumber] = useState("");
+  const [expiryDate, setExpiryDate] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
@@ -26,6 +28,8 @@ export function StockAdjustmentForm({ medicineId, onClose, onSaved }: Props) {
         quantity: Number(quantity),
         entry_type: entryType,
         notes,
+        ...(entryType === "purchase" && batchNumber ? { batch_number: batchNumber } : {}),
+        ...(entryType === "purchase" && expiryDate ? { expiry_date: expiryDate } : {}),
       });
       onSaved();
     } catch {
@@ -48,47 +52,74 @@ export function StockAdjustmentForm({ medicineId, onClose, onSaved }: Props) {
         <div className="mb-3 rounded bg-red-50 p-2 text-sm text-red-700">{error}</div>
       )}
 
-      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-3">
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Type</label>
-          <select
-            value={entryType}
-            onChange={(e) => setEntryType(e.target.value as "purchase" | "adjustment")}
-            className="rounded-lg border px-3 py-2 text-sm"
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <div className="flex flex-wrap items-end gap-3">
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Type</label>
+            <select
+              value={entryType}
+              onChange={(e) => setEntryType(e.target.value as "purchase" | "adjustment")}
+              className="rounded-lg border px-3 py-2 text-sm"
+            >
+              <option value="purchase">Purchase</option>
+              <option value="adjustment">Adjustment</option>
+            </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs font-medium text-gray-600">Quantity *</label>
+            <input
+              type="number"
+              min="1"
+              required
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              className="w-24 rounded-lg border px-3 py-2 text-sm"
+              placeholder="0"
+            />
+          </div>
+          <div className="flex-1">
+            <label className="mb-1 block text-xs font-medium text-gray-600">Notes</label>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full rounded-lg border px-3 py-2 text-sm"
+              placeholder="Optional notes..."
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving || !quantity}
+            className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
           >
-            <option value="purchase">Purchase</option>
-            <option value="adjustment">Adjustment</option>
-          </select>
+            {saving ? "Saving..." : "Add"}
+          </button>
         </div>
-        <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">Quantity *</label>
-          <input
-            type="number"
-            min="1"
-            required
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-            className="w-24 rounded-lg border px-3 py-2 text-sm"
-            placeholder="0"
-          />
-        </div>
-        <div className="flex-1">
-          <label className="mb-1 block text-xs font-medium text-gray-600">Notes</label>
-          <input
-            type="text"
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full rounded-lg border px-3 py-2 text-sm"
-            placeholder="Optional notes..."
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={saving || !quantity}
-          className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-50"
-        >
-          {saving ? "Saving..." : "Add"}
-        </button>
+
+        {entryType === "purchase" && (
+          <div className="flex flex-wrap items-end gap-3 border-t pt-3">
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">Batch Number</label>
+              <input
+                type="text"
+                value={batchNumber}
+                onChange={(e) => setBatchNumber(e.target.value)}
+                className="w-40 rounded-lg border px-3 py-2 text-sm"
+                placeholder="e.g., BN-2026-001"
+              />
+            </div>
+            <div>
+              <label className="mb-1 block text-xs font-medium text-gray-600">Expiry Date</label>
+              <input
+                type="date"
+                value={expiryDate}
+                onChange={(e) => setExpiryDate(e.target.value)}
+                className="rounded-lg border px-3 py-2 text-sm"
+              />
+              <p className="mt-1 text-xs text-gray-400">Adding expiry date helps track medicine shelf life</p>
+            </div>
+          </div>
+        )}
       </form>
     </div>
   );

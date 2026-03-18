@@ -46,6 +46,7 @@ class Medicine(models.Model):
     )
     name = models.CharField(max_length=255)
     name_ta = models.CharField(max_length=255, blank=True, default="")
+    brand_name = models.CharField(max_length=255, blank=True, default="")
     category = models.CharField(max_length=30, choices=CATEGORY_CHOICES)
     dosage_form = models.CharField(max_length=20, choices=DOSAGE_FORM_CHOICES)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
@@ -90,6 +91,8 @@ class StockEntry(models.Model):
     entry_type = models.CharField(max_length=20, choices=ENTRY_TYPE_CHOICES)
     quantity_change = models.IntegerField()
     balance_after = models.IntegerField()
+    batch_number = models.CharField(max_length=100, blank=True, default="")
+    expiry_date = models.DateField(null=True, blank=True)
     notes = models.TextField(blank=True, default="")
     actor = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="stock_entries"
