@@ -13,7 +13,12 @@ export default function OnboardingPage() {
 
   const [clinicName, setClinicName] = useState("");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [addressLine1, setAddressLine1] = useState("");
+  const [addressLine2, setAddressLine2] = useState("");
+  const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [pinCode, setPinCode] = useState("");
+  const [country, setCountry] = useState("India");
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -53,7 +58,10 @@ export default function OnboardingPage() {
       await completeOnboarding({
         clinic_name: clinicName.trim(),
         phone: phone.trim(),
-        address: address.trim(),
+        address: [addressLine1, addressLine2, city, state, pinCode, country]
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .join(", "),
         registration_number: registrationNumber.trim(),
         discipline,
       });
@@ -85,7 +93,7 @@ export default function OnboardingPage() {
   }
 
   const formValid =
-    clinicName.trim() && address.trim() && registrationNumber.trim();
+    clinicName.trim() && addressLine1.trim() && city.trim() && pinCode.trim() && registrationNumber.trim();
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -158,30 +166,82 @@ export default function OnboardingPage() {
             />
           </div>
 
-          <div>
-            <label
-              htmlFor="address"
-              className="mb-1 block text-sm font-medium text-gray-700"
-            >
+          <fieldset className="space-y-3">
+            <legend className="mb-1 block text-sm font-medium text-gray-700">
               Clinic Address <span className="text-red-500">*</span>
-            </label>
-            <textarea
-              id="address"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+            </legend>
+            <input
+              id="address_line1"
+              type="text"
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
               required
-              rows={3}
-              placeholder="Full clinic address including city, state, and PIN code"
+              placeholder="Address line 1"
               className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
                 fieldErrors.address
                   ? "border-red-400 focus-visible:ring-red-500"
                   : "border-gray-300 focus-visible:ring-emerald-500"
               }`}
             />
+            <input
+              id="address_line2"
+              type="text"
+              value={addressLine2}
+              onChange={(e) => setAddressLine2(e.target.value)}
+              placeholder="Address line 2 (optional)"
+              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+            />
+            <div className="flex gap-2">
+              <input
+                id="city"
+                type="text"
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                required
+                placeholder="City"
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                  fieldErrors.address
+                    ? "border-red-400 focus-visible:ring-red-500"
+                    : "border-gray-300 focus-visible:ring-emerald-500"
+                }`}
+              />
+              <input
+                id="state"
+                type="text"
+                value={state}
+                onChange={(e) => setState(e.target.value)}
+                placeholder="State"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+              />
+            </div>
+            <div className="flex gap-2">
+              <input
+                id="pin_code"
+                type="text"
+                inputMode="numeric"
+                value={pinCode}
+                onChange={(e) => setPinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                required
+                placeholder="PIN code"
+                className={`w-full rounded-lg border px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 ${
+                  fieldErrors.address
+                    ? "border-red-400 focus-visible:ring-red-500"
+                    : "border-gray-300 focus-visible:ring-emerald-500"
+                }`}
+              />
+              <input
+                id="country"
+                type="text"
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+              />
+            </div>
             {fieldErrors.address && (
               <p className="mt-1 text-xs text-red-600">{fieldErrors.address}</p>
             )}
-          </div>
+          </fieldset>
 
           <div>
             <label
