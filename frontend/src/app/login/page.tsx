@@ -222,12 +222,12 @@ export default function LoginPage() {
         )}
 
         <p className="mt-6 text-center text-sm text-gray-500">
-          New clinic?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/signup"
-            className="font-medium text-emerald-700 hover:text-emerald-700"
+            className="font-medium text-emerald-700 hover:text-emerald-800"
           >
-            Register your clinic
+            Register your clinic &rarr;
           </Link>
         </p>
       </div>

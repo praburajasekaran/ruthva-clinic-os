@@ -10,6 +10,7 @@ export type User = {
   role: UserRole;
   is_clinic_owner: boolean;
   clinic: ClinicInfo | null;
+  onboarding_complete: boolean;
 };
 
 export type ClinicInfo = {
@@ -24,6 +25,7 @@ export type ClinicInfo = {
   paper_size: string;
   primary_color: string;
   tagline: string;
+  registration_number: string;
   is_active: boolean;
 };
 
@@ -59,6 +61,31 @@ export type SignupRequest = {
 
 export type SignupResponse = AuthTokens & {
   user: User;
+};
+
+export type InitiateSignupRequest = {
+  first_name: string;
+  last_name?: string;
+  email: string;
+  discipline: Discipline;
+};
+
+export type VerifySignupOTPRequest = {
+  email: string;
+  code: string;
+};
+
+export type VerifySignupOTPResponse = AuthTokens & {
+  discipline: Discipline;
+  onboarding_required: boolean;
+};
+
+export type OnboardingRequest = {
+  clinic_name: string;
+  phone?: string;
+  address: string;
+  registration_number: string;
+  discipline: Discipline;
 };
 
 // ── Domain unions ──

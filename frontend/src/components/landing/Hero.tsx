@@ -39,10 +39,10 @@ export function Hero() {
 
                         <div className="flex flex-col flex-wrap items-center justify-center gap-4 sm:flex-row">
                             <Link
-                                href="/login"
+                                href="/signup"
                                 className="flex h-14 w-full items-center justify-center gap-2 rounded-xl bg-brand-500 px-8 text-base font-semibold text-white shadow-lg shadow-brand-500/25 transition-all hover:bg-brand-400 hover:shadow-brand-500/40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white active:scale-95 sm:w-auto"
                             >
-                                Start using Ruthva <ArrowRight className="h-5 w-5" aria-hidden="true" />
+                                Register Your Clinic <ArrowRight className="h-5 w-5" aria-hidden="true" />
                             </Link>
                             <Link
                                 href="#how-it-works"

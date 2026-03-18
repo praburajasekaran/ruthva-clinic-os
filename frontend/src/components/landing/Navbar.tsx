@@ -36,10 +36,10 @@ export function Navbar() {
                     Sign In
                 </Link>
                 <Link
-                    href="/login"
+                    href="/signup"
                     className="flex h-10 items-center justify-center gap-2 rounded-full bg-brand-500 px-5 text-sm font-bold text-white shadow-md shadow-brand-900/20 transition-all hover:bg-brand-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-400 active:scale-95"
                 >
-                    Dashboard <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    Register <ArrowRight className="h-4 w-4" aria-hidden="true" />
                 </Link>
             </div>
         </nav>
