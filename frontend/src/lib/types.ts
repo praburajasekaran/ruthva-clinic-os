@@ -13,6 +13,8 @@ export type User = {
   onboarding_complete: boolean;
 };
 
+export type ClinicPlan = "free" | "pro";
+
 export type ClinicInfo = {
   readonly id: number;
   name: string;
@@ -26,7 +28,20 @@ export type ClinicInfo = {
   primary_color: string;
   tagline: string;
   registration_number: string;
+  plan: ClinicPlan;
   is_active: boolean;
+};
+
+export type RoleSlot = {
+  used: number;
+  limit: number;
+  available: boolean;
+};
+
+export type TeamLimits = {
+  plan: ClinicPlan;
+  slots: Record<UserRole, RoleSlot>;
+  all_slots_full: boolean;
 };
 
 export type AuthTokens = {

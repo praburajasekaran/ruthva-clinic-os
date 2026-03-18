@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AlertTriangle,
   Crown,
   Mail,
   MoreVertical,
@@ -21,6 +22,7 @@ import { Select } from "@/components/ui/Select";
 import type {
   Invitation,
   InviteMemberRequest,
+  TeamLimits,
   TeamMember,
   UserRole,
 } from "@/lib/types";
@@ -46,6 +48,8 @@ export default function TeamPage() {
     useApi<TeamMember[]>("/team/");
   const { data: invitations, refetch: refetchInvitations } =
     useApi<Invitation[]>(isOwner ? "/team/invitations/" : null);
+  const { data: limits, refetch: refetchLimits } =
+    useApi<TeamLimits>("/team/limits/");
 
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [actionMenuId, setActionMenuId] = useState<number | null>(null);
@@ -53,6 +57,7 @@ export default function TeamPage() {
   const [error, setError] = useState<string | null>(null);
 
   const pendingInvitations = invitations?.filter((inv) => !inv.accepted_at) ?? [];
+  const allSlotsFull = limits?.all_slots_full ?? false;
 
   return (
     <div className="space-y-8">
@@ -63,14 +68,35 @@ export default function TeamPage() {
           <p className="mt-1 text-sm text-gray-500">
             Manage your clinic&apos;s team members and roles
           </p>
+          {limits && (
+            <p className="mt-1 text-xs text-gray-400">
+              Doctor: {limits.slots.doctor.used}/{limits.slots.doctor.limit}
+              {" · "}
+              Therapist: {limits.slots.therapist.used}/{limits.slots.therapist.limit}
+              {" · "}
+              Admin: {limits.slots.admin.used}/{limits.slots.admin.limit}
+            </p>
+          )}
         </div>
         {isOwner && (
-          <Button onClick={() => setShowInviteModal(true)}>
+          <Button
+            onClick={() => setShowInviteModal(true)}
+            disabled={allSlotsFull}
+            title={allSlotsFull ? "All team slots are full on the free plan" : undefined}
+          >
             <UserPlus className="h-4 w-4" />
             Invite Member
           </Button>
         )}
       </div>
+
+      {/* Plan limit banner */}
+      {isOwner && allSlotsFull && limits?.plan === "free" && (
+        <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <AlertTriangle className="h-4 w-4 flex-shrink-0" />
+          <span>Free plan: all team slots filled. Upgrade to add more members.</span>
+        </div>
+      )}
 
       {/* Error banner */}
       {error && (
@@ -160,10 +186,12 @@ export default function TeamPage() {
       {/* Invite modal */}
       {showInviteModal && (
         <InviteModal
+          limits={limits ?? null}
           onClose={() => setShowInviteModal(false)}
           onSuccess={() => {
             setShowInviteModal(false);
             refetchInvitations();
+            refetchLimits();
           }}
         />
       )}
@@ -415,17 +443,24 @@ function InvitationRow({
 // ── Invite Modal ──
 
 function InviteModal({
+  limits,
   onClose,
   onSuccess,
 }: {
+  limits: TeamLimits | null;
   onClose: () => void;
   onSuccess: () => void;
 }) {
+  // Default to first available role
+  const firstAvailable = (["doctor", "therapist", "admin"] as UserRole[]).find(
+    (r) => limits?.slots[r]?.available !== false
+  ) ?? "doctor";
+
   const [form, setForm] = useState<InviteMemberRequest>({
     email: "",
     first_name: "",
     last_name: "",
-    role: "doctor",
+    role: firstAvailable,
   });
 
   const modalRef = useRef<HTMLDivElement>(null);
@@ -598,9 +633,15 @@ function InviteModal({
                 setForm({ ...form, role: e.target.value as UserRole })
               }
             >
-              <option value="doctor">Doctor</option>
-              <option value="therapist">Therapist</option>
-              <option value="admin">Admin</option>
+              {(["doctor", "therapist", "admin"] as UserRole[]).map((role) => {
+                const slot = limits?.slots[role];
+                const isFull = slot ? !slot.available : false;
+                return (
+                  <option key={role} value={role} disabled={isFull}>
+                    {ROLE_LABELS[role]}{isFull ? " (slot filled)" : ""}
+                  </option>
+                );
+              })}
             </Select>
           </div>
 
