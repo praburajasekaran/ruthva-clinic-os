@@ -7,9 +7,11 @@
   --color-brand-50: #eff6f1;
   --color-brand-100: #deede2;
   --color-brand-200: #bfd7c5;
+  --color-brand-400: #7aab8a;
   --color-brand-500: #5f8f71;
   --color-brand-600: #467858;
   --color-brand-700: #2f5f44;
+  --color-brand-800: #244d35;
   --color-brand-900: #1a3c2a;
   --color-brand-950: #102418;
 
@@ -25,6 +27,7 @@
   --color-canvas: #f2efe8;
   --color-surface: #fffdf8;
   --color-surface-raised: #f7f3ec;
+  --color-surface-sunken: #f0ece3;
   --color-border: #ddd5c8;
   --color-border-strong: #c8bcab;
   --color-text-primary: #1d261f;
