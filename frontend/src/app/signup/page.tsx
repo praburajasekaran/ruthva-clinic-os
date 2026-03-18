@@ -11,8 +11,6 @@ import type { Discipline } from "@/lib/types";
 const DISCIPLINES = [
   { value: "siddha", label: "Siddha" },
   { value: "ayurveda", label: "Ayurveda" },
-  { value: "yoga_naturopathy", label: "Yoga & Naturopathy" },
-  { value: "unani", label: "Unani" },
   { value: "homeopathy", label: "Homeopathy" },
 ];
 
@@ -26,7 +24,7 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [discipline, setDiscipline] = useState<Discipline>("siddha");
+  const [discipline, setDiscipline] = useState<Discipline | "">("");
   const [code, setCode] = useState("");
 
   const [error, setError] = useState<string | null>(null);
@@ -126,7 +124,7 @@ export default function SignupPage() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         email: email.trim().toLowerCase(),
-        discipline,
+        discipline: discipline as Discipline,
       });
       setStep("otp");
       setResendCooldown(60);
@@ -174,7 +172,7 @@ export default function SignupPage() {
         first_name: firstName.trim(),
         last_name: lastName.trim(),
         email: email.trim().toLowerCase(),
-        discipline,
+        discipline: discipline as Discipline,
       });
       setResendCooldown(60);
     } catch (err: unknown) {
@@ -338,8 +336,12 @@ export default function SignupPage() {
                 id="discipline"
                 value={discipline}
                 onChange={(e) => setDiscipline(e.target.value as Discipline)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500"
+                required
+                className={`w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-emerald-500 ${!discipline ? "text-gray-400" : ""}`}
               >
+                <option value="" disabled>
+                  Choose your clinic&apos;s discipline
+                </option>
                 {DISCIPLINES.map((d) => (
                   <option key={d.value} value={d.value}>
                     {d.label}
