@@ -1,15 +1,2 @@
-import { Manrope, Noto_Sans_Tamil } from "next/font/google";
-
-export const inter = Manrope({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-});
-
-export const notoSansTamil = Noto_Sans_Tamil({
-  subsets: ["tamil"],
-  display: "swap",
-  variable: "--font-tamil",
-  weight: ["400", "500", "600", "700"],
-  preload: false,
-});
+// Google Sans is loaded via CDN <link> tags in layout.tsx
+// No next/font imports needed — Google Sans covers Latin, Tamil, and Devanagari

@@ -5,7 +5,8 @@ import { Printer, ArrowLeft } from "lucide-react";
 
 export function PrintTrigger() {
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
+      await document.fonts.ready;
       window.print();
     }, 500);
     return () => clearTimeout(timer);

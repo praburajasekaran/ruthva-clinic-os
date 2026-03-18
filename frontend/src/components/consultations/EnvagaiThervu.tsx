@@ -24,7 +24,7 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
         >
           <div className="mb-3 flex items-baseline gap-2">
             <h4 className="font-semibold text-gray-900">{tool.label}</h4>
-            <span className="font-tamil text-xs text-gray-500">
+            <span lang="ta" className="text-xs text-gray-500">
               ({tool.labelTamil})
             </span>
             <span className="text-xs text-gray-400">{tool.translation}</span>

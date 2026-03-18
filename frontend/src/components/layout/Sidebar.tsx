@@ -95,7 +95,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
                 clinicInitial
               )}
             </div>
-            <h1 className="truncate text-xl font-bold text-emerald-700">
+            <h1 className="text-xl font-bold leading-tight text-emerald-700">
               {clinicName}
             </h1>
           </div>

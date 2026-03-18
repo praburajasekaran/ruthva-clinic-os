@@ -13,12 +13,10 @@ import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { Prescription, Consultation, Patient } from "@/lib/types";
 
-const tamil = { style: { fontFamily: "var(--font-tamil)" } };
-
 function TamilHeader({ ta, en }: { ta: string; en: string }) {
   return (
     <span>
-      <span {...tamil} className="font-semibold">
+      <span lang="ta" className="font-semibold">
         {ta}
       </span>{" "}
       <span className="text-[8pt] font-normal text-gray-400">{en}</span>
@@ -29,7 +27,7 @@ function TamilHeader({ ta, en }: { ta: string; en: string }) {
 function BilingualTh({ ta, en }: { ta: string; en: string }) {
   return (
     <>
-      <span {...tamil}>{ta}</span>
+      <span lang="ta">{ta}</span>
       <br />
       <span className="text-[7pt] font-normal text-gray-400">{en}</span>
     </>
@@ -220,7 +218,7 @@ export default function PrintPrescriptionPage() {
                     {instrText && (
                       <div
                         className="text-[8pt] text-gray-500"
-                        {...(med.instructions_ta ? tamil : {})}
+                        {...(med.instructions_ta ? { lang: "ta" } : {})}
                       >
                         ({instrText})
                       </div>
@@ -230,7 +228,7 @@ export default function PrintPrescriptionPage() {
                   <td>
                     {med.frequency_tamil ? (
                       <>
-                        <span {...tamil}>{med.frequency_tamil}</span>
+                        <span lang="ta">{med.frequency_tamil}</span>
                         <div className="text-[7pt] text-gray-400">
                           {freqOpt
                             ? freqOpt.label.split(" \u2014 ")[0]
@@ -287,23 +285,23 @@ export default function PrintPrescriptionPage() {
             />
           </p>
           {(prescription.diet_advice_ta || prescription.diet_advice) && (
-            <p {...(prescription.diet_advice_ta ? tamil : {})}>
-              <strong {...tamil}>{ADVICE_LABELS.diet.ta}:</strong>{" "}
+            <p {...(prescription.diet_advice_ta ? { lang: "ta" } : {})}>
+              <strong lang="ta">{ADVICE_LABELS.diet.ta}:</strong>{" "}
               {prescription.diet_advice_ta || prescription.diet_advice}
             </p>
           )}
           {(prescription.lifestyle_advice_ta ||
             prescription.lifestyle_advice) && (
-            <p {...(prescription.lifestyle_advice_ta ? tamil : {})}>
-              <strong {...tamil}>{ADVICE_LABELS.lifestyle.ta}:</strong>{" "}
+            <p {...(prescription.lifestyle_advice_ta ? { lang: "ta" } : {})}>
+              <strong lang="ta">{ADVICE_LABELS.lifestyle.ta}:</strong>{" "}
               {prescription.lifestyle_advice_ta ||
                 prescription.lifestyle_advice}
             </p>
           )}
           {(prescription.exercise_advice_ta ||
             prescription.exercise_advice) && (
-            <p {...(prescription.exercise_advice_ta ? tamil : {})}>
-              <strong {...tamil}>{ADVICE_LABELS.exercise.ta}:</strong>{" "}
+            <p {...(prescription.exercise_advice_ta ? { lang: "ta" } : {})}>
+              <strong lang="ta">{ADVICE_LABELS.exercise.ta}:</strong>{" "}
               {prescription.exercise_advice_ta || prescription.exercise_advice}
             </p>
           )}
@@ -326,7 +324,7 @@ export default function PrintPrescriptionPage() {
           })}
           {(prescription.follow_up_notes_ta ||
             prescription.follow_up_notes) && (
-            <span {...(prescription.follow_up_notes_ta ? tamil : {})}>
+            <span {...(prescription.follow_up_notes_ta ? { lang: "ta" } : {})}>
               {" — "}
               {prescription.follow_up_notes_ta || prescription.follow_up_notes}
             </span>

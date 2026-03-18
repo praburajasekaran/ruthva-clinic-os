@@ -213,7 +213,7 @@ export function ConsultationForm({
               }`}
             >
               {section.label}
-              <span className="block font-tamil text-xs opacity-60">
+              <span lang="ta" className="block text-xs opacity-60">
                 {section.labelTamil}
               </span>
             </button>

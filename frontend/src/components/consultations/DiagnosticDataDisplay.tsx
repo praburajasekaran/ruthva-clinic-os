@@ -60,7 +60,7 @@ function EnvagaiDisplay({ data }: { data: Record<string, string> }) {
           <div key={key} className="rounded-lg border border-gray-100 p-3">
             <h4 className="text-sm font-medium text-gray-900">
               {tool.label}{" "}
-              <span className="font-tamil text-xs text-gray-400">
+              <span lang="ta" className="text-xs text-gray-400">
                 ({tool.labelTamil})
               </span>
             </h4>

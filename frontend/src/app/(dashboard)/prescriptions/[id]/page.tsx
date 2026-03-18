@@ -140,7 +140,7 @@ export default function PrescriptionDetailPage() {
                     {freqOpt ? freqOpt.label : med.frequency}
                   </p>
                   {med.frequency_tamil && (
-                    <p className="font-tamil text-xs text-gray-500">
+                    <p lang="ta" className="text-xs text-gray-500">
                       {med.frequency_tamil}
                     </p>
                   )}
@@ -150,7 +150,7 @@ export default function PrescriptionDetailPage() {
                     </p>
                   )}
                   {med.instructions_ta && (
-                    <p className="mt-0.5 font-tamil text-sm text-emerald-700">
+                    <p lang="ta" className="mt-0.5 text-sm text-emerald-700">
                       {med.instructions_ta}
                     </p>
                   )}
@@ -199,7 +199,7 @@ export default function PrescriptionDetailPage() {
                   <dd className="text-gray-600">{prescription.diet_advice}</dd>
                 )}
                 {prescription.diet_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">
+                  <dd lang="ta" className="text-emerald-700">
                     {prescription.diet_advice_ta}
                   </dd>
                 )}
@@ -215,7 +215,7 @@ export default function PrescriptionDetailPage() {
                   </dd>
                 )}
                 {prescription.lifestyle_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">
+                  <dd lang="ta" className="text-emerald-700">
                     {prescription.lifestyle_advice_ta}
                   </dd>
                 )}
@@ -231,7 +231,7 @@ export default function PrescriptionDetailPage() {
                   </dd>
                 )}
                 {prescription.exercise_advice_ta && (
-                  <dd className="font-tamil text-emerald-700">
+                  <dd lang="ta" className="text-emerald-700">
                     {prescription.exercise_advice_ta}
                   </dd>
                 )}
@@ -259,7 +259,7 @@ export default function PrescriptionDetailPage() {
             </p>
           )}
           {prescription.follow_up_notes_ta && (
-            <p className="mt-0.5 font-tamil text-sm text-amber-700">
+            <p lang="ta" className="mt-0.5 text-sm text-amber-700">
               {prescription.follow_up_notes_ta}
             </p>
           )}
