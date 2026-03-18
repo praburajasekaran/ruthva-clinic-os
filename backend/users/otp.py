@@ -48,8 +48,10 @@ def send_otp_email(email: str, code: str):
         )
         + email_footer()
     )
-    send_email(
+    result = send_email(
         to=email,
         subject=f"Your login code is {code}",
         html=email_wrapper(content, preview_text=f"Your login code is {code}"),
     )
+    if result is None:
+        raise RuntimeError("Failed to send OTP email via SES")
