@@ -23,6 +23,7 @@ def send_prescription_followup_email(
     diagnosis: str,
     follow_up_notes: str,
     consultation_date,
+    logo_url: str = "",
 ) -> str | None:
     """Send a prescription follow-up reminder. Returns SES message ID or None."""
     formatted_date = follow_up_date.strftime("%d %B %Y")
@@ -36,7 +37,7 @@ def send_prescription_followup_email(
         rows.append(("Notes", follow_up_notes))
 
     content = (
-        email_header("Follow-up Reminder")
+        email_header("Follow-up Reminder", logo_url=logo_url)
         + email_heading(f"Hello {patient_name}")
         + email_text(
             f"This is a reminder that you have a follow-up consultation "
@@ -72,6 +73,7 @@ def send_procedure_followup_email(
     follow_up_date,
     procedure_name: str,
     consultation_date,
+    logo_url: str = "",
 ) -> str | None:
     """Send a procedure follow-up reminder. Returns SES message ID or None."""
     formatted_date = follow_up_date.strftime("%d %B %Y")
@@ -83,7 +85,7 @@ def send_procedure_followup_email(
     ]
 
     content = (
-        email_header("Procedure Follow-up")
+        email_header("Procedure Follow-up", logo_url=logo_url)
         + email_heading(f"Hello {patient_name}")
         + email_text(
             f"This is a reminder that you have a follow-up for your procedure "

@@ -37,8 +37,10 @@ def send_invite_email(*, invitation) -> str | None:
 
     subject = f"You're invited to join {clinic_name}"
 
+    logo_url = invitation.clinic.logo_url or ""
+
     content = (
-        email_header("Team Invitation")
+        email_header("Team Invitation", logo_url=logo_url)
         + email_heading(f"Hello {first_name}")
         + email_text(
             f"<strong>{inviter_name}</strong> has invited you to join "

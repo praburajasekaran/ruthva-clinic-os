@@ -22,9 +22,23 @@ _DATA_BG = "#f7f3ec"      # --color-surface-raised – structured data card
 _FONT = "'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif"
 
 
-def email_header(topic: str) -> str:
-    """Emerald accent bar + Ruthva wordmark + topic label."""
+def email_header(topic: str, logo_url: str = "") -> str:
+    """Emerald accent bar + clinic logo / Ruthva wordmark + topic label."""
     safe_topic = html_mod.escape(topic)
+
+    if logo_url:
+        safe_logo = html_mod.escape(logo_url)
+        brand_html = (
+            f'<img src="{safe_logo}" alt="Clinic logo"'
+            f' style="height: 36px; width: auto; display: block;"'
+            f' height="36" />'
+        )
+    else:
+        brand_html = (
+            f'<span style="font-family: {_FONT}; font-size: 22px; font-weight: 800;'
+            f' letter-spacing: -0.02em; color: {_PRIMARY_DARK};">ruthva</span>'
+        )
+
     return f"""\
 <tr>
   <td style="padding: 0;">
@@ -36,8 +50,7 @@ def email_header(topic: str) -> str:
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td>
-          <span style="font-family: {_FONT}; font-size: 22px; font-weight: 800;
-             letter-spacing: -0.02em; color: {_PRIMARY_DARK};">ruthva</span>
+          {brand_html}
         </td>
         <td align="right">
           <span style="font-family: {_FONT}; font-size: 11px; font-weight: 700;

@@ -50,7 +50,7 @@ class Command(BaseCommand):
                 follow_up_date=target_date,
                 consultation__patient__email__gt="",
             )
-            .select_related("consultation", "consultation__patient")
+            .select_related("consultation", "consultation__patient", "consultation__clinic")
         )
 
         for rx in rx_qs:
@@ -80,6 +80,7 @@ class Command(BaseCommand):
                 diagnosis=rx.consultation.diagnosis,
                 follow_up_notes=rx.follow_up_notes,
                 consultation_date=rx.consultation.consultation_date,
+                logo_url=rx.consultation.clinic.logo_url,
             )
 
             if resend_id is not None:
@@ -113,6 +114,7 @@ class Command(BaseCommand):
             .select_related(
                 "prescription__consultation",
                 "prescription__consultation__patient",
+                "prescription__consultation__clinic",
             )
         )
 
@@ -142,6 +144,7 @@ class Command(BaseCommand):
                 follow_up_date=proc.follow_up_date,
                 procedure_name=proc.name,
                 consultation_date=proc.prescription.consultation.consultation_date,
+                logo_url=proc.prescription.consultation.clinic.logo_url,
             )
 
             if resend_id is not None:
