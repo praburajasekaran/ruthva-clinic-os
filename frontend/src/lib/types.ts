@@ -556,5 +556,19 @@ export type UsageDashboard = {
   usage_percentage: number;
   medicines_count: number;
   low_stock_count: number;
+};
 
+// ── Integrations (Ruthva Journeys) ──
+
+export type StartJourneyPayload = {
+  patient_id: number;
+  consultation_id: number | null;
+  duration_days: number;
+  followup_interval_days: number;
+  consent_given: boolean;
+};
+
+export type RuthvaJourneyRef = {
+  id: number;
+  status: string;
 };

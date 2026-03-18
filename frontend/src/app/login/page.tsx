@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 
@@ -92,10 +93,12 @@ export default function LoginPage() {
         </div>
 
         <div className="mb-8 text-center">
-          <img
+          <Image
             src="/ruthva-logo.png"
             alt="Ruthva"
-            className="mx-auto mb-6 h-10"
+            width={120}
+            height={40}
+            className="mx-auto mb-6 h-10 w-auto"
           />
           {/* Single error region — hoisted above both form branches so it persists across step transitions */}
         <div

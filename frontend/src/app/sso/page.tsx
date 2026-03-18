@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Leaf, Loader2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import axios from "axios";
 
-export default function SsoPage() {
+function SsoContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setTokens } = useAuth();
@@ -78,5 +78,22 @@ export default function SsoPage() {
         <p className="text-sm text-gray-500">Signing you in...</p>
       </div>
     </main>
+  );
+}
+
+export default function SsoPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center bg-gray-50">
+          <div className="text-center">
+            <Loader2 className="mx-auto mb-3 h-8 w-8 animate-spin text-emerald-600" />
+            <p className="text-sm text-gray-500">Loading...</p>
+          </div>
+        </main>
+      }
+    >
+      <SsoContent />
+    </Suspense>
   );
 }
