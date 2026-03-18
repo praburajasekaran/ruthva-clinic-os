@@ -199,7 +199,7 @@ class ClinicSerializer(serializers.ModelSerializer):
         fields = [
             "id", "name", "subdomain", "discipline", "address", "phone",
             "email", "logo_url", "paper_size", "primary_color", "tagline",
-            "registration_number", "active_patient_limit", "is_active", "created_at",
+            "registration_number", "plan", "active_patient_limit", "is_active", "created_at",
         ]
 
 

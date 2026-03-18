@@ -6,12 +6,14 @@ from .views import (
     invitation_list,
     invite_details,
     team_invite,
+    team_limits,
     team_list,
     team_remove,
     team_update_role,
 )
 
 urlpatterns = [
+    path("limits/", team_limits, name="team-limits"),
     path("", team_list, name="team-list"),
     path("invite/", team_invite, name="team-invite"),
     path("<int:member_id>/role/", team_update_role, name="team-update-role"),
