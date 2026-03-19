@@ -80,29 +80,29 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   const nav = (
     <div className="flex flex-1 flex-col">
       <div>
-        <div className="mb-8 flex items-center justify-between">
-          <a
-            href="https://ruthva.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center text-gray-400 hover:text-emerald-700"
-          >
-            <Image
-              src="/ruthva-logo.png"
-              alt="Ruthva"
-              width={80}
-              height={20}
-              className="h-5 w-auto"
-            />
-          </a>
+        <div className="mb-6 flex flex-col items-center border-b border-gray-200 pb-6">
           <button
             type="button"
             onClick={closeMobileMenu}
-            className="rounded-lg p-1 text-gray-400 hover:text-gray-600 md:hidden"
+            className="absolute right-3 top-3 rounded-lg p-1 text-gray-400 hover:text-gray-600 md:hidden"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" aria-hidden="true" />
           </button>
+          <a
+            href="https://ruthva.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center"
+          >
+            <Image
+              src="/ruthva-logo.png"
+              alt="Ruthva"
+              width={140}
+              height={35}
+              className="h-10 w-auto"
+            />
+          </a>
         </div>
 
         {/* Search button */}
@@ -204,15 +204,24 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile hamburger */}
-      <button
-        type="button"
-        onClick={openMobileMenu}
-        className="fixed left-4 top-4 z-40 rounded-lg border border-gray-200 bg-white p-2 shadow-sm md:hidden"
-        aria-label="Open menu"
-      >
-        <Menu className="h-5 w-5 text-gray-700" aria-hidden="true" />
-      </button>
+      {/* Mobile header */}
+      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+        <button
+          type="button"
+          onClick={openMobileMenu}
+          className="rounded-lg border border-gray-200 p-2 shadow-sm"
+          aria-label="Open menu"
+        >
+          <Menu className="h-5 w-5 text-gray-700" aria-hidden="true" />
+        </button>
+        <Image
+          src="/ruthva-logo.png"
+          alt="Ruthva"
+          width={100}
+          height={25}
+          className="h-6 w-auto"
+        />
+      </div>
 
       {/* Mobile overlay */}
       {mobileOpen && (
