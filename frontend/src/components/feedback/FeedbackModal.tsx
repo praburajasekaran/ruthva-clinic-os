@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import {
   AlertTriangle,
   Bug,
+  Camera,
   CheckCircle,
   ImagePlus,
   Lightbulb,
+  Loader2,
   X,
 } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
@@ -38,8 +40,34 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const [screenshot, setScreenshot] = useState<File | null>(null);
   const [fileError, setFileError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
+
+  const captureScreenshot = async () => {
+    setIsCapturing(true);
+    setFileError("");
+    try {
+      const html2canvas = (await import("html2canvas")).default;
+      const canvas = await html2canvas(document.body, {
+        ignoreElements: (el) =>
+          el.closest("[role='dialog']") !== null ||
+          el.closest(".no-print") !== null,
+      });
+      canvas.toBlob((blob) => {
+        if (blob) {
+          const file = new File([blob], `screenshot-${Date.now()}.png`, {
+            type: "image/png",
+          });
+          setScreenshot(file);
+        }
+        setIsCapturing(false);
+      }, "image/png");
+    } catch {
+      setFileError("Failed to capture screenshot.");
+      setIsCapturing(false);
+    }
+  };
 
   const handleFileChange = (file: File | null) => {
     setFileError("");
@@ -210,14 +238,29 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               </button>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="flex w-full items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600"
-            >
-              <ImagePlus className="h-4 w-4" aria-hidden="true" />
-              Attach a screenshot
-            </button>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={captureScreenshot}
+                disabled={isCapturing}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+              >
+                {isCapturing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                ) : (
+                  <Camera className="h-4 w-4" aria-hidden="true" />
+                )}
+                {isCapturing ? "Capturing…" : "Capture screen"}
+              </button>
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600"
+              >
+                <ImagePlus className="h-4 w-4" aria-hidden="true" />
+                Upload image
+              </button>
+            </div>
           )}
           <input
             ref={fileInputRef}

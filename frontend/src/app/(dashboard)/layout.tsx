@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { KeyboardProvider } from "@/components/layout/KeyboardProvider";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { FloatingFeedbackButton } from "@/components/feedback/FloatingFeedbackButton";
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -29,6 +30,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </main>
           </div>
         </div>
+        <FloatingFeedbackButton />
       </KeyboardProvider>
     </AuthGuard>
   );
