@@ -113,8 +113,9 @@ def email_footer(clinic_name: str = "", doctor_name: str = "") -> str:
     <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
       <tr>
         <td align="center">
-          <span style="font-family: {_FONT}; font-size: 15px; font-weight: 800;
-             letter-spacing: -0.02em; color: {_BORDER};">ruthva</span>
+          <a href="https://ruthva.com" style="font-family: {_FONT}; font-size: 15px; font-weight: 800;
+             letter-spacing: -0.02em; color: {_PRIMARY}; text-decoration: underline;
+             text-underline-offset: 3px;">ruthva</a>
           <p style="margin: 6px 0 0; font-family: {_FONT}; font-size: 12px;
              color: {_TEXT_MUTED};">
             Clinic management, simplified.
