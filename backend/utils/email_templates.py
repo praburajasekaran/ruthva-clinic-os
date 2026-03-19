@@ -11,8 +11,8 @@ from django.conf import settings
 # ---------------------------------------------------------------------------
 # Design tokens — aligned with clinic OS globals.css
 # ---------------------------------------------------------------------------
-_BG = "#f2efe8"           # --color-canvas  – warm page background
-_CARD = "#fffdf8"         # --color-surface  – warm white content card
+_BG = "#ffffff"           # --color-canvas  – clean white page background
+_CARD = "#ffffff"         # --color-surface  – white content card
 _PRIMARY = "#2f5f44"      # --color-brand-700 – CTA, links, emphasis
 _PRIMARY_DARK = "#1a3c2a" # --color-brand-900 – accent bar, bold elements
 _PRIMARY_LIGHT = "#eff6f1" # --color-brand-50 – subtle tinted backgrounds
@@ -115,7 +115,7 @@ def email_footer(clinic_name: str = "", doctor_name: str = "") -> str:
         <td align="center">
           <a href="https://ruthva.com" style="font-family: {_FONT}; font-size: 15px; font-weight: 800;
              letter-spacing: -0.02em; color: {_PRIMARY}; text-decoration: underline;
-             text-underline-offset: 3px;">ruthva</a>
+             text-underline-offset: 3px;">RUTHVA</a>
           <p style="margin: 6px 0 0; font-family: {_FONT}; font-size: 12px;
              color: {_TEXT_MUTED};">
             Clinic management, simplified.
