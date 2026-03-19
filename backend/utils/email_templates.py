@@ -6,6 +6,8 @@ solid gray background with white content card, emerald brand palette.
 
 import html as html_mod
 
+from django.conf import settings
+
 # ---------------------------------------------------------------------------
 # Design tokens — aligned with clinic OS globals.css
 # ---------------------------------------------------------------------------
@@ -34,9 +36,12 @@ def email_header(topic: str, logo_url: str = "") -> str:
             f' height="36" />'
         )
     else:
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        ruthva_logo = html_mod.escape(f"{frontend_url}/ruthva-logo.png")
         brand_html = (
-            f'<span style="font-family: {_FONT}; font-size: 22px; font-weight: 800;'
-            f' letter-spacing: -0.02em; color: {_PRIMARY_DARK};">ruthva</span>'
+            f'<img src="{ruthva_logo}" alt="Ruthva"'
+            f' style="height: 36px; width: auto; display: block;"'
+            f' height="36" />'
         )
 
     return f"""\
