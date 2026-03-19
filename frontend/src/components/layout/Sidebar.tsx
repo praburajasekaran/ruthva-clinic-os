@@ -81,24 +81,20 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
     <div className="flex flex-1 flex-col">
       <div>
         <div className="mb-8 flex items-center justify-between">
-          <div className="flex min-w-0 items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-emerald-200 bg-emerald-50 text-sm font-semibold text-emerald-700">
-              {clinicLogoUrl && !logoError ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={clinicLogoUrl}
-                  alt={`${clinicName} logo`}
-                  className="h-full w-full object-cover"
-                  onError={() => setLogoError(true)}
-                />
-              ) : (
-                clinicInitial
-              )}
-            </div>
-            <h1 className="text-xl font-bold leading-tight text-emerald-700">
-              {clinicName}
-            </h1>
-          </div>
+          <a
+            href="https://ruthva.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center text-gray-400 hover:text-emerald-700"
+          >
+            <Image
+              src="/ruthva-logo.png"
+              alt="Ruthva"
+              width={80}
+              height={20}
+              className="h-5 w-auto"
+            />
+          </a>
           <button
             type="button"
             onClick={closeMobileMenu}
@@ -168,8 +164,26 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         </nav>
       </div>
 
-      {/* User info + logout */}
+      {/* Clinic info + user + logout */}
       <div className="mt-auto border-t pt-4">
+        <div className="mb-3 flex items-center gap-3 px-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center overflow-hidden rounded-full border border-emerald-200 bg-emerald-50 text-xs font-semibold text-emerald-700">
+            {clinicLogoUrl && !logoError ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={clinicLogoUrl}
+                alt={`${clinicName} logo`}
+                className="h-full w-full object-cover"
+                onError={() => setLogoError(true)}
+              />
+            ) : (
+              clinicInitial
+            )}
+          </div>
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-emerald-700">{clinicName}</p>
+          </div>
+        </div>
         <div className="mb-2 px-3">
           <p className="truncate text-sm font-medium text-gray-900">
             {user?.first_name} {user?.last_name}
@@ -184,23 +198,6 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           <LogOut className="h-4 w-4" aria-hidden="true" />
           <span>Sign out</span>
         </button>
-        <div className="mt-3 text-center text-xs text-gray-400">
-          <a
-            href="https://ruthva.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-gray-400 hover:text-emerald-700"
-          >
-            Powered by
-            <Image
-              src="/ruthva-logo.png"
-              alt="Ruthva"
-              width={64}
-              height={16}
-              className="inline-block h-4 w-auto"
-            />
-          </a>
-        </div>
       </div>
     </div>
   );
