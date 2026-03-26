@@ -45,6 +45,7 @@ class RuthvaJourneyRefSerializer(serializers.ModelSerializer):
             "next_visit_date",
             "last_visit_date",
             "missed_visits",
+            "recovery_attempts",
             "duration_days",
             "followup_interval_days",
             "last_synced_at",

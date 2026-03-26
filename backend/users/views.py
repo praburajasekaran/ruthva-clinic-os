@@ -41,6 +41,10 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
 
+DEMO_EMAIL = "demo@ruthva.com"
+DEMO_OTP_CODE = "123456"
+
+
 @api_view(["POST"])
 @permission_classes([AllowAny])
 @throttle_classes([OTPRequestThrottle])
@@ -58,6 +62,11 @@ def request_otp(request):
 
     # Invalidate previous OTPs for this email
     EmailOTP.objects.filter(email=email).delete()
+
+    # Demo account bypass: fixed code, skip email
+    if email == DEMO_EMAIL:
+        EmailOTP.objects.create(email=email, code_hash=hash_otp(DEMO_OTP_CODE))
+        return Response({"detail": "If that email exists, a code has been sent."})
 
     code = generate_otp()
     EmailOTP.objects.create(email=email, code_hash=hash_otp(code))

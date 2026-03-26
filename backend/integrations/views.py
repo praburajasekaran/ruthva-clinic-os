@@ -127,6 +127,7 @@ def journey_status(request, journey_ref_id):
             ref.next_visit_date = data.get("nextVisitDate", ref.next_visit_date)
             ref.last_visit_date = data.get("lastVisitDate", ref.last_visit_date)
             ref.missed_visits = data.get("missedVisits", ref.missed_visits)
+            ref.recovery_attempts = data.get("recoveryAttempts", ref.recovery_attempts)
             ref.last_synced_at = timezone.now()
             ref.save()
 
@@ -243,6 +244,8 @@ def webhook_receiver(request):
             ref.risk_reason = event_data["riskReason"] or ""
         if "missedVisits" in event_data:
             ref.missed_visits = event_data["missedVisits"]
+        if "recoveryAttempts" in event_data:
+            ref.recovery_attempts = event_data["recoveryAttempts"]
         if "nextVisitDate" in event_data and event_data["nextVisitDate"]:
             ref.next_visit_date = event_data["nextVisitDate"]
         if "lastVisitDate" in event_data and event_data["lastVisitDate"]:

@@ -56,6 +56,7 @@ class RuthvaJourneyRef(models.Model):
     next_visit_date = models.DateField(null=True, blank=True)
     last_visit_date = models.DateField(null=True, blank=True)
     missed_visits = models.PositiveSmallIntegerField(default=0)
+    recovery_attempts = models.PositiveSmallIntegerField(default=0)
     duration_days = models.PositiveSmallIntegerField(default=0)
     followup_interval_days = models.PositiveSmallIntegerField(default=0)
     consent_given_at = models.DateTimeField(
@@ -93,3 +94,44 @@ class RuthvaJourneyRef(models.Model):
 
     def __str__(self):
         return f"Ruthva journey {self.ruthva_journey_id} for {self.patient} ({self.status})"
+
+
+class JourneyEvent(models.Model):
+    """
+    Timeline event for a Ruthva treatment journey.
+    Each event is unique per journey + event_type + event_date.
+    """
+
+    EVENT_TYPE_CHOICES = [
+        ("journey_started", "Journey Started"),
+        ("visit_expected", "Visit Expected"),
+        ("reminder_sent", "Reminder Sent"),
+        ("visit_confirmed", "Visit Confirmed"),
+        ("visit_missed", "Visit Missed"),
+        ("recovery_message_sent", "Recovery Message Sent"),
+        ("adherence_check_sent", "Adherence Check Sent"),
+        ("adherence_response", "Adherence Response"),
+        ("patient_returned", "Patient Returned"),
+    ]
+
+    journey = models.ForeignKey(
+        RuthvaJourneyRef,
+        on_delete=models.CASCADE,
+        related_name="events",
+    )
+    event_type = models.CharField(max_length=30, choices=EVENT_TYPE_CHOICES)
+    event_date = models.DateField()
+    metadata = models.JSONField(default=dict, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["event_date", "created_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["journey", "event_type", "event_date"],
+                name="unique_journey_event_type_date",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.event_type} on {self.event_date} for journey {self.journey_id}"

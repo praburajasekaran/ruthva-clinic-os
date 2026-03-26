@@ -157,6 +157,13 @@ export default function LoginPage() {
             >
               {loading ? "Sending code..." : "Send login code"}
             </button>
+
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+              <p className="font-medium">Try the demo</p>
+              <p className="mt-0.5">
+                Email: <span className="font-mono font-medium">demo@ruthva.com</span>
+              </p>
+            </div>
           </form>
         ) : (
           <form onSubmit={handleVerifyOTP} className="space-y-4">
@@ -192,6 +199,15 @@ export default function LoginPage() {
             >
               {loading ? "Verifying..." : "Verify"}
             </button>
+
+            {email.toLowerCase() === "demo@ruthva.com" && (
+              <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800">
+                <p className="font-medium">Demo account</p>
+                <p className="mt-0.5">
+                  Code: <span className="font-mono font-medium">123456</span>
+                </p>
+              </div>
+            )}
 
             <button
               type="button"
