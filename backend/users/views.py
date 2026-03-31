@@ -15,6 +15,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from clinics.models import Clinic
 
+from .demo import DEMO_EMAIL, block_demo_user, ensure_demo_setup, is_demo_user
 from .models import EmailOTP, PendingSignup
 from .otp import generate_otp, hash_otp, send_otp_email, verify_otp_hash
 from .serializers import (
@@ -51,6 +52,14 @@ def request_otp(request):
             {"detail": "Email is required."},
             status=status.HTTP_400_BAD_REQUEST,
         )
+
+    # Demo mode: skip SES, use fixed OTP
+    if email == DEMO_EMAIL:
+        ensure_demo_setup()
+        otp_code = "123456"  # SECURITY: intentionally hardcoded for demo account only
+        EmailOTP.objects.filter(email=email).delete()
+        EmailOTP.objects.create(email=email, code_hash=hash_otp(otp_code))
+        return Response({"detail": "Demo mode — use code 123456", "is_demo": True})
 
     # Always return success to avoid email enumeration
     if not User.objects.filter(email=email).exists():
@@ -312,6 +321,10 @@ def check_availability(request):
         )
 
     if field == "subdomain":
+        # Block reserved subdomains (exact match and demo-* prefix)
+        reserved = {"www", "api", "admin", "demo", "app"}
+        if value in reserved or value.startswith("demo-"):
+            return Response({"available": False})
         taken = Clinic.objects.filter(subdomain=value).exists()
     else:
         taken = User.objects.filter(**{field: value}).exists()
@@ -332,6 +345,7 @@ def me(request):
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
+@block_demo_user
 def update_me(request):
     serializer = UserUpdateSerializer(request.user, data=request.data, partial=True)
     serializer.is_valid(raise_exception=True)
@@ -345,6 +359,7 @@ def update_me(request):
 
 @api_view(["PATCH"])
 @permission_classes([IsAuthenticated])
+@block_demo_user
 def update_clinic(request):
     clinic = request.user.clinic
     if not clinic or not request.user.is_clinic_owner:
@@ -432,3 +447,34 @@ def delete_clinic_logo(request):
     clinic.logo_url = ""
     clinic.save(update_fields=["logo_url"])
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def switch_demo_clinic(request):
+    """Switch demo user to a different demo clinic. Returns new JWT tokens."""
+    if not is_demo_user(request.user):
+        return Response(
+            {"detail": "Only available in demo mode."},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    target_slug = request.data.get("clinic_slug", "")
+
+    try:
+        clinic = Clinic.objects.get(subdomain=target_slug, is_demo=True, is_active=True)
+    except Clinic.DoesNotExist:
+        return Response(
+            {"detail": "Demo clinic not found."},
+            status=status.HTTP_404_NOT_FOUND,
+        )
+
+    request.user.clinic = clinic
+    request.user.save(update_fields=["clinic"])
+
+    token = CustomTokenObtainPairSerializer.get_token(request.user)
+    return Response({
+        "access": str(token.access_token),
+        "refresh": str(token),
+        "clinic_slug": clinic.subdomain,
+    })

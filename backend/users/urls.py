@@ -10,6 +10,7 @@ from .views import (
     me,
     request_otp,
     signup,
+    switch_demo_clinic,
     update_clinic,
     update_me,
     upload_clinic_logo,
@@ -32,4 +33,5 @@ urlpatterns = [
     path("clinic/update/", update_clinic, name="auth-clinic-update"),
     path("clinic/logo/upload/", upload_clinic_logo, name="auth-clinic-logo-upload"),
     path("clinic/logo/", delete_clinic_logo, name="auth-clinic-logo-delete"),
+    path("demo/switch-clinic/", switch_demo_clinic, name="auth-demo-switch-clinic"),
 ]
