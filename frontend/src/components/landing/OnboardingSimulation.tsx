@@ -9,7 +9,7 @@ import {
     useTransform,
 } from "framer-motion";
 import type { MotionValue } from "framer-motion";
-import { Clock, AlertTriangle, MessageCircleHeart, UserPlus, Activity, PlayCircle } from "lucide-react";
+import { Clock, UserPlus, Stethoscope, FileText, Printer, Save } from "lucide-react";
 
 const STEP_DURATION = 4000;
 const TOTAL_STEPS = 3;
@@ -54,7 +54,7 @@ export function OnboardingSimulation() {
                         3 steps. Zero extra work.
                     </h2>
                     <p className="mt-4 text-lg text-text-secondary max-w-2xl mx-auto">
-                        You are staging a future reality preview. Add a patient in 20 seconds, and we monitor their 30-day journey.
+                        Register a patient, record a consultation, and generate a prescription — all in one flow.
                     </p>
                 </div>
 
@@ -66,8 +66,8 @@ export function OnboardingSimulation() {
                     <div className="lg:col-span-5 space-y-4 lg:space-y-6">
                         <FeatureStep
                             number={1}
-                            title="Add a patient (takes 20s)"
-                            description="Input only their Name, Phone, and Treatment Duration. Defaults handle the rest."
+                            title="Register a patient"
+                            description="Add their name, phone, and discipline. The profile is ready in seconds."
                             Icon={UserPlus}
                             isActive={activeStep === 1}
                             elapsed={elapsed}
@@ -77,9 +77,9 @@ export function OnboardingSimulation() {
                         </FeatureStep>
                         <FeatureStep
                             number={2}
-                            title="Silent Monitoring"
-                            description="System instantly creates events for the journey, expected visits, and adherence checks."
-                            Icon={Activity}
+                            title="Record a consultation"
+                            description="Capture complaints, diagnosis, and notes with discipline-specific fields built in."
+                            Icon={Stethoscope}
                             isActive={activeStep === 2}
                             elapsed={elapsed}
                             onClick={() => handleStepClick(2)}
@@ -88,9 +88,9 @@ export function OnboardingSimulation() {
                         </FeatureStep>
                         <FeatureStep
                             number={3}
-                            title="Risk Detected & Recovered"
-                            description="When a patient misses a milestone, Ruthva triggers an automated WhatsApp intervention."
-                            Icon={MessageCircleHeart}
+                            title="Generate a prescription"
+                            description="Create a printable prescription with medicines, dosage, and duration — ready to hand over."
+                            Icon={FileText}
                             isActive={activeStep === 3}
                             elapsed={elapsed}
                             onClick={() => handleStepClick(3)}
@@ -222,14 +222,14 @@ function StepOneUI() {
                     </div>
                 </div>
                 <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Treatment Duration</label>
+                    <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Discipline</label>
                     <div className="w-full h-10 bg-gray-50 border border-gray-200 rounded-md flex items-center px-3 text-sm text-text-primary justify-between">
-                        <span>30 Days (Panchakarma)</span>
-                        <Clock className="w-4 h-4 text-brand-500" />
+                        <span>Siddha</span>
+                        <Stethoscope className="w-4 h-4 text-brand-500" />
                     </div>
                 </div>
                 <button className="w-full mt-2 bg-brand-600 text-white font-medium py-2.5 rounded-md shadow-sm flex items-center justify-center gap-2">
-                    Start Monitoring <PlayCircle className="w-4 h-4" />
+                    Save Patient <Save className="w-4 h-4" />
                 </button>
             </div>
         </div>
@@ -241,31 +241,33 @@ function StepTwoUI() {
         <div className="bg-white rounded-2xl border border-border shadow-2xl overflow-hidden flex flex-col pointer-events-none">
             <div className="border-b border-border bg-gray-50 px-6 py-4 flex justify-between items-center">
                 <h4 className="font-semibold flex items-center gap-2 text-text-primary">
-                    <Activity className="w-5 h-5 text-brand-600" />
-                    Patient Journey
+                    <Stethoscope className="w-5 h-5 text-brand-600" />
+                    New Consultation
                 </h4>
-                <span className="text-xs bg-brand-100 text-brand-700 px-2 py-1 rounded-full font-medium">Active</span>
+                <span className="text-xs bg-brand-100 text-brand-700 px-2 py-1 rounded-full font-medium">Rajesh Kumar</span>
             </div>
-            <div className="p-6">
-                <div className="relative border-l-2 border-brand-200 ml-3 space-y-6">
-                    <div className="relative pl-6">
-                        <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-brand-500 ring-4 ring-white" />
-                        <h5 className="text-sm font-bold text-text-primary">Day 1: Treatment Started</h5>
-                        <p className="text-xs text-text-secondary mt-1">Profile created &amp; welcome message sent.</p>
-                    </div>
-                    <div className="relative pl-6">
-                        <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-brand-500 ring-4 ring-white" />
-                        <h5 className="text-sm font-bold text-text-primary">Day 3: Medication Check</h5>
-                        <p className="text-xs text-text-secondary mt-1">Patient confirmed taking Kashayam.</p>
-                    </div>
-                    <div className="relative pl-6">
-                        <div className="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-yellow-400 ring-4 ring-white" />
-                        <h5 className="text-sm font-bold text-text-primary">Day 7: Follow-up Visit</h5>
-                        <p className="text-xs text-text-secondary mt-1 text-yellow-600 font-medium flex items-center gap-1">
-                            <Clock className="w-3 h-3 animate-pulse" /> Waiting for response...
-                        </p>
+            <div className="p-6 space-y-4">
+                <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Chief Complaint</label>
+                    <div className="w-full h-10 bg-gray-50 border border-gray-200 rounded-md flex items-center px-3 text-sm text-text-primary">
+                        Knee pain, swelling for 2 weeks
                     </div>
                 </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Diagnosis</label>
+                    <div className="w-full h-10 bg-gray-50 border border-gray-200 rounded-md flex items-center px-3 text-sm text-text-primary">
+                        Vatha Suronitham (Arthritis)
+                    </div>
+                </div>
+                <div className="space-y-1.5">
+                    <label className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Notes</label>
+                    <div className="w-full h-16 bg-gray-50 border border-gray-200 rounded-md flex items-start px-3 pt-2 text-sm text-text-primary">
+                        Advised Varmam therapy. Follow-up in 7 days.
+                    </div>
+                </div>
+                <button className="w-full mt-1 bg-brand-600 text-white font-medium py-2.5 rounded-md shadow-sm flex items-center justify-center gap-2">
+                    Save Consultation <Save className="w-4 h-4" />
+                </button>
             </div>
         </div>
     );
@@ -273,34 +275,52 @@ function StepTwoUI() {
 
 function StepThreeUI() {
     return (
-        <div className="relative rounded-2xl border border-border bg-white shadow-2xl p-4 sm:p-5 pointer-events-none">
-            <div className="rounded-xl overflow-hidden bg-[#e5ddd5]">
-                <div className="bg-[#075e54] text-white p-3 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                        <MessageCircleHeart className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                        <h4 className="font-semibold leading-tight text-sm">Sri Lakshmi Ayurveda Clinic</h4>
-                        <p className="text-[10px] text-white/90">Automated Assistant</p>
-                    </div>
-                </div>
-                <div className="p-4 space-y-4 min-h-[250px] flex flex-col justify-end text-sm">
-                    <div className="bg-white rounded-lg rounded-tl-none p-3 shadow-sm max-w-[85%] self-start">
-                        <p className="text-[#111b21] mb-2 leading-relaxed text-[13px]">
-                            Vanakkam &#128591;<br /><br />
-                            Just a quick check from Sri Lakshmi Ayurveda Clinic. Did you take your medicines today?
-                        </p>
-                        <div className="pt-2 border-t border-gray-100 flex flex-col gap-2">
-                            <div className="text-center py-2 bg-blue-50 text-blue-600 rounded font-medium text-xs">&#9989; Yes I did</div>
-                            <div className="text-center py-2 bg-blue-50 text-blue-600 rounded font-medium text-xs">&#9888;&#65039; Missed today</div>
-                        </div>
-                        <p className="text-[10px] text-right text-gray-500 mt-2">10:42 AM</p>
-                    </div>
-                </div>
+        <div className="bg-white rounded-2xl border border-border shadow-2xl overflow-hidden pointer-events-none">
+            <div className="border-b border-border bg-gray-50 px-6 py-4 flex justify-between items-center">
+                <h4 className="font-semibold flex items-center gap-2 text-text-primary">
+                    <FileText className="w-5 h-5 text-brand-600" />
+                    Prescription
+                </h4>
+                <span className="text-xs text-text-secondary">31 Mar 2026</span>
             </div>
-            <div className="mt-4 flex items-start gap-3 p-3 bg-brand-50 rounded-lg border border-brand-100 text-brand-900 text-xs">
-                <AlertTriangle className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
-                <p>This triggers when adherence drops. Dashboards update if they click &quot;Missed today&quot;.</p>
+            <div className="p-6">
+                <div className="mb-4 pb-3 border-b border-border">
+                    <p className="text-sm font-bold text-text-primary">Rajesh Kumar</p>
+                    <p className="text-xs text-text-secondary">Vatha Suronitham (Arthritis)</p>
+                </div>
+
+                <div className="space-y-3 mb-5">
+                    <div className="flex items-start justify-between gap-4 text-sm">
+                        <div>
+                            <p className="font-medium text-text-primary">1. Nilavembu Kashayam</p>
+                            <p className="text-xs text-text-secondary">30ml, twice daily before food</p>
+                        </div>
+                        <span className="text-xs text-text-secondary whitespace-nowrap">14 days</span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 text-sm">
+                        <div>
+                            <p className="font-medium text-text-primary">2. Kottamchukkadi Thailam</p>
+                            <p className="text-xs text-text-secondary">External application, twice daily</p>
+                        </div>
+                        <span className="text-xs text-text-secondary whitespace-nowrap">14 days</span>
+                    </div>
+                    <div className="flex items-start justify-between gap-4 text-sm">
+                        <div>
+                            <p className="font-medium text-text-primary">3. Rasnadi Choornam</p>
+                            <p className="text-xs text-text-secondary">1 tsp with warm water, after food</p>
+                        </div>
+                        <span className="text-xs text-text-secondary whitespace-nowrap">14 days</span>
+                    </div>
+                </div>
+
+                <div className="flex gap-3">
+                    <button className="flex-1 bg-brand-600 text-white font-medium py-2.5 rounded-md shadow-sm flex items-center justify-center gap-2 text-sm">
+                        <Printer className="w-4 h-4" /> Print
+                    </button>
+                    <button className="flex-1 bg-gray-100 text-text-primary font-medium py-2.5 rounded-md shadow-sm flex items-center justify-center gap-2 text-sm border border-gray-200">
+                        <FileText className="w-4 h-4" /> Share PDF
+                    </button>
+                </div>
             </div>
         </div>
     );

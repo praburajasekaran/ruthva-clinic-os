@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { BookX, BotMessageSquare } from "lucide-react";
+import { BookX, LayoutDashboard } from "lucide-react";
 
 export function ProblemSolution() {
     const prefersReducedMotion = useReducedMotion();
@@ -11,10 +11,10 @@ export function ProblemSolution() {
             <div className="mx-auto max-w-5xl">
                 <div className="mb-20 text-center max-w-3xl mx-auto">
                     <h2 id="problem-heading" className="text-3xl font-bold tracking-tight text-brand-950 sm:text-4xl lg:text-5xl text-balance">
-                        Stop relying on notebooks and memory.
+                        Stop running your clinic on paper.
                     </h2>
                     <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-                        Your clinic operates in real-time chaos. Memory fails. Automated continuity won&apos;t.
+                        Paper prescriptions get lost. Patient histories live in scattered notebooks. There&apos;s a better way.
                     </p>
                 </div>
 
@@ -29,28 +29,28 @@ export function ProblemSolution() {
                         <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-red-50 text-red-600 shadow-sm border border-red-100" aria-hidden="true">
                             <BookX className="h-7 w-7" />
                         </div>
-                        <h3 className="mb-5 text-2xl font-bold text-red-950">The Notebook Way</h3>
-                        <ul className="mb-10 space-y-4 text-text-secondary font-medium" aria-label="Problems with manual tracking">
+                        <h3 className="mb-5 text-2xl font-bold text-red-950">The Old Way</h3>
+                        <ul className="mb-10 space-y-4 text-text-secondary font-medium" aria-label="Problems with paper-based clinic management">
                             <li className="flex items-start">
                                 <span className="mr-4 text-red-600 mt-1" aria-hidden="true">&#10060;</span>
-                                Remember treatment durations manually
+                                Paper prescriptions lost or illegible
                             </li>
                             <li className="flex items-start">
                                 <span className="mr-4 text-red-600 mt-1" aria-hidden="true">&#10060;</span>
-                                Scan pages to find who missed today
+                                Patient history scattered across notebooks
                             </li>
                             <li className="flex items-start">
                                 <span className="mr-4 text-red-600 mt-1" aria-hidden="true">&#10060;</span>
-                                Mentally calculate delays
+                                No coordination between doctor and staff
                             </li>
                             <li className="flex items-start">
                                 <span className="mr-4 text-red-600 mt-1" aria-hidden="true">&#10060;</span>
-                                Hope someone remembers to call them
+                                Follow-ups tracked manually or forgotten
                             </li>
                         </ul>
                         <div className="mt-auto border-t border-red-200 pt-6">
                             <p className="font-semibold text-red-950">
-                                Result: <span className="text-red-700">Lost continuity. Lost revenue.</span>
+                                Result: <span className="text-red-700">Missed follow-ups. Lost records.</span>
                             </p>
                         </div>
                     </motion.div>
@@ -61,35 +61,35 @@ export function ProblemSolution() {
                         className="flex flex-col rounded-[2.5rem] border-2 border-brand-500 bg-white p-8 sm:p-10 shadow-2xl shadow-brand-900/10 relative overflow-hidden"
                     >
                         <div className="absolute top-0 right-0 p-8 opacity-5">
-                            <BotMessageSquare className="w-48 h-48 rotate-12" />
+                            <LayoutDashboard className="w-48 h-48 rotate-12" />
                         </div>
 
                         <div className="relative z-10">
                             <div className="mb-8 flex h-14 w-14 items-center justify-center rounded-2xl bg-brand-500 text-white shadow-md shadow-brand-500/20" aria-hidden="true">
-                                <BotMessageSquare className="h-7 w-7" />
+                                <LayoutDashboard className="h-7 w-7" />
                             </div>
                             <h3 className="mb-5 text-2xl font-bold text-brand-950">The Ruthva Way</h3>
                             <ul className="mb-10 space-y-4 text-text-secondary font-medium" aria-label="Benefits of using Ruthva">
                                 <li className="flex items-start">
                                     <span className="mr-4 text-brand-600 mt-1" aria-hidden="true">&#9989;</span>
-                                    System detects emerging risk continuously
+                                    Complete digital patient records at a glance
                                 </li>
                                 <li className="flex items-start">
                                     <span className="mr-4 text-brand-600 mt-1" aria-hidden="true">&#9989;</span>
-                                    WhatsApp check-ins sent automatically
+                                    One-click prescriptions with print and share
                                 </li>
                                 <li className="flex items-start">
                                     <span className="mr-4 text-brand-600 mt-1" aria-hidden="true">&#9989;</span>
-                                    Patient responds via quick replies
+                                    Consultation history organised by visit
                                 </li>
                                 <li className="flex items-start">
                                     <span className="mr-4 text-brand-600 mt-1" aria-hidden="true">&#9989;</span>
-                                    At-risk flag surfaces on your dashboard
+                                    Team dashboard with roles and permissions
                                 </li>
                             </ul>
                             <div className="mt-auto border-t border-brand-100 pt-6">
                                 <p className="font-semibold text-brand-950">
-                                    Result: <span className="text-brand-600">Recovered patients. Protected reputation.</span>
+                                    Result: <span className="text-brand-600">Organised clinic. Happy patients.</span>
                                 </p>
                             </div>
                         </div>
