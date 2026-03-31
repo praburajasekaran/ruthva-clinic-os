@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, Stethoscope, FileText, Users } from "lucide-react";
 
 export function Hero() {
     const prefersReducedMotion = useReducedMotion();
@@ -31,10 +31,10 @@ export function Hero() {
                             Built exclusively for AYUSH Clinics
                         </span>
                         <h1 id="hero-heading" className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl text-balance">
-                            Detect disappearing patients and bring them back.
+                            Your entire AYUSH practice. One powerful platform.
                         </h1>
                         <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-200 sm:text-xl font-normal">
-                            The Patient Continuity System that tracks treatment adherence automatically, finds at-risk patients, and engages them via WhatsApp before they drop out.
+                            Manage patients, consultations, prescriptions, pharmacy, and your team — with built-in support for Siddha, Ayurveda, Homeopathy, Yoga &amp; Naturopathy, and Unani.
                         </p>
 
                         <div className="flex flex-col flex-wrap items-center justify-center gap-4 sm:flex-row">
@@ -54,13 +54,13 @@ export function Hero() {
 
                         <div className="mt-14 mb-20 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-brand-200 font-medium">
                             <span className="flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-brand-400" aria-hidden="true" /> WhatsApp Integration
+                                <Stethoscope className="h-5 w-5 text-brand-400" aria-hidden="true" /> Multi-Discipline Support
                             </span>
                             <span className="flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-brand-400" aria-hidden="true" /> Zero Software to Learn
+                                <FileText className="h-5 w-5 text-brand-400" aria-hidden="true" /> Digital Prescriptions
                             </span>
                             <span className="flex items-center gap-2">
-                                <CheckCircle2 className="h-5 w-5 text-brand-400" aria-hidden="true" /> Runs on Autopilot
+                                <Users className="h-5 w-5 text-brand-400" aria-hidden="true" /> Team Collaboration
                             </span>
                         </div>
                     </motion.div>
@@ -74,7 +74,7 @@ export function Hero() {
                     <div className="relative w-full rounded-[2rem] bg-brand-950/80 backdrop-blur-xl border border-brand-700 p-2 shadow-[0_20px_60px_rgba(0,0,0,0.6)] overflow-hidden flex items-center justify-center">
                         <Image
                             src="/Ruthva-hero-image.png"
-                            alt="Ruthva Adherence Flow — diagram showing how patient treatment journeys are tracked, monitored, and recovered automatically"
+                            alt="Ruthva Clinic OS — dashboard showing patient management, consultations, prescriptions, and clinic analytics"
                             width={1200}
                             height={600}
                             className="w-full h-auto rounded-[1.5rem]"

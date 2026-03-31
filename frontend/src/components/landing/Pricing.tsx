@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Users, FileText, Pill, Stethoscope, BarChart3, Download, Languages } from "lucide-react";
 import Link from "next/link";
 
 export function Pricing() {
@@ -14,10 +14,10 @@ export function Pricing() {
             <div className="mx-auto max-w-5xl">
                 <div className="text-center mb-16 max-w-2xl mx-auto">
                     <h2 id="pricing-heading" className="text-3xl font-bold tracking-tight text-brand-950 sm:text-4xl lg:text-5xl text-balance">
-                        Simple pricing. Clear ROI.
+                        Simple pricing. Everything included.
                     </h2>
                     <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-                        Pay a flat fee, recover lost patient revenue, and protect your clinic&apos;s reputation.
+                        One plan with everything your AYUSH clinic needs. No hidden fees, no per-feature charges.
                     </p>
                 </div>
 
@@ -27,12 +27,12 @@ export function Pricing() {
                         className="rounded-[2.5rem] shadow-2xl shadow-brand-900/10 border border-brand-100 bg-white p-8 sm:p-12 relative overflow-hidden"
                     >
                         <div className="absolute top-0 inset-x-0 bg-brand-950 py-3.5 text-center text-sm font-semibold text-brand-100">
-                            Revenue Protected This Month: &#8377;72,000*
+                            Everything your clinic needs in one plan
                         </div>
 
                         <div className="mt-10 mb-10">
-                            <h3 className="text-3xl font-bold text-brand-950">Starter Plan</h3>
-                            <p className="text-text-secondary text-base mt-3 leading-relaxed">Perfect for independent AYUSH practitioners looking for immediate continuity wins.</p>
+                            <h3 className="text-3xl font-bold text-brand-950">Clinic Plan</h3>
+                            <p className="text-text-secondary text-base mt-3 leading-relaxed">Complete clinic management for independent AYUSH practitioners and small clinics.</p>
 
                             <div className="mt-8 flex flex-col gap-1">
                                 <div className="flex items-center gap-2 text-text-secondary">
@@ -50,20 +50,36 @@ export function Pricing() {
 
                         <ul className="space-y-5 text-base leading-6 text-text-secondary mb-10">
                             <li className="flex gap-x-4 text-brand-900 font-medium">
-                                <Check className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
-                                Up to 100 active treatment journeys
+                                <Users className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Unlimited patient records
                             </li>
                             <li className="flex gap-x-4 text-brand-900 font-medium">
-                                <Check className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
-                                Automated Adherence Checks
+                                <Stethoscope className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Digital consultations &amp; EMR
                             </li>
                             <li className="flex gap-x-4 text-brand-900 font-medium">
-                                <Check className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
-                                Recovery Automation &amp; Alerts
+                                <FileText className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Prescription generation &amp; print
                             </li>
                             <li className="flex gap-x-4 text-brand-900 font-medium">
-                                <Check className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
-                                WhatsApp Messaging Included
+                                <Pill className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Pharmacy management
+                            </li>
+                            <li className="flex gap-x-4 text-brand-900 font-medium">
+                                <Users className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Team management &amp; roles
+                            </li>
+                            <li className="flex gap-x-4 text-brand-900 font-medium">
+                                <BarChart3 className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Dashboard &amp; analytics
+                            </li>
+                            <li className="flex gap-x-4 text-brand-900 font-medium">
+                                <Download className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Data export (CSV / PDF)
+                            </li>
+                            <li className="flex gap-x-4 text-brand-900 font-medium">
+                                <Languages className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
+                                Multi-discipline &amp; bilingual support
                             </li>
                         </ul>
 
@@ -71,11 +87,11 @@ export function Pricing() {
                             href="/login"
                             className="mt-8 block w-full rounded-xl bg-brand-600 px-4 py-4 text-center text-base font-semibold text-white shadow-lg shadow-brand-600/25 hover:bg-brand-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand-600 transition-all active:scale-95"
                         >
-                            Start recovering patients today
+                            Start managing your clinic
                         </Link>
 
                         <p className="text-center text-xs text-text-secondary mt-6">
-                            *Based on 4-5 average patient recoveries / month
+                            Free 14-day trial. No credit card required.
                         </p>
                     </motion.div>
                 </div>

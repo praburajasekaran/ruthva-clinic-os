@@ -25,7 +25,7 @@ export function Footer() {
                         />
                     </Link>
                     <p className="text-center text-xs leading-5 text-brand-200">
-                        &copy; {new Date().getFullYear()} Ruthva Continuity System. All rights reserved.
+                        &copy; {new Date().getFullYear()} Ruthva Clinic OS. All rights reserved.
                     </p>
                 </div>
             </div>
