@@ -4,6 +4,9 @@ set -e
 echo "Running migrations..."
 python manage.py migrate || echo "Migration warnings (non-fatal)"
 
+echo "Seeding demo data..."
+python manage.py seed_demo || echo "seed_demo warnings (non-fatal)"
+
 echo "Collecting static files..."
 python manage.py collectstatic --noinput || echo "collectstatic warnings (non-fatal)"
 
