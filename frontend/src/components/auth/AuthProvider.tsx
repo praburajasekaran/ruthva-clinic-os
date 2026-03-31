@@ -26,7 +26,7 @@ type AuthState = {
 };
 
 type AuthContextValue = AuthState & {
-  requestOTP: (data: RequestOTPRequest) => Promise<void>;
+  requestOTP: (data: RequestOTPRequest) => Promise<{ is_demo?: boolean }>;
   verifyOTP: (data: VerifyOTPRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   initiateSignup: (data: InitiateSignupRequest) => Promise<void>;
@@ -94,7 +94,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const requestOTP = useCallback(
     async (data: RequestOTPRequest) => {
-      await api.post("/auth/request-otp/", data);
+      const res = await api.post("/auth/request-otp/", data);
+      return res.data as { is_demo?: boolean };
     },
     [],
   );

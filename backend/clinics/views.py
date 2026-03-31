@@ -11,6 +11,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
+from users.demo import block_demo_user
 from users.serializers import CustomTokenObtainPairSerializer
 
 from .email import send_invite_email
@@ -111,6 +112,7 @@ def team_list(request):
 @api_view(["POST"])
 @permission_classes([IsAuthenticated, IsClinicOwner])
 @throttle_classes([UserRateThrottle])
+@block_demo_user
 def team_invite(request):
     """Invite a new member to the clinic by email."""
     serializer = InviteMemberSerializer(

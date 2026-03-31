@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [resendCooldown, setResendCooldown] = useState(0);
+  const [isDemo, setIsDemo] = useState(false);
 
   // Task 5: Cooldown timer effect
   useEffect(() => {
@@ -24,13 +25,14 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  async function handleRequestOTP(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleRequestOTP(e?: React.FormEvent) {
+    e?.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      await requestOTP({ email: email.trim().toLowerCase() });
+      const result = await requestOTP({ email: email.trim().toLowerCase() });
+      setIsDemo(!!result?.is_demo);
       setStep("otp");
     } catch (err: unknown) {
       const msg =
@@ -115,6 +117,14 @@ export default function LoginPage() {
               <p className="mt-1 text-sm text-gray-500">
                 Sign in to your clinic dashboard
               </p>
+            </>
+          ) : isDemo ? (
+            <>
+              <h1 className="text-2xl font-bold text-gray-900">Demo Mode</h1>
+              <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+                <p className="text-sm text-emerald-700">Use this code to continue</p>
+                <p className="mt-1 font-mono text-2xl font-bold text-emerald-900">123456</p>
+              </div>
             </>
           ) : (
             <>
@@ -206,18 +216,19 @@ export default function LoginPage() {
               Back
             </button>
 
-            <p className="text-center text-xs text-gray-400">
-              Didn&apos;t receive the code? Check your spam folder or{" "}
-              {/* Task 5: Dedicated resend handler with cooldown */}
-              <button
-                type="button"
-                onClick={handleResendOTP}
-                disabled={resendCooldown > 0}
-                className="text-emerald-700 hover:text-emerald-700 disabled:opacity-50"
-              >
-                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "resend"}
-              </button>
-            </p>
+            {!isDemo && (
+              <p className="text-center text-xs text-gray-400">
+                Didn&apos;t receive the code? Check your spam folder or{" "}
+                <button
+                  type="button"
+                  onClick={handleResendOTP}
+                  disabled={resendCooldown > 0}
+                  className="text-emerald-700 hover:text-emerald-700 disabled:opacity-50"
+                >
+                  {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "resend"}
+                </button>
+              </p>
+            )}
           </form>
         )}
 
@@ -230,6 +241,19 @@ export default function LoginPage() {
             Register your clinic &rarr;
           </Link>
         </p>
+
+        {step === "email" && (
+          <button
+            type="button"
+            onClick={() => {
+              setEmail("demo@ruthva.com");
+              setTimeout(() => handleRequestOTP(), 0);
+            }}
+            className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+          >
+            Try Demo
+          </button>
+        )}
       </div>
     </main>
   );
