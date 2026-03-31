@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { useShortcuts } from "@/components/layout/KeyboardProvider";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { DemoClinicSwitcher } from "@/components/demo/DemoClinicSwitcher";
 import { useApi } from "@/hooks/useApi";
 import type { FollowUpsResponse, Medicine } from "@/lib/types";
 
@@ -104,6 +105,8 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
             />
           </a>
         </div>
+
+        <DemoClinicSwitcher />
 
         {/* Search button */}
         <button
