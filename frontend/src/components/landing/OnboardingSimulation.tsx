@@ -9,7 +9,7 @@ import {
     useTransform,
 } from "framer-motion";
 import type { MotionValue } from "framer-motion";
-import { Clock, UserPlus, Stethoscope, FileText, Printer, Save } from "lucide-react";
+import { UserPlus, Stethoscope, FileText, Printer, Save } from "lucide-react";
 
 const STEP_DURATION = 4000;
 const TOTAL_STEPS = 3;

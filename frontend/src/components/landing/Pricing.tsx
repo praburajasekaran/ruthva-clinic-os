@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { Check, Users, FileText, Pill, Stethoscope, BarChart3, Download, Languages } from "lucide-react";
+import { Users, FileText, Pill, Stethoscope, BarChart3, Download, Languages } from "lucide-react";
 import Link from "next/link";
 
 export function Pricing() {
