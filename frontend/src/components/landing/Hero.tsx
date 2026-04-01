@@ -3,7 +3,7 @@
 import { motion, useReducedMotion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight, CheckCircle2, Stethoscope, FileText, Users } from "lucide-react";
+import { ArrowRight, Stethoscope, FileText, Users } from "lucide-react";
 
 export function Hero() {
     const prefersReducedMotion = useReducedMotion();
