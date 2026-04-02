@@ -28,7 +28,7 @@ export default function NewConsultationPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pt-10 lg:pt-0">
       <PatientBanner patient={patient} />
       <h1 className="text-2xl font-bold text-gray-900">Start Consultation</h1>
       <ConsultationForm patientId={patient.id} />

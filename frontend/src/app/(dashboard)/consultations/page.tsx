@@ -1,11 +1,15 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/Button";
+import { Modal } from "@/components/ui/Modal";
+import { Input } from "@/components/ui/Input";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
-import { Stethoscope } from "lucide-react";
+import { Plus, Search, Stethoscope } from "lucide-react";
+import type { PaginatedResponse, PatientListItem } from "@/lib/types";
 
 interface Consultation {
     id: number;
@@ -23,6 +27,10 @@ export default function ConsultationsPage() {
     const [consultations, setConsultations] = useState<Consultation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
+    const [showPatientPicker, setShowPatientPicker] = useState(false);
+    const [patients, setPatients] = useState<PatientListItem[]>([]);
+    const [patientsLoading, setPatientsLoading] = useState(false);
+    const [patientSearch, setPatientSearch] = useState("");
 
     useEffect(() => {
         api
@@ -31,6 +39,30 @@ export default function ConsultationsPage() {
             .catch((err) => setError(err.message || "Failed to load visits"))
             .finally(() => setLoading(false));
     }, []);
+
+    useEffect(() => {
+        if (!showPatientPicker) return;
+        setPatientsLoading(true);
+        api
+            .get("/patients/")
+            .then((res) => {
+                const data = res.data as PaginatedResponse<PatientListItem>;
+                setPatients(data.results);
+            })
+            .catch(() => setPatients([]))
+            .finally(() => setPatientsLoading(false));
+    }, [showPatientPicker]);
+
+    const filteredPatients = useMemo(() => {
+        if (!patientSearch.trim()) return patients;
+        const q = patientSearch.toLowerCase();
+        return patients.filter(
+            (p) =>
+                p.name.toLowerCase().includes(q) ||
+                p.record_id.toLowerCase().includes(q) ||
+                p.phone.includes(q),
+        );
+    }, [patients, patientSearch]);
 
     if (loading) {
         return (
@@ -57,7 +89,63 @@ export default function ConsultationsPage() {
                         {consultations.length} visit{consultations.length !== 1 ? "s" : ""} recorded in the care flow
                     </p>
                 </div>
+                <Button
+                    onClick={() => {
+                        setPatientSearch("");
+                        setShowPatientPicker(true);
+                    }}
+                    size="sm"
+                >
+                    <Plus className="h-4 w-4" />
+                    New Consultation
+                </Button>
             </div>
+
+            <Modal
+                open={showPatientPicker}
+                onClose={() => setShowPatientPicker(false)}
+                title="Select Patient"
+                size="md"
+            >
+                <div className="relative mb-4">
+                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                    <Input
+                        placeholder="Search by name, record ID, or phone..."
+                        value={patientSearch}
+                        onChange={(e) => setPatientSearch(e.target.value)}
+                        className="pl-9"
+                        autoFocus
+                    />
+                </div>
+                {patientsLoading ? (
+                    <div className="flex justify-center py-8">
+                        <Spinner />
+                    </div>
+                ) : filteredPatients.length === 0 ? (
+                    <p className="py-8 text-center text-sm text-gray-500">
+                        {patientSearch ? "No patients match your search" : "No patients found"}
+                    </p>
+                ) : (
+                    <ul className="max-h-72 divide-y divide-gray-100 overflow-y-auto rounded-lg border border-gray-200">
+                        {filteredPatients.map((p) => (
+                            <li key={p.id}>
+                                <button
+                                    type="button"
+                                    onClick={() => router.push(`/patients/${p.id}/consultations/new`)}
+                                    className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-gray-50"
+                                >
+                                    <div className="min-w-0 flex-1">
+                                        <p className="text-sm font-medium text-gray-900">{p.name}</p>
+                                        <p className="text-xs text-gray-500">
+                                            {p.record_id} &middot; {p.phone}
+                                        </p>
+                                    </div>
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                )}
+            </Modal>
 
             {consultations.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-16">
