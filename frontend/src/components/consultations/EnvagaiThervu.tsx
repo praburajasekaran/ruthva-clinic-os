@@ -1,6 +1,6 @@
 "use client";
 
-import { Select } from "@/components/ui/Select";
+import { PillGroup } from "@/components/ui/PillGroup";
 import { DoshaChip, isDoshaType } from "@/components/ui/DoshaChip";
 import { ENVAGAI_OPTIONS, type EnvagaiTool } from "@/lib/constants/envagai-options";
 
@@ -42,26 +42,19 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
                 <label className="mb-1 block text-xs font-medium capitalize text-gray-600">
                   {fieldKey.replace(/_/g, " ")}
                 </label>
-                <Select
-                  value={
-                    getFieldValue(values[key] ?? "", fieldKey)
-                  }
-                  onChange={(e) => {
+                <PillGroup
+                  label={fieldKey.replace(/_/g, " ")}
+                  options={options as readonly string[]}
+                  value={getFieldValue(values[key] ?? "", fieldKey)}
+                  onChange={(val) => {
                     const updated = setFieldValue(
                       values[key] ?? "",
                       fieldKey,
-                      e.target.value,
+                      val,
                     );
                     onChange(key, updated);
                   }}
-                >
-                  <option value="">Select...</option>
-                  {(options as readonly string[]).map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt}
-                    </option>
-                  ))}
-                </Select>
+                />
               </div>
             ))}
 
