@@ -135,9 +135,35 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
 
 // ── Clinic section ────────────────────────────────────────────────────────────
 
+function parseAddress(raw: string): { line1: string; line2: string; city: string; state: string; pinCode: string; country: string } {
+  const parts = raw.split(",").map((s) => s.trim());
+  // Best-effort reverse of the join: line1, line2?, city, state?, pinCode, country?
+  // PIN code is a 6-digit number; country is last if present
+  const pinIdx = parts.findIndex((p) => /^\d{6}$/.test(p));
+  if (pinIdx === -1) {
+    // Fallback: dump everything into line1
+    return { line1: raw, line2: "", city: "", state: "", pinCode: "", country: "" };
+  }
+  const country = pinIdx < parts.length - 1 ? parts.slice(pinIdx + 1).join(", ") : "";
+  const pinCode = parts[pinIdx];
+  // Everything before pinCode: last is state, second-to-last is city, rest is address lines
+  const before = parts.slice(0, pinIdx);
+  const state = before.length >= 3 ? before.pop()! : "";
+  const city = before.length >= 2 ? before.pop()! : before.length === 1 ? before.pop()! : "";
+  const line1 = before.length >= 1 ? before[0] : "";
+  const line2 = before.length >= 2 ? before.slice(1).join(", ") : "";
+  return { line1, line2, city, state, pinCode, country };
+}
+
 function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () => void }) {
   const [name, setName] = useState(clinic.name);
-  const [address, setAddress] = useState(clinic.address);
+  const parsed = parseAddress(clinic.address);
+  const [addressLine1, setAddressLine1] = useState(parsed.line1);
+  const [addressLine2, setAddressLine2] = useState(parsed.line2);
+  const [city, setCity] = useState(parsed.city);
+  const [addrState, setAddrState] = useState(parsed.state);
+  const [pinCode, setPinCode] = useState(parsed.pinCode);
+  const [country, setCountry] = useState(parsed.country || "India");
   const [phone, setPhone] = useState(clinic.phone);
   const [email, setEmail] = useState(clinic.email);
   const [tagline, setTagline] = useState(clinic.tagline);
@@ -202,6 +228,10 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
     setIsLoading(true);
 
     try {
+      const address = [addressLine1, addressLine2, city, addrState, pinCode, country]
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .join(", ");
       await api.patch("/auth/clinic/update/", {
         name,
         address,
@@ -279,23 +309,52 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
               )}
             </FormField>
           </div>
-          <FormField label="Address" error={errors.address}>
-            {(props) => (
-              <textarea
-                id={props.id}
-                aria-describedby={props["aria-describedby"]}
-                aria-invalid={props["aria-invalid"]}
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                rows={3}
-                className={`w-full rounded-lg border px-3 py-2.5 text-base placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 ${
-                  errors.address
-                    ? "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500"
-                    : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
-                }`}
+          <fieldset className="space-y-3">
+            <legend className="mb-1 text-sm font-medium text-gray-700">
+              Address
+            </legend>
+            <Input
+              value={addressLine1}
+              onChange={(e) => setAddressLine1(e.target.value)}
+              placeholder="Address line 1"
+              hasError={!!errors.address}
+            />
+            <Input
+              value={addressLine2}
+              onChange={(e) => setAddressLine2(e.target.value)}
+              placeholder="Address line 2 (optional)"
+            />
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                placeholder="City"
+                hasError={!!errors.address}
               />
+              <Input
+                value={addrState}
+                onChange={(e) => setAddrState(e.target.value)}
+                placeholder="State"
+              />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Input
+                value={pinCode}
+                onChange={(e) => setPinCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                placeholder="PIN code"
+                inputMode="numeric"
+                hasError={!!errors.address}
+              />
+              <Input
+                value={country}
+                onChange={(e) => setCountry(e.target.value)}
+                placeholder="Country"
+              />
+            </div>
+            {errors.address && (
+              <p className="text-sm text-red-600">{errors.address}</p>
             )}
-          </FormField>
+          </fieldset>
         </div>
       </FormSection>
 
