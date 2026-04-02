@@ -1,5 +1,6 @@
 import hashlib
 import hmac
+import logging
 import secrets
 import string
 
@@ -15,6 +16,8 @@ from utils.email_templates import (
     email_wrapper,
 )
 from utils.ses import send_email
+
+logger = logging.getLogger(__name__)
 
 
 def generate_otp(length=6):
@@ -48,6 +51,13 @@ def send_otp_email(email: str, code: str, purpose: str = "login"):
     else:
         subject = f"Your login code is {code}"
         header_title = "Login Code"
+
+    if settings.DEBUG:
+        logger.info("[DEV] OTP for %s: %s", email, code)
+        print(f"\n{'='*50}")
+        print(f"  OTP for {email}: {code}")
+        print(f"{'='*50}\n")
+        return
 
     content = (
         email_header(header_title)
