@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import Image from "next/image";
 import { Building2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
 import type { Discipline } from "@/lib/types";
@@ -99,6 +100,13 @@ export default function OnboardingPage() {
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
+          <Image
+            src="/ruthva-logo.png"
+            alt="Ruthva"
+            width={120}
+            height={40}
+            className="mx-auto mb-6 h-10 w-auto"
+          />
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
             <Building2 className="h-6 w-6 text-emerald-700" />
           </div>
