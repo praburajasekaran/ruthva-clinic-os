@@ -31,7 +31,7 @@ export function Navbar() {
             <div className="flex items-center gap-4">
                 <Link
                     href="/login"
-                    className="hidden text-sm font-semibold text-brand-100 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-400 rounded-sm md:block"
+                    className="text-sm font-semibold text-brand-100 transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-brand-400 rounded-sm"
                 >
                     Sign In
                 </Link>
