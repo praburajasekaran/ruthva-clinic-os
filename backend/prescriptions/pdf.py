@@ -108,6 +108,16 @@ def generate_prescription_pdf(prescription: Prescription) -> bytes:
 
     letterhead_mode = getattr(clinic, "letterhead_mode", "digital")
 
+    # Pre-process medications to split frequency display into English/Tamil
+    meds = []
+    for med in prescription.medications.all():
+        display = med.get_frequency_display()
+        # Display format: "Once daily / ஒரு முறை" — split on " / "
+        parts = display.split(" / ", 1) if display else [""]
+        med.freq_english = parts[0] if parts else ""
+        med.freq_tamil = parts[1] if len(parts) > 1 else (med.frequency_tamil or "")
+        meds.append(med)
+
     context = {
         "prescription": prescription,
         "patient": prescription.consultation.patient,
@@ -116,7 +126,7 @@ def generate_prescription_pdf(prescription: Prescription) -> bytes:
         "clinic_logo_url": clinic_logo_url,
         "letterhead_mode": letterhead_mode,
         "conducted_by": prescription.consultation.conducted_by,
-        "medications": prescription.medications.all(),
+        "medications": meds,
         "procedures": prescription.procedures.all(),
         "qr_code_data_uri": _generate_qr_data_uri(
             getattr(clinic, "google_review_url", "")

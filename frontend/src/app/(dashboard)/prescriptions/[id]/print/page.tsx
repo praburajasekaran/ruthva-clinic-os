@@ -17,10 +17,10 @@ import type { Prescription, Consultation, Patient } from "@/lib/types";
 function TamilHeader({ ta, en }: { ta: string; en: string }) {
   return (
     <span>
-      <span lang="ta" className="font-semibold">
+      <span className="font-semibold">{en}</span>{" "}
+      <span lang="ta" className="text-[9pt] font-normal text-gray-400">
         {ta}
-      </span>{" "}
-      <span className="text-[8pt] font-normal text-gray-400">{en}</span>
+      </span>
     </span>
   );
 }
@@ -28,9 +28,11 @@ function TamilHeader({ ta, en }: { ta: string; en: string }) {
 function BilingualTh({ ta, en }: { ta: string; en: string }) {
   return (
     <>
-      <span lang="ta">{ta}</span>
+      <span>{en}</span>
       <br />
-      <span className="text-[7pt] font-normal text-gray-400">{en}</span>
+      <span lang="ta" className="text-[8pt] font-normal text-gray-400">
+        {ta}
+      </span>
     </>
   );
 }
@@ -86,6 +88,7 @@ export default function PrintPrescriptionPage() {
           .print-prescription {
             max-width: 100% !important;
             padding: 0 !important;
+            min-height: 0 !important;
           }
           .no-print {
             display: none !important;
@@ -97,9 +100,10 @@ export default function PrintPrescriptionPage() {
         }
         .print-prescription th,
         .print-prescription td {
-          padding: 8px 10px;
+          padding: 6px 10px;
           text-align: left;
           font-size: 11pt;
+          vertical-align: top;
         }
         .print-prescription th {
           background: ${primaryColor}15;
@@ -120,8 +124,13 @@ export default function PrintPrescriptionPage() {
       `}</style>
 
       {/* Letterhead header — digital mode prints it, preprinted mode hides on print */}
-      <div className={`mb-4 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "border-gray-300" : "no-print border-gray-300"}`}
-        style={user?.clinic?.letterhead_mode === "digital" ? { borderColor: primaryColor } : undefined}
+      <div
+        className={`mb-3 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "border-gray-300" : "no-print border-gray-300"}`}
+        style={
+          user?.clinic?.letterhead_mode === "digital"
+            ? { borderColor: primaryColor }
+            : undefined
+        }
       >
         {user?.clinic?.logo_url && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -132,7 +141,14 @@ export default function PrintPrescriptionPage() {
             style={{ maxHeight: "60px", maxWidth: "200px" }}
           />
         )}
-        <h1 className="text-lg font-bold" style={user?.clinic?.letterhead_mode === "digital" ? { color: primaryColor } : undefined}>
+        <h1
+          className="text-lg font-bold"
+          style={
+            user?.clinic?.letterhead_mode === "digital"
+              ? { color: primaryColor }
+              : undefined
+          }
+        >
           {clinicName}
         </h1>
         {user?.clinic?.tagline && (
@@ -143,7 +159,8 @@ export default function PrintPrescriptionPage() {
         )}
         {user?.clinic?.phone && (
           <p className="text-[8pt] text-gray-500">
-            {user.clinic.phone}{user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
+            {user.clinic.phone}
+            {user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
           </p>
         )}
         {user?.clinic?.letterhead_mode !== "digital" && (
@@ -155,10 +172,10 @@ export default function PrintPrescriptionPage() {
 
       {/* Patient Info */}
       {patient && (
-        <div className="mb-3 text-[10pt]">
+        <div className="mb-2 rounded bg-gray-50 px-3 py-2 text-[10pt]">
           <div className="flex items-baseline justify-between">
             <div>
-              {patient.name} &bull; {patient.age}y &bull;{" "}
+              <strong>{patient.name}</strong> &bull; {patient.age}y &bull;{" "}
               {patient.gender.charAt(0).toUpperCase()}
               <span className="ml-3 text-[9pt] text-gray-500">
                 ({patient.record_id})
@@ -172,24 +189,75 @@ export default function PrintPrescriptionPage() {
                 : new Date().toLocaleDateString("en-IN")}
             </div>
           </div>
-          {consultation?.diagnosis && (
-            <div className="mt-1">
-              <TamilHeader
-                ta={PRINT_LABELS.diagnosis.ta + ":"}
-                en={PRINT_LABELS.diagnosis.en}
-              />{" "}
-              {consultation.diagnosis}
-            </div>
-          )}
         </div>
       )}
 
+      {/* Vitals */}
+      {consultation &&
+        (consultation.weight ||
+          consultation.pulse_rate ||
+          consultation.bp_systolic ||
+          consultation.temperature) && (
+          <div className="mb-2 flex flex-wrap gap-4 rounded bg-green-50 px-3 py-1.5 text-[10pt]">
+            {consultation.weight && (
+              <span>
+                <span className="font-semibold text-gray-500">Weight:</span>{" "}
+                {consultation.weight} kg
+              </span>
+            )}
+            {consultation.pulse_rate && (
+              <span>
+                <span className="font-semibold text-gray-500">Pulse:</span>{" "}
+                {consultation.pulse_rate}/min
+              </span>
+            )}
+            {consultation.bp_systolic && (
+              <span>
+                <span className="font-semibold text-gray-500">BP:</span>{" "}
+                {consultation.bp_systolic}/{consultation.bp_diastolic} mmHg
+              </span>
+            )}
+            {consultation.temperature && (
+              <span>
+                <span className="font-semibold text-gray-500">Temp:</span>{" "}
+                {consultation.temperature}&deg;F
+              </span>
+            )}
+          </div>
+        )}
+
+      {/* Chief Complaints & Diagnosis */}
+      {consultation &&
+        (consultation.chief_complaints || consultation.diagnosis) && (
+          <div className="mb-2 text-[10pt]">
+            {consultation.chief_complaints && (
+              <div>
+                <span className="font-semibold text-gray-500">
+                  Complaints:
+                </span>{" "}
+                {consultation.chief_complaints}
+              </div>
+            )}
+            {consultation.diagnosis && (
+              <div>
+                <span className="font-semibold text-gray-500">Diagnosis:</span>{" "}
+                {consultation.diagnosis}
+              </div>
+            )}
+          </div>
+        )}
+
       {/* Rx Symbol */}
-      <div className="mb-3 text-[18pt] font-bold italic" style={{ color: primaryColor }}>&#8478;</div>
+      <div
+        className="mb-2 text-[18pt] font-bold italic"
+        style={{ color: primaryColor }}
+      >
+        &#8478;
+      </div>
 
       {/* Medications Table */}
       {medications.length > 0 && (
-        <table className="mb-4">
+        <table className="mb-3">
           <thead>
             <tr>
               <th className="w-8">#</th>
@@ -222,6 +290,13 @@ export default function PrintPrescriptionPage() {
                 (f) => f.value === med.frequency,
               );
               const instrText = med.instructions_ta || med.instructions;
+              // English label: "Once daily" (strip "OD — " prefix)
+              const freqEnglish = freqOpt
+                ? freqOpt.label.split(" \u2014 ")[1] || freqOpt.label
+                : med.frequency;
+              // Tamil label from option or from med field
+              const freqTamil =
+                med.frequency_tamil || (freqOpt ? freqOpt.tamil : "");
               return (
                 <tr key={med.id} className="medication-item">
                   <td>{idx + 1}</td>
@@ -229,7 +304,7 @@ export default function PrintPrescriptionPage() {
                     <div className="text-[13pt] font-bold">{med.drug_name}</div>
                     {instrText && (
                       <div
-                        className="text-[10pt] italic text-gray-500"
+                        className="text-[9pt] text-gray-500"
                         {...(med.instructions_ta ? { lang: "ta" } : {})}
                       >
                         ({instrText})
@@ -238,19 +313,11 @@ export default function PrintPrescriptionPage() {
                   </td>
                   <td>{med.dosage}</td>
                   <td>
-                    {med.frequency_tamil ? (
-                      <>
-                        <span lang="ta">{med.frequency_tamil}</span>
-                        <div className="text-[7pt] text-gray-400">
-                          {freqOpt
-                            ? freqOpt.label.split(" \u2014 ")[0]
-                            : med.frequency}
-                        </div>
-                      </>
-                    ) : freqOpt ? (
-                      freqOpt.label.split(" \u2014 ")[0]
-                    ) : (
-                      med.frequency
+                    <div>{freqEnglish}</div>
+                    {freqTamil && (
+                      <div className="text-[9pt] text-gray-400" lang="ta">
+                        {freqTamil}
+                      </div>
                     )}
                   </td>
                   <td>{med.duration}</td>
@@ -263,10 +330,16 @@ export default function PrintPrescriptionPage() {
 
       {/* Procedures */}
       {procedures.length > 0 && (
-        <div className="mb-4">
-          <p className="font-semibold" style={{ color: primaryColor, borderBottom: `1px solid ${primaryColor}`, paddingBottom: "3px", marginBottom: "8px" }}>
+        <div className="mb-3">
+          <p
+            className="mb-1 border-b pb-1 font-semibold"
+            style={{
+              color: primaryColor,
+              borderColor: primaryColor,
+            }}
+          >
             <TamilHeader
-              ta={PRINT_LABELS.procedures.ta + ":"}
+              ta={PRINT_LABELS.procedures.ta}
               en={PRINT_LABELS.procedures.en}
             />
           </p>
@@ -289,32 +362,58 @@ export default function PrintPrescriptionPage() {
         prescription.lifestyle_advice_ta ||
         prescription.exercise_advice ||
         prescription.exercise_advice_ta) && (
-        <div className="mb-4 text-[10pt]">
-          <p className="font-semibold" style={{ color: primaryColor, borderBottom: `1px solid ${primaryColor}`, paddingBottom: "3px", marginBottom: "8px" }}>
+        <div className="mb-3 text-[10pt]">
+          <p
+            className="mb-1 border-b pb-1 font-semibold"
+            style={{
+              color: primaryColor,
+              borderColor: primaryColor,
+            }}
+          >
             <TamilHeader
-              ta={PRINT_LABELS.advice.ta + ":"}
+              ta={PRINT_LABELS.advice.ta}
               en={PRINT_LABELS.advice.en}
             />
           </p>
           {(prescription.diet_advice_ta || prescription.diet_advice) && (
-            <p {...(prescription.diet_advice_ta ? { lang: "ta" } : {})}>
-              <strong lang="ta">{ADVICE_LABELS.diet.ta}:</strong>{" "}
-              {prescription.diet_advice_ta || prescription.diet_advice}
+            <p>
+              <strong>{ADVICE_LABELS.diet.en}:</strong>{" "}
+              {prescription.diet_advice || prescription.diet_advice_ta}
+              {prescription.diet_advice_ta && prescription.diet_advice && (
+                <span className="text-[9pt] text-gray-400" lang="ta">
+                  {" "}
+                  ({ADVICE_LABELS.diet.ta})
+                </span>
+              )}
             </p>
           )}
           {(prescription.lifestyle_advice_ta ||
             prescription.lifestyle_advice) && (
-            <p {...(prescription.lifestyle_advice_ta ? { lang: "ta" } : {})}>
-              <strong lang="ta">{ADVICE_LABELS.lifestyle.ta}:</strong>{" "}
-              {prescription.lifestyle_advice_ta ||
-                prescription.lifestyle_advice}
+            <p>
+              <strong>{ADVICE_LABELS.lifestyle.en}:</strong>{" "}
+              {prescription.lifestyle_advice ||
+                prescription.lifestyle_advice_ta}
+              {prescription.lifestyle_advice_ta &&
+                prescription.lifestyle_advice && (
+                  <span className="text-[9pt] text-gray-400" lang="ta">
+                    {" "}
+                    ({ADVICE_LABELS.lifestyle.ta})
+                  </span>
+                )}
             </p>
           )}
           {(prescription.exercise_advice_ta ||
             prescription.exercise_advice) && (
-            <p {...(prescription.exercise_advice_ta ? { lang: "ta" } : {})}>
-              <strong lang="ta">{ADVICE_LABELS.exercise.ta}:</strong>{" "}
-              {prescription.exercise_advice_ta || prescription.exercise_advice}
+            <p>
+              <strong>{ADVICE_LABELS.exercise.en}:</strong>{" "}
+              {prescription.exercise_advice || prescription.exercise_advice_ta}
+              {prescription.exercise_advice_ta &&
+                prescription.exercise_advice && (
+                  <span className="text-[9pt] text-gray-400" lang="ta">
+                    {" "}
+                    ({ADVICE_LABELS.exercise.ta})
+                  </span>
+                )}
             </p>
           )}
         </div>
@@ -322,13 +421,14 @@ export default function PrintPrescriptionPage() {
 
       {/* Follow-up */}
       {prescription.follow_up_date && (
-        <div className="mb-4 text-[10pt]">
+        <div className="mb-3 text-[10pt]">
           <strong>
             <TamilHeader
-              ta={PRINT_LABELS.followUp.ta + ":"}
+              ta={PRINT_LABELS.followUp.ta}
               en={PRINT_LABELS.followUp.en}
             />
-          </strong>{" "}
+            :{" "}
+          </strong>
           {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
             day: "numeric",
             month: "long",
@@ -336,32 +436,33 @@ export default function PrintPrescriptionPage() {
           })}
           {(prescription.follow_up_notes_ta ||
             prescription.follow_up_notes) && (
-            <span {...(prescription.follow_up_notes_ta ? { lang: "ta" } : {})}>
+            <span>
               {" — "}
-              {prescription.follow_up_notes_ta || prescription.follow_up_notes}
+              {prescription.follow_up_notes || prescription.follow_up_notes_ta}
             </span>
           )}
         </div>
       )}
 
-      {/* Google Review QR */}
-      {googleReviewUrl && (
-        <div className="mt-3 flex items-center justify-end gap-2">
-          <span className="text-[8pt] text-gray-400">Leave us a review</span>
-          <QRCodeSVG
-            value={googleReviewUrl}
-            size={94}
-            level="M"
-          />
+      {/* Footer: branding + QR side by side */}
+      <div className="mt-4 flex items-end justify-between border-t border-gray-200 pt-2">
+        <div className="text-[8pt] text-gray-400">
+          Powered by Ruthva.com — AYUSH Clinic OS
         </div>
-      )}
-
-      {/* Footer branding */}
-      <div className="mt-6 border-t border-gray-200 pt-2 text-center text-[8pt] text-gray-400">
-        Powered by Ruthva.com — AYUSH Clinic OS
+        {googleReviewUrl && (
+          <div className="flex items-center gap-2">
+            <span className="text-[8pt] text-gray-400">
+              Leave us a review
+            </span>
+            <QRCodeSVG value={googleReviewUrl} size={80} level="M" />
+          </div>
+        )}
       </div>
 
-      <PrintTrigger patientName={patient?.name} consultationDate={consultation?.consultation_date} />
+      <PrintTrigger
+        patientName={patient?.name}
+        consultationDate={consultation?.consultation_date}
+      />
     </div>
   );
 }
