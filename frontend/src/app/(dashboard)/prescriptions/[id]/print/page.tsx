@@ -389,11 +389,42 @@ export default function PrintPrescriptionPage() {
         <div className="mb-5 rounded bg-gray-100 px-3 py-2">
           <span className="text-[10pt] font-bold">Follow-up: </span>
           <span className="text-[10pt] font-semibold">
-            {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
-              day: "numeric",
-              month: "long",
-              year: "numeric",
-            })}
+            {(() => {
+              const d = new Date(prescription.follow_up_date);
+              const formatted = d.toLocaleDateString("en-IN", {
+                weekday: "long",
+                day: "numeric",
+                month: "long",
+                year: "numeric",
+              });
+              // Friendly hint: "3rd Wednesday", "1st of next month", etc.
+              const today = new Date();
+              const diffDays = Math.round(
+                (d.getTime() - today.getTime()) / 86400000,
+              );
+              const nth = Math.ceil(d.getDate() / 7);
+              const ordinal = ["", "1st", "2nd", "3rd", "4th", "5th"][nth] || `${nth}th`;
+              const dayName = d.toLocaleDateString("en-IN", { weekday: "long" });
+              let hint = `${ordinal} ${dayName}`;
+              if (d.getDate() === 1) {
+                hint = "1st of the month";
+              } else if (d.getDate() <= 3) {
+                hint = `${d.getDate()}${d.getDate() === 2 ? "nd" : "rd"} of the month`;
+              }
+              if (diffDays <= 7) {
+                hint = `This ${dayName}`;
+              } else if (diffDays <= 14) {
+                hint = `Next ${dayName}`;
+              }
+              return (
+                <>
+                  {formatted}
+                  <span className="ml-2 text-[9pt] font-normal text-gray-500">
+                    ({hint}{diffDays > 0 ? ` — ${diffDays} days` : ""})
+                  </span>
+                </>
+              );
+            })()}
           </span>
           {(prescription.follow_up_notes ||
             prescription.follow_up_notes_ta) && (
