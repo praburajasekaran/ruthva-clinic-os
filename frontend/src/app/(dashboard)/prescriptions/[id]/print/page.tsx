@@ -14,14 +14,24 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { QRCodeSVG } from "qrcode.react";
 import type { Prescription, Consultation, Patient } from "@/lib/types";
 
-function TamilHeader({ ta, en }: { ta: string; en: string }) {
+function SectionHeader({ en, ta }: { en: string; ta?: string }) {
   return (
-    <span>
-      <span className="font-semibold">{en}</span>{" "}
-      <span lang="ta" className="text-[9pt] font-normal text-gray-400">
-        {ta}
+    <div
+      className="mb-2 mt-4 flex items-baseline gap-2 border-b-2 pb-1"
+      style={{ borderColor: "var(--rx-primary)" }}
+    >
+      <span
+        className="text-[11pt] font-bold uppercase tracking-wide"
+        style={{ color: "var(--rx-primary)" }}
+      >
+        {en}
       </span>
-    </span>
+      {ta && (
+        <span className="text-[9pt] text-gray-400" lang="ta">
+          {ta}
+        </span>
+      )}
+    </div>
   );
 }
 
@@ -30,7 +40,7 @@ function BilingualTh({ ta, en }: { ta: string; en: string }) {
     <>
       <span>{en}</span>
       <br />
-      <span lang="ta" className="text-[8pt] font-normal text-gray-400">
+      <span lang="ta" className="text-[8pt] font-normal opacity-60">
         {ta}
       </span>
     </>
@@ -66,14 +76,24 @@ export default function PrintPrescriptionPage() {
   const bottomMargin = user?.clinic?.bottom_margin_mm ?? 15;
   const googleReviewUrl = user?.clinic?.google_review_url || "";
 
+  const hasVitals =
+    consultation &&
+    (consultation.weight ||
+      consultation.pulse_rate ||
+      consultation.bp_systolic ||
+      consultation.temperature);
+
   return (
-    <div className="print-prescription mx-auto bg-white p-[10mm]">
+    <div
+      className="print-prescription mx-auto bg-white p-[10mm]"
+      style={{ "--rx-primary": primaryColor } as React.CSSProperties}
+    >
       <style>{`
         .print-prescription {
           max-width: 210mm;
-          font-size: 12pt;
-          line-height: 1.4;
-          color: black;
+          font-size: 11pt;
+          line-height: 1.45;
+          color: #1a1a1a;
         }
         @media print {
           @page {
@@ -94,28 +114,25 @@ export default function PrintPrescriptionPage() {
             display: none !important;
           }
         }
-        .print-prescription table {
+        .print-prescription table.rx-table {
           border-collapse: collapse;
           width: 100%;
         }
-        .print-prescription th,
-        .print-prescription td {
-          padding: 6px 10px;
+        .print-prescription table.rx-table th {
+          background: ${primaryColor};
+          color: white;
+          padding: 7px 10px;
           text-align: left;
-          font-size: 11pt;
+          font-size: 9pt;
+          font-weight: 600;
+        }
+        .print-prescription table.rx-table td {
+          padding: 8px 10px;
+          border-bottom: 1px solid #d1d5db;
+          font-size: 10pt;
           vertical-align: top;
         }
-        .print-prescription th {
-          background: ${primaryColor}15;
-          color: ${primaryColor};
-          font-weight: 600;
-          font-size: 10pt;
-          border-bottom: 2px solid ${primaryColor};
-        }
-        .print-prescription td {
-          border-bottom: 1px solid #e5e7eb;
-        }
-        .print-prescription tr:nth-child(even) {
+        .print-prescription table.rx-table tbody tr:nth-child(even) {
           background: #f9fafb;
         }
         .medication-item {
@@ -123,14 +140,10 @@ export default function PrintPrescriptionPage() {
         }
       `}</style>
 
-      {/* Letterhead header — digital mode prints it, preprinted mode hides on print */}
+      {/* ── LETTERHEAD ── */}
       <div
-        className={`mb-3 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "border-gray-300" : "no-print border-gray-300"}`}
-        style={
-          user?.clinic?.letterhead_mode === "digital"
-            ? { borderColor: primaryColor }
-            : undefined
-        }
+        className={`mb-3 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "" : "no-print"}`}
+        style={{ borderColor: primaryColor }}
       >
         {user?.clinic?.logo_url && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -142,12 +155,8 @@ export default function PrintPrescriptionPage() {
           />
         )}
         <h1
-          className="text-lg font-bold"
-          style={
-            user?.clinic?.letterhead_mode === "digital"
-              ? { color: primaryColor }
-              : undefined
-          }
+          className="text-[16pt] font-bold"
+          style={{ color: primaryColor }}
         >
           {clinicName}
         </h1>
@@ -165,278 +174,255 @@ export default function PrintPrescriptionPage() {
         )}
         {user?.clinic?.letterhead_mode !== "digital" && (
           <p className="text-[8pt] italic text-gray-400">
-            This header is hidden when printing — pre-printed letterhead is used
+            Header hidden on print — pre-printed letterhead
           </p>
         )}
       </div>
 
-      {/* Patient Info */}
+      {/* ── PATIENT INFO BAR ── */}
       {patient && (
-        <div className="mb-2 rounded bg-gray-50 px-3 py-2 text-[10pt]">
-          <div className="flex items-baseline justify-between">
-            <div>
-              <strong>{patient.name}</strong> &bull; {patient.age}y &bull;{" "}
-              {patient.gender.charAt(0).toUpperCase()}
-              <span className="ml-3 text-[9pt] text-gray-500">
-                ({patient.record_id})
-              </span>
-            </div>
-            <div>
-              {consultation
-                ? new Date(consultation.consultation_date).toLocaleDateString(
-                    "en-IN",
-                  )
-                : new Date().toLocaleDateString("en-IN")}
-            </div>
+        <div
+          className="mb-1 flex items-center justify-between border-b px-1 pb-2"
+          style={{ borderColor: "#d1d5db" }}
+        >
+          <div>
+            <span className="text-[13pt] font-bold">{patient.name}</span>
+            <span className="ml-2 text-[10pt] text-gray-500">
+              {patient.age}y &bull; {patient.gender.charAt(0).toUpperCase()}
+            </span>
+            <span className="ml-2 text-[9pt] text-gray-400">
+              {patient.record_id}
+            </span>
+          </div>
+          <div className="text-[10pt] font-medium">
+            {consultation
+              ? new Date(consultation.consultation_date).toLocaleDateString(
+                  "en-IN",
+                  { day: "numeric", month: "short", year: "numeric" },
+                )
+              : new Date().toLocaleDateString("en-IN")}
           </div>
         </div>
       )}
 
-      {/* Vitals */}
-      {consultation &&
-        (consultation.weight ||
-          consultation.pulse_rate ||
-          consultation.bp_systolic ||
-          consultation.temperature) && (
-          <div className="mb-2 flex flex-wrap gap-4 rounded bg-green-50 px-3 py-1.5 text-[10pt]">
-            {consultation.weight && (
-              <span>
-                <span className="font-semibold text-gray-500">Weight:</span>{" "}
-                {consultation.weight} kg
-              </span>
-            )}
-            {consultation.pulse_rate && (
-              <span>
-                <span className="font-semibold text-gray-500">Pulse:</span>{" "}
-                {consultation.pulse_rate}/min
-              </span>
-            )}
-            {consultation.bp_systolic && (
-              <span>
-                <span className="font-semibold text-gray-500">BP:</span>{" "}
-                {consultation.bp_systolic}/{consultation.bp_diastolic} mmHg
-              </span>
-            )}
-            {consultation.temperature && (
-              <span>
-                <span className="font-semibold text-gray-500">Temp:</span>{" "}
-                {consultation.temperature}&deg;F
-              </span>
-            )}
-          </div>
-        )}
+      {/* ── VITALS BAR ── */}
+      {hasVitals && (
+        <div className="mb-1 flex flex-wrap gap-x-5 gap-y-0.5 border-b border-dashed border-gray-300 px-1 py-1.5 text-[9pt]">
+          {consultation.weight && (
+            <span>
+              <span className="font-bold text-gray-600">Wt</span>{" "}
+              {String(consultation.weight)} kg
+            </span>
+          )}
+          {consultation.pulse_rate && (
+            <span>
+              <span className="font-bold text-gray-600">Pulse</span>{" "}
+              {consultation.pulse_rate}/min
+            </span>
+          )}
+          {consultation.bp_systolic && (
+            <span>
+              <span className="font-bold text-gray-600">BP</span>{" "}
+              {consultation.bp_systolic}/{consultation.bp_diastolic} mmHg
+            </span>
+          )}
+          {consultation.temperature && (
+            <span>
+              <span className="font-bold text-gray-600">Temp</span>{" "}
+              {String(consultation.temperature)}&deg;F
+            </span>
+          )}
+        </div>
+      )}
 
-      {/* Chief Complaints & Diagnosis */}
+      {/* ── COMPLAINTS & DIAGNOSIS ── */}
       {consultation &&
         (consultation.chief_complaints || consultation.diagnosis) && (
-          <div className="mb-2 text-[10pt]">
+          <div className="mb-2 border-b border-gray-200 px-1 py-1.5 text-[10pt]">
             {consultation.chief_complaints && (
               <div>
-                <span className="font-semibold text-gray-500">
-                  Complaints:
-                </span>{" "}
+                <span className="font-bold">C/O:</span>{" "}
                 {consultation.chief_complaints}
               </div>
             )}
             {consultation.diagnosis && (
               <div>
-                <span className="font-semibold text-gray-500">Diagnosis:</span>{" "}
-                {consultation.diagnosis}
+                <span className="font-bold">Diagnosis:</span>{" "}
+                <span className="font-semibold">{consultation.diagnosis}</span>
               </div>
             )}
           </div>
         )}
 
-      {/* Rx Symbol */}
-      <div
-        className="mb-2 text-[18pt] font-bold italic"
-        style={{ color: primaryColor }}
-      >
-        &#8478;
-      </div>
-
-      {/* Medications Table */}
+      {/* ── Rx MEDICATIONS ── */}
       {medications.length > 0 && (
-        <table className="mb-3">
-          <thead>
-            <tr>
-              <th className="w-8">#</th>
-              <th>
-                <BilingualTh
-                  ta={MEDICATION_LABELS.drugName.ta}
-                  en="Medicine"
-                />
-              </th>
-              <th>
-                <BilingualTh ta={MEDICATION_LABELS.dosage.ta} en="Dosage" />
-              </th>
-              <th>
-                <BilingualTh
-                  ta={MEDICATION_LABELS.frequency.ta}
-                  en="Frequency"
-                />
-              </th>
-              <th>
-                <BilingualTh
-                  ta={MEDICATION_LABELS.duration.ta}
-                  en="Duration"
-                />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {medications.map((med, idx) => {
-              const freqOpt = FREQUENCY_OPTIONS.find(
-                (f) => f.value === med.frequency,
-              );
-              const instrText = med.instructions_ta || med.instructions;
-              // English label: "Once daily" (strip "OD — " prefix)
-              const freqEnglish = freqOpt
-                ? freqOpt.label.split(" \u2014 ")[1] || freqOpt.label
-                : med.frequency;
-              // Tamil label from option or from med field
-              const freqTamil =
-                med.frequency_tamil || (freqOpt ? freqOpt.tamil : "");
-              return (
-                <tr key={med.id} className="medication-item">
-                  <td>{idx + 1}</td>
-                  <td>
-                    <div className="text-[13pt] font-bold">{med.drug_name}</div>
-                    {instrText && (
-                      <div
-                        className="text-[9pt] text-gray-500"
-                        {...(med.instructions_ta ? { lang: "ta" } : {})}
-                      >
-                        ({instrText})
+        <>
+          <div className="mb-1 mt-3 flex items-baseline gap-2">
+            <span
+              className="text-[20pt] font-bold italic leading-none"
+              style={{ color: primaryColor }}
+            >
+              &#8478;
+            </span>
+          </div>
+
+          <table className="rx-table mb-3">
+            <thead>
+              <tr>
+                <th style={{ width: "28px" }}>#</th>
+                <th>
+                  <BilingualTh
+                    ta={MEDICATION_LABELS.drugName.ta}
+                    en="Medicine"
+                  />
+                </th>
+                <th>
+                  <BilingualTh ta={MEDICATION_LABELS.dosage.ta} en="Dosage" />
+                </th>
+                <th>
+                  <BilingualTh
+                    ta={MEDICATION_LABELS.frequency.ta}
+                    en="Frequency"
+                  />
+                </th>
+                <th>
+                  <BilingualTh
+                    ta={MEDICATION_LABELS.duration.ta}
+                    en="Duration"
+                  />
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {medications.map((med, idx) => {
+                const freqOpt = FREQUENCY_OPTIONS.find(
+                  (f) => f.value === med.frequency,
+                );
+                const instrText = med.instructions_ta || med.instructions;
+                const freqEnglish = freqOpt
+                  ? freqOpt.label.split(" \u2014 ")[1] || freqOpt.label
+                  : med.frequency;
+                const freqTamil =
+                  med.frequency_tamil || (freqOpt ? freqOpt.tamil : "");
+                return (
+                  <tr key={med.id} className="medication-item">
+                    <td className="text-center font-bold text-gray-400">
+                      {idx + 1}.
+                    </td>
+                    <td>
+                      <div className="text-[12pt] font-bold">
+                        {med.drug_name}
                       </div>
-                    )}
-                  </td>
-                  <td>{med.dosage}</td>
-                  <td>
-                    <div>{freqEnglish}</div>
-                    {freqTamil && (
-                      <div className="text-[9pt] text-gray-400" lang="ta">
-                        {freqTamil}
-                      </div>
-                    )}
-                  </td>
-                  <td>{med.duration}</td>
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
+                      {instrText && (
+                        <div
+                          className="text-[8pt] italic text-gray-500"
+                          {...(med.instructions_ta ? { lang: "ta" } : {})}
+                        >
+                          ({instrText})
+                        </div>
+                      )}
+                    </td>
+                    <td>{med.dosage}</td>
+                    <td>
+                      <div className="text-[10pt]">{freqEnglish}</div>
+                      {freqTamil && (
+                        <div className="text-[8pt] text-gray-400" lang="ta">
+                          {freqTamil}
+                        </div>
+                      )}
+                    </td>
+                    <td>{med.duration}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </>
       )}
 
-      {/* Procedures */}
+      {/* ── PROCEDURES ── */}
       {procedures.length > 0 && (
-        <div className="mb-3">
-          <p
-            className="mb-1 border-b pb-1 font-semibold"
-            style={{
-              color: primaryColor,
-              borderColor: primaryColor,
-            }}
-          >
-            <TamilHeader
-              ta={PRINT_LABELS.procedures.ta}
-              en={PRINT_LABELS.procedures.en}
-            />
-          </p>
-          <ul className="list-inside list-disc text-[10pt]">
+        <>
+          <SectionHeader
+            en={PRINT_LABELS.procedures.en}
+            ta={PRINT_LABELS.procedures.ta}
+          />
+          <ul className="list-inside list-disc pl-1 text-[10pt]">
             {procedures.map((proc) => (
               <li key={proc.id}>
-                {proc.name}
+                <span className="font-semibold">{proc.name}</span>
                 {proc.duration && ` (${proc.duration})`}
                 {proc.details && ` — ${proc.details}`}
               </li>
             ))}
           </ul>
-        </div>
+        </>
       )}
 
-      {/* Advice */}
+      {/* ── ADVICE ── */}
       {(prescription.diet_advice ||
         prescription.diet_advice_ta ||
         prescription.lifestyle_advice ||
         prescription.lifestyle_advice_ta ||
         prescription.exercise_advice ||
         prescription.exercise_advice_ta) && (
-        <div className="mb-3 text-[10pt]">
-          <p
-            className="mb-1 border-b pb-1 font-semibold"
-            style={{
-              color: primaryColor,
-              borderColor: primaryColor,
-            }}
-          >
-            <TamilHeader
-              ta={PRINT_LABELS.advice.ta}
-              en={PRINT_LABELS.advice.en}
-            />
-          </p>
-          {(prescription.diet_advice_ta || prescription.diet_advice) && (
-            <p>
-              <strong>{ADVICE_LABELS.diet.en}:</strong>{" "}
-              {prescription.diet_advice || prescription.diet_advice_ta}
-              {prescription.diet_advice_ta && prescription.diet_advice && (
-                <span className="text-[9pt] text-gray-400" lang="ta">
-                  {" "}
-                  ({ADVICE_LABELS.diet.ta})
-                </span>
-              )}
-            </p>
-          )}
-          {(prescription.lifestyle_advice_ta ||
-            prescription.lifestyle_advice) && (
-            <p>
-              <strong>{ADVICE_LABELS.lifestyle.en}:</strong>{" "}
-              {prescription.lifestyle_advice ||
-                prescription.lifestyle_advice_ta}
-              {prescription.lifestyle_advice_ta &&
-                prescription.lifestyle_advice && (
-                  <span className="text-[9pt] text-gray-400" lang="ta">
-                    {" "}
-                    ({ADVICE_LABELS.lifestyle.ta})
-                  </span>
-                )}
-            </p>
-          )}
-          {(prescription.exercise_advice_ta ||
-            prescription.exercise_advice) && (
-            <p>
-              <strong>{ADVICE_LABELS.exercise.en}:</strong>{" "}
-              {prescription.exercise_advice || prescription.exercise_advice_ta}
-              {prescription.exercise_advice_ta &&
-                prescription.exercise_advice && (
-                  <span className="text-[9pt] text-gray-400" lang="ta">
-                    {" "}
-                    ({ADVICE_LABELS.exercise.ta})
-                  </span>
-                )}
-            </p>
-          )}
-        </div>
+        <>
+          <SectionHeader
+            en={PRINT_LABELS.advice.en}
+            ta={PRINT_LABELS.advice.ta}
+          />
+          <div className="space-y-0.5 pl-1 text-[10pt]">
+            {(prescription.diet_advice_ta || prescription.diet_advice) && (
+              <p>
+                <span className="font-bold">{ADVICE_LABELS.diet.en}:</span>{" "}
+                {prescription.diet_advice || prescription.diet_advice_ta}
+              </p>
+            )}
+            {(prescription.lifestyle_advice_ta ||
+              prescription.lifestyle_advice) && (
+              <p>
+                <span className="font-bold">
+                  {ADVICE_LABELS.lifestyle.en}:
+                </span>{" "}
+                {prescription.lifestyle_advice ||
+                  prescription.lifestyle_advice_ta}
+              </p>
+            )}
+            {(prescription.exercise_advice_ta ||
+              prescription.exercise_advice) && (
+              <p>
+                <span className="font-bold">
+                  {ADVICE_LABELS.exercise.en}:
+                </span>{" "}
+                {prescription.exercise_advice ||
+                  prescription.exercise_advice_ta}
+              </p>
+            )}
+          </div>
+        </>
       )}
 
-      {/* Follow-up */}
+      {/* ── FOLLOW-UP ── */}
       {prescription.follow_up_date && (
-        <div className="mb-3 text-[10pt]">
-          <strong>
-            <TamilHeader
-              ta={PRINT_LABELS.followUp.ta}
-              en={PRINT_LABELS.followUp.en}
-            />
-            :{" "}
-          </strong>
-          {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-          })}
-          {(prescription.follow_up_notes_ta ||
-            prescription.follow_up_notes) && (
-            <span>
+        <div
+          className="mt-4 rounded border-l-4 px-3 py-2"
+          style={{
+            borderColor: "#f59e0b",
+            background: "#fffbeb",
+          }}
+        >
+          <span className="text-[10pt] font-bold">
+            Follow-up:{" "}
+          </span>
+          <span className="text-[10pt] font-semibold">
+            {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+            })}
+          </span>
+          {(prescription.follow_up_notes || prescription.follow_up_notes_ta) && (
+            <span className="text-[10pt]">
               {" — "}
               {prescription.follow_up_notes || prescription.follow_up_notes_ta}
             </span>
@@ -444,17 +430,17 @@ export default function PrintPrescriptionPage() {
         </div>
       )}
 
-      {/* Footer: branding + QR side by side */}
-      <div className="mt-4 flex items-end justify-between border-t border-gray-200 pt-2">
-        <div className="text-[8pt] text-gray-400">
+      {/* ── FOOTER ── */}
+      <div className="mt-6 flex items-end justify-between border-t border-gray-300 pt-2">
+        <div className="text-[7pt] text-gray-400">
           Powered by Ruthva.com — AYUSH Clinic OS
         </div>
         {googleReviewUrl && (
           <div className="flex items-center gap-2">
-            <span className="text-[8pt] text-gray-400">
+            <span className="text-[7pt] text-gray-400">
               Leave us a review
             </span>
-            <QRCodeSVG value={googleReviewUrl} size={80} level="M" />
+            <QRCodeSVG value={googleReviewUrl} size={72} level="M" />
           </div>
         )}
       </div>
