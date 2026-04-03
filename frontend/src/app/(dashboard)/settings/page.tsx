@@ -171,6 +171,9 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
   const [logoUrl, setLogoUrl] = useState(clinic.logo_url);
   const [primaryColor, setPrimaryColor] = useState(clinic.primary_color || "#2c5f2d");
   const [letterheadMode, setLetterheadMode] = useState(clinic.letterhead_mode || "digital");
+  const [topMarginMm, setTopMarginMm] = useState(clinic.top_margin_mm ?? 15);
+  const [bottomMarginMm, setBottomMarginMm] = useState(clinic.bottom_margin_mm ?? 15);
+  const [googleReviewUrl, setGoogleReviewUrl] = useState(clinic.google_review_url || "");
 
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -242,6 +245,9 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
         logo_url: logoUrl,
         primary_color: primaryColor,
         letterhead_mode: letterheadMode,
+        top_margin_mm: topMarginMm,
+        bottom_margin_mm: bottomMarginMm,
+        google_review_url: googleReviewUrl,
       });
       setSuccess(true);
       onSaved();
@@ -473,12 +479,56 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
               <Select
                 {...props}
                 value={letterheadMode}
-                onChange={(e) => setLetterheadMode(e.target.value as "digital" | "preprinted")}
+                onChange={(e) => {
+                  const mode = e.target.value as "digital" | "preprinted";
+                  setLetterheadMode(mode);
+                  setTopMarginMm(mode === "preprinted" ? 52 : 15);
+                  setBottomMarginMm(15);
+                }}
                 className="max-w-[320px]"
               >
                 <option value="digital">Digital — logo + clinic details printed</option>
                 <option value="preprinted">Pre-printed — blank header for stationery</option>
               </Select>
+            )}
+          </FormField>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <FormField label="Top margin" hint="mm — space above content">
+              {(props) => (
+                <Input
+                  {...props}
+                  type="number"
+                  min={5}
+                  max={100}
+                  value={topMarginMm}
+                  onChange={(e) => setTopMarginMm(Number(e.target.value))}
+                  className="max-w-[120px]"
+                />
+              )}
+            </FormField>
+            <FormField label="Bottom margin" hint="mm — space below content">
+              {(props) => (
+                <Input
+                  {...props}
+                  type="number"
+                  min={5}
+                  max={100}
+                  value={bottomMarginMm}
+                  onChange={(e) => setBottomMarginMm(Number(e.target.value))}
+                  className="max-w-[120px]"
+                />
+              )}
+            </FormField>
+          </div>
+          <FormField label="Google Review URL" hint="QR code will appear on prescriptions when set.">
+            {(props) => (
+              <Input
+                {...props}
+                type="url"
+                value={googleReviewUrl}
+                onChange={(e) => setGoogleReviewUrl(e.target.value)}
+                placeholder="https://g.page/r/..."
+              />
             )}
           </FormField>
           <div>
