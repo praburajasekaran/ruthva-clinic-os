@@ -36,10 +36,10 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
             })()}
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-5">
             {Object.entries(tool.fields).map(([fieldKey, options]) => (
               <div key={fieldKey}>
-                <label className="mb-1 block text-xs font-medium capitalize text-gray-600">
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
                   {fieldKey.replace(/_/g, " ")}
                 </label>
                 <PillGroup
