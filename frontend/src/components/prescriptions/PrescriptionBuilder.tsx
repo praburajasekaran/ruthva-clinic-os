@@ -308,7 +308,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Procedures */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" />} id="procedures" defaultOpen={false}>
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" />} id="procedures">
         <div className="space-y-3">
           {state.procedures.map((proc, idx) => (
             <div

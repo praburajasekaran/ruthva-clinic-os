@@ -5,7 +5,6 @@ import { type ReactNode, useId } from "react";
 type FormSectionProps = {
   title: ReactNode;
   subtitle?: string;
-  defaultOpen?: boolean;
   children: ReactNode;
   id?: string;
 };
@@ -13,7 +12,6 @@ type FormSectionProps = {
 export function FormSection({
   title,
   subtitle,
-  defaultOpen: _defaultOpen = true,
   children,
   id,
 }: FormSectionProps) {
