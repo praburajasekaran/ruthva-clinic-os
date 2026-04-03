@@ -99,16 +99,17 @@ export default function PrintPrescriptionPage() {
           width: 100%;
         }
         .print-prescription table.rx-table th {
-          background: ${primaryColor};
-          color: white;
+          background: #f3f4f6;
+          color: #111;
           padding: 7px 10px;
           text-align: left;
           font-size: 9pt;
-          font-weight: 600;
+          font-weight: 700;
+          border-bottom: 2px solid #333;
         }
         .print-prescription table.rx-table td {
           padding: 8px 10px;
-          border-bottom: 1px solid #e5e7eb;
+          border-bottom: 1px solid #d1d5db;
           font-size: 10pt;
           vertical-align: top;
         }
@@ -132,10 +133,7 @@ export default function PrintPrescriptionPage() {
               style={{ maxHeight: "60px", maxWidth: "200px" }}
             />
           )}
-          <h1
-            className="text-[16pt] font-bold"
-            style={{ color: primaryColor }}
-          >
+          <h1 className="text-[16pt] font-bold text-gray-900">
             {clinicName}
           </h1>
           {user?.clinic?.tagline && (
@@ -237,10 +235,7 @@ export default function PrintPrescriptionPage() {
       {medications.length > 0 && (
         <div className="mb-5">
           <div className="mb-2">
-            <span
-              className="text-[20pt] font-bold italic leading-none"
-              style={{ color: primaryColor }}
-            >
+            <span className="text-[20pt] font-bold italic leading-none text-gray-900">
               &#8478;
             </span>
           </div>
@@ -323,8 +318,7 @@ export default function PrintPrescriptionPage() {
       {procedures.length > 0 && (
         <div className="mb-5">
           <p
-            className="mb-1 text-[11pt] font-bold uppercase tracking-wide"
-            style={{ color: primaryColor }}
+            className="mb-1 text-[11pt] font-bold uppercase tracking-wide text-gray-900"
           >
             {PRINT_LABELS.procedures.en}{" "}
             <span className="text-[9pt] font-normal text-gray-400" lang="ta">
@@ -352,8 +346,7 @@ export default function PrintPrescriptionPage() {
         prescription.exercise_advice_ta) && (
         <div className="mb-5">
           <p
-            className="mb-1 text-[11pt] font-bold uppercase tracking-wide"
-            style={{ color: primaryColor }}
+            className="mb-1 text-[11pt] font-bold uppercase tracking-wide text-gray-900"
           >
             {PRINT_LABELS.advice.en}{" "}
             <span className="text-[9pt] font-normal text-gray-400" lang="ta">
@@ -393,7 +386,7 @@ export default function PrintPrescriptionPage() {
 
       {/* ── FOLLOW-UP ── */}
       {prescription.follow_up_date && (
-        <div className="mb-5 rounded bg-amber-50 px-3 py-2">
+        <div className="mb-5 rounded bg-gray-100 px-3 py-2">
           <span className="text-[10pt] font-bold">Follow-up: </span>
           <span className="text-[10pt] font-semibold">
             {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
