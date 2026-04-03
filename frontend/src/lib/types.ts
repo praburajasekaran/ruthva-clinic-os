@@ -248,7 +248,6 @@ export type Consultation = {
   chief_complaints: string;
   history_of_present_illness: string;
   diagnosis: string;
-  icd_code: string;
   consultation_date: string;
   readonly created_at: string;
   readonly updated_at: string;

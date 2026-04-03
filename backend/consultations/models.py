@@ -63,7 +63,6 @@ class Consultation(models.Model):
     chief_complaints = models.TextField(blank=True, default="")
     history_of_present_illness = models.TextField(blank=True, default="")
     diagnosis = models.TextField(blank=True, default="")
-    icd_code = models.CharField(max_length=20, blank=True, default="")
 
     consultation_date = models.DateField()
     is_imported = models.BooleanField(

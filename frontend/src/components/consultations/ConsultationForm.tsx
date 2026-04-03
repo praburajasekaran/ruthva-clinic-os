@@ -39,7 +39,6 @@ type ConsultationFormState = {
   chief_complaints: string;
   history_of_present_illness: string;
   diagnosis: string;
-  icd_code: string;
   consultation_date: string;
 };
 
@@ -69,7 +68,6 @@ function getInitialState(): ConsultationFormState {
     chief_complaints: "",
     history_of_present_illness: "",
     diagnosis: "",
-    icd_code: "",
     consultation_date: new Date().toISOString().split("T")[0],
   };
 }
@@ -469,8 +467,7 @@ export function ConsultationForm({
                 />
               )}
             </FormField>
-            <div className="grid gap-4 sm:grid-cols-2">
-              <FormField label="Diagnosis">
+            <FormField label="Diagnosis">
                 {(props) => (
                   <Input
                     {...props}
@@ -480,17 +477,6 @@ export function ConsultationForm({
                   />
                 )}
               </FormField>
-              <FormField label="ICD Code">
-                {(props) => (
-                  <Input
-                    {...props}
-                    value={state.icd_code}
-                    onChange={(e) => setField("icd_code", e.target.value)}
-                    placeholder="e.g., M54.5"
-                  />
-                )}
-              </FormField>
-            </div>
             <FormField label="Visit Date" required>
               {(props) => (
                 <Input

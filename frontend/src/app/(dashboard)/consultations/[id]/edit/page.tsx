@@ -80,7 +80,6 @@ export default function EditConsultationPage() {
     chief_complaints: consultation.chief_complaints ?? "",
     history_of_present_illness: consultation.history_of_present_illness ?? "",
     diagnosis: consultation.diagnosis ?? "",
-    icd_code: consultation.icd_code ?? "",
     consultation_date: consultation.consultation_date ?? "",
   };
 

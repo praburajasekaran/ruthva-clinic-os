@@ -23,6 +23,6 @@ class ConsultationAdmin(admin.ModelAdmin):
         ("Diagnostic Data", {"fields": ["diagnostic_data"]}),
         ("Diagnosis", {"fields": [
             "chief_complaints", "history_of_present_illness",
-            "diagnosis", "icd_code",
+            "diagnosis",
         ]}),
     ]
