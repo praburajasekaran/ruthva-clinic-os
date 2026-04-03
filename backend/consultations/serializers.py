@@ -140,7 +140,7 @@ class ConsultationDetailSerializer(serializers.ModelSerializer):
             "diagnostic_data",
             # Diagnosis
             "chief_complaints", "history_of_present_illness",
-            "diagnosis", "icd_code",
+            "diagnosis",
             "consultation_date", "created_at", "updated_at",
         ]
         read_only_fields = ["created_at", "updated_at", "conducted_by"]

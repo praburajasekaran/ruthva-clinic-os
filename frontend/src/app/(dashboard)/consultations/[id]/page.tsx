@@ -237,12 +237,6 @@ export default function ConsultationDetailPage() {
                 {consultation.diagnosis || "\u2014"}
               </dd>
             </div>
-            <div>
-              <dt className="text-gray-500">ICD Code</dt>
-              <dd className="font-mono text-gray-900">
-                {consultation.icd_code || "\u2014"}
-              </dd>
-            </div>
           </div>
         </dl>
       </div>
