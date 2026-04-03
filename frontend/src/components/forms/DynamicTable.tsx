@@ -84,7 +84,7 @@ export function DynamicTable({
               {columns.map((col) => (
                 <span
                   key={col.key}
-                  className="text-sm font-medium text-gray-700"
+                  className="text-sm font-medium text-foreground"
                 >
                   {col.label}
                 </span>
@@ -124,7 +124,7 @@ export function DynamicTable({
               <button
                 type="button"
                 onClick={() => onRemove(idx)}
-                className="mt-2 rounded-lg p-2 text-gray-400 hover:bg-red-50 hover:text-red-600"
+                className="mt-2 rounded-lg p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 aria-label={`Remove row ${idx + 1}`}
               >
                 <Trash2 className="h-4 w-4" />
@@ -139,7 +139,7 @@ export function DynamicTable({
         variant="ghost"
         size="sm"
         onClick={onAdd}
-        className="text-emerald-700"
+        className="w-full justify-start text-sm text-primary hover:text-primary/80"
       >
         <Plus className="h-4 w-4" />
         {addLabel}

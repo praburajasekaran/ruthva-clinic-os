@@ -2,7 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { PillGroup } from "@/components/ui/PillGroup";
 
 export type Complaint = {
   complaint: string;
@@ -63,8 +63,11 @@ const PHYSICAL_FIELDS: { key: string; label: string; placeholder: string }[] = [
   { key: "sleep",         label: "Sleep",          placeholder: "e.g., Restless, wakes 3am, position" },
 ];
 
-const THERMAL_OPTIONS = ["", "Chilly", "Hot", "Warm", "Ambithermal"];
-const THIRST_OPTIONS   = ["", "Excessive", "Moderate", "Thirstless", "Increased for cold water"];
+const THERMAL_OPTIONS = ["Chilly", "Hot", "Warm", "Ambithermal"] as const;
+const THIRST_OPTIONS  = ["Excessive", "Moderate", "Thirstless", "Increased for cold water"] as const;
+
+const textareaClasses =
+  "w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 type Props = {
   value: HomeopathyCaseData;
@@ -73,7 +76,7 @@ type Props = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-emerald-700">
+    <h4 className="mb-3 border-b border-border pb-2 text-base font-semibold text-foreground">
       {children}
     </h4>
   );
@@ -98,27 +101,27 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-10">
       {/* Chief Complaints */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div>
         <SectionLabel>Chief Complaints</SectionLabel>
-        <div className="space-y-4">
+        <div className="space-y-5">
           {complaints.map((c, i) => (
-            <div key={i} className="rounded-lg border border-gray-200 bg-white p-4">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Complaint {i + 1}</span>
+            <div key={i} className="border-t border-border pt-5">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Complaint {i + 1}</span>
                 <button
                   type="button"
                   onClick={() => removeComplaint(i)}
-                  className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-500"
+                  className="rounded p-1 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                   aria-label="Remove complaint"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
               </div>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Complaint</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Complaint</label>
                   <Input
                     value={c.complaint}
                     onChange={(e) => updateComplaint(i, "complaint", e.target.value)}
@@ -126,7 +129,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Duration</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Duration</label>
                   <Input
                     value={c.duration}
                     onChange={(e) => updateComplaint(i, "duration", e.target.value)}
@@ -134,7 +137,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Location</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Location</label>
                   <Input
                     value={c.location}
                     onChange={(e) => updateComplaint(i, "location", e.target.value)}
@@ -142,7 +145,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
                     Modalities — Worse (&lt;)
                   </label>
                   <Input
@@ -152,7 +155,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
                   />
                 </div>
                 <div>
-                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">
                     Modalities — Better (&gt;)
                   </label>
                   <Input
@@ -162,7 +165,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">Concomitants</label>
+                  <label className="mb-1.5 block text-sm font-medium text-foreground">Concomitants</label>
                   <Input
                     value={c.concomitants}
                     onChange={(e) => updateComplaint(i, "concomitants", e.target.value)}
@@ -176,7 +179,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
         <button
           type="button"
           onClick={addComplaint}
-          className="mt-3 flex items-center gap-1.5 rounded-lg border border-dashed border-emerald-300 px-4 py-2 text-sm text-emerald-700 hover:bg-emerald-50"
+          className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
         >
           <Plus className="h-4 w-4" />
           Add Complaint
@@ -184,12 +187,12 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
       </div>
 
       {/* Mental Generals */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div>
         <SectionLabel>Mental Generals</SectionLabel>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2">
           {MENTAL_FIELDS.map(({ key, label, placeholder }) => (
             <div key={key}>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{label}</label>
               <Input
                 value={mental[key] ?? ""}
                 onChange={(e) =>
@@ -200,7 +203,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
             </div>
           ))}
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-gray-600">Notes</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               value={mental.notes ?? ""}
               onChange={(e) =>
@@ -208,49 +211,41 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
               }
               placeholder="Additional mental generals..."
               rows={2}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              className={textareaClasses}
             />
           </div>
         </div>
       </div>
 
       {/* Physical Generals */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+      <div>
         <SectionLabel>Physical Generals</SectionLabel>
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid gap-5 sm:grid-cols-2">
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Thermals</label>
-            <Select
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Thermals</label>
+            <PillGroup
+              options={THERMAL_OPTIONS}
               value={physical.thermals ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, physical_generals: { ...physical, thermals: e.target.value } })
+              onChange={(v) =>
+                onChange({ ...value, physical_generals: { ...physical, thermals: v } })
               }
-            >
-              {THERMAL_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt || "Select..."}
-                </option>
-              ))}
-            </Select>
+              label="Thermals"
+            />
           </div>
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">Thirst</label>
-            <Select
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Thirst</label>
+            <PillGroup
+              options={THIRST_OPTIONS}
               value={physical.thirst ?? ""}
-              onChange={(e) =>
-                onChange({ ...value, physical_generals: { ...physical, thirst: e.target.value } })
+              onChange={(v) =>
+                onChange({ ...value, physical_generals: { ...physical, thirst: v } })
               }
-            >
-              {THIRST_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt || "Select..."}
-                </option>
-              ))}
-            </Select>
+              label="Thirst"
+            />
           </div>
           {PHYSICAL_FIELDS.map(({ key, label, placeholder }) => (
             <div key={key}>
-              <label className="mb-1 block text-xs font-medium text-gray-600">{label}</label>
+              <label className="mb-1.5 block text-sm font-medium text-foreground">{label}</label>
               <Input
                 value={physical[key] ?? ""}
                 onChange={(e) =>
@@ -261,7 +256,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
             </div>
           ))}
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-gray-600">Notes</label>
+            <label className="mb-1.5 block text-sm font-medium text-foreground">Notes</label>
             <textarea
               value={physical.notes ?? ""}
               onChange={(e) =>
@@ -269,34 +264,27 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
               }
               placeholder="Additional physical generals..."
               rows={2}
-              className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+              className={textareaClasses}
             />
           </div>
         </div>
       </div>
 
       {/* Miasmatic Classification + Constitutional Notes */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">
             Miasmatic Classification
           </label>
-          <Select
+          <PillGroup
+            options={MIASMATIC_OPTIONS}
             value={value.miasmatic_classification ?? ""}
-            onChange={(e) =>
-              onChange({ ...value, miasmatic_classification: e.target.value })
-            }
-          >
-            <option value="">Select miasm...</option>
-            {MIASMATIC_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
+            onChange={(v) => onChange({ ...value, miasmatic_classification: v })}
+            label="Miasmatic Classification"
+          />
         </div>
-        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-          <label className="mb-2 block text-sm font-medium text-gray-700">
+        <div>
+          <label className="mb-1.5 block text-sm font-medium text-foreground">
             Constitutional Notes
           </label>
           <textarea
@@ -304,14 +292,14 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
             onChange={(e) => onChange({ ...value, constitutional_notes: e.target.value })}
             placeholder="e.g., Calc carb type — fair, chilly, sweaty head, slow"
             rows={2}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+            className={textareaClasses}
           />
         </div>
       </div>
 
       {/* General Notes */}
-      <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-        <label className="mb-2 block text-sm font-medium text-gray-700">
+      <div>
+        <label className="mb-1.5 block text-sm font-medium text-foreground">
           Additional Notes
         </label>
         <textarea
@@ -319,7 +307,7 @@ export function HomeopathyCaseTakingForm({ value, onChange }: Props) {
           onChange={(e) => onChange({ ...value, notes: e.target.value })}
           placeholder="Any other observations..."
           rows={3}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+          className={textareaClasses}
         />
       </div>
     </div>

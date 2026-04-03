@@ -1,10 +1,10 @@
 "use client";
 
-import { ChevronDown, ChevronRight } from "lucide-react";
-import { type ReactNode, useId, useState } from "react";
+import { type ReactNode, useId } from "react";
 
 type FormSectionProps = {
   title: ReactNode;
+  subtitle?: string;
   defaultOpen?: boolean;
   children: ReactNode;
   id?: string;
@@ -12,31 +12,23 @@ type FormSectionProps = {
 
 export function FormSection({
   title,
-  defaultOpen = true,
+  subtitle,
+  defaultOpen: _defaultOpen = true,
   children,
   id,
 }: FormSectionProps) {
-  const [isOpen, setIsOpen] = useState(defaultOpen);
   const generatedId = useId();
-  const panelId = id ?? `form-section-${generatedId}`;
+  const sectionId = id ?? `form-section-${generatedId}`;
 
   return (
-    <section id={id} className="rounded-lg border border-gray-200 bg-white">
-      <button
-        type="button"
-        aria-expanded={isOpen}
-        aria-controls={panelId}
-        onClick={() => setIsOpen(!isOpen)}
-        className="flex w-full items-center justify-between px-6 py-4 text-left"
-      >
-        <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-        {isOpen ? (
-          <ChevronDown className="h-5 w-5 text-gray-400" />
-        ) : (
-          <ChevronRight className="h-5 w-5 text-gray-400" />
+    <section id={sectionId} className="space-y-5">
+      <div className="border-b border-border pb-2">
+        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+        {subtitle && (
+          <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
         )}
-      </button>
-      <div id={panelId} hidden={!isOpen} className="border-t border-gray-200 px-6 py-4">{children}</div>
+      </div>
+      <div>{children}</div>
     </section>
   );
 }

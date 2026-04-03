@@ -7,10 +7,15 @@ export const metadata: Metadata = {
 
 export default function NewPatientPage() {
   return (
-    <div className="mx-auto max-w-3xl">
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">
-        Register New Patient
-      </h1>
+    <div className="mx-auto w-full max-w-6xl space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">
+          Register New Patient
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Add a new patient to your clinic
+        </p>
+      </div>
       <PatientForm />
     </div>
   );

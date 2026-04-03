@@ -2,7 +2,7 @@
 
 import { GripVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { PillGroup } from "@/components/ui/PillGroup";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { MedicineAutocomplete } from "@/components/pharmacy/MedicineAutocomplete";
 import {
@@ -54,26 +54,27 @@ export function MedicationRow({
 }: MedicationRowProps) {
   const isHomeopathy = discipline === "homeopathy";
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
+    <div className="border-t border-border pt-5">
       <div className="mb-3 flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <GripVertical className="h-4 w-4 text-gray-300" />
-          <span className="text-sm font-medium text-gray-700">
+          <GripVertical className="h-4 w-4 text-muted-foreground/50" />
+          <span className="text-sm font-medium text-foreground">
             Medication {index + 1}
           </span>
         </div>
         <button
           type="button"
           onClick={onRemove}
-          className="min-h-[44px] min-w-[44px] rounded-lg p-2.5 text-gray-400 hover:bg-red-50 hover:text-red-600"
+          className="min-h-[44px] min-w-[44px] rounded-lg p-2.5 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           aria-label={`Remove medication ${index + 1}`}
         >
           <Trash2 className="h-4 w-4" />
         </button>
       </div>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="sm:col-span-2">
+      <div className="space-y-4">
+        {/* Drug Name — full width */}
+        <div>
           <BilingualLabel
             english={MEDICATION_LABELS.drugName.en}
             tamil={MEDICATION_LABELS.drugName.ta}
@@ -88,94 +89,32 @@ export function MedicationRow({
           />
         </div>
 
+        {/* Dosage + Unit + Duration */}
         <div>
           <BilingualLabel
             english={MEDICATION_LABELS.dosage.en}
             tamil={MEDICATION_LABELS.dosage.ta}
           />
-          <div className="flex gap-2">
+          <div className="flex items-center gap-3">
             <Input
               type="text"
               inputMode="decimal"
               value={data.dosage_amount}
               onChange={(e) => onChange("dosage_amount", e.target.value)}
               placeholder="Amount"
-              className="flex-1"
+              className="w-24 shrink-0"
             />
-            <Select
+            <PillGroup
+              options={DOSAGE_UNITS}
               value={data.dosage_unit}
-              onChange={(e) => onChange("dosage_unit", e.target.value)}
-              className="w-28"
-            >
-              <option value="">Unit</option>
-              {DOSAGE_UNITS.map((unit) => (
-                <option key={unit} value={unit}>
-                  {unit}
-                </option>
-              ))}
-            </Select>
+              onChange={(v) => onChange("dosage_unit", v)}
+              label="Dosage unit"
+            />
           </div>
         </div>
 
-        <div>
-          <BilingualLabel
-            english={MEDICATION_LABELS.frequency.en}
-            tamil={MEDICATION_LABELS.frequency.ta}
-          />
-          <Select
-            value={data.frequency}
-            onChange={(e) => {
-              onChange("frequency", e.target.value);
-              const opt = FREQUENCY_OPTIONS.find(
-                (f) => f.value === e.target.value,
-              );
-              if (opt) onChange("frequency_tamil", opt.tamil);
-            }}
-          >
-            <option value="">Select frequency</option>
-            {FREQUENCY_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
-          {data.frequency_tamil && (
-            <p lang="ta" className="mt-1 text-xs text-gray-500">
-              {data.frequency_tamil}
-            </p>
-          )}
-        </div>
-
-        <div>
-          <BilingualLabel
-            english={MEDICATION_LABELS.timing.en}
-            tamil={MEDICATION_LABELS.timing.ta}
-          />
-          <Select
-            value={data.timing}
-            onChange={(e) => {
-              onChange("timing", e.target.value);
-              const opt = TIMING_OPTIONS.find(
-                (t) => t.value === e.target.value,
-              );
-              if (opt) onChange("timing_tamil", opt.tamil);
-            }}
-          >
-            <option value="">Select timing</option>
-            {TIMING_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </Select>
-          {data.timing_tamil && (
-            <p lang="ta" className="mt-1 text-xs text-gray-500">
-              {data.timing_tamil}
-            </p>
-          )}
-        </div>
-
-        <div>
+        {/* Duration */}
+        <div className="sm:max-w-xs">
           <BilingualLabel
             english={MEDICATION_LABELS.duration.en}
             tamil={MEDICATION_LABELS.duration.ta}
@@ -187,56 +126,93 @@ export function MedicationRow({
           />
         </div>
 
-        <div className="sm:col-span-2">
+        {/* Frequency + Timing — side by side on desktop */}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <BilingualLabel
+              english={MEDICATION_LABELS.frequency.en}
+              tamil={MEDICATION_LABELS.frequency.ta}
+            />
+            <PillGroup
+              options={FREQUENCY_OPTIONS.map((f) => ({ value: f.value, label: f.value }))}
+              value={data.frequency}
+              onChange={(v) => {
+                onChange("frequency", v);
+                const opt = FREQUENCY_OPTIONS.find((f) => f.value === v);
+                if (opt) onChange("frequency_tamil", opt.tamil);
+              }}
+              label="Frequency"
+            />
+            {data.frequency && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                {FREQUENCY_OPTIONS.find((f) => f.value === data.frequency)?.label}
+                {data.frequency_tamil && (
+                  <span lang="ta" className="ml-2">{data.frequency_tamil}</span>
+                )}
+              </p>
+            )}
+          </div>
+          <div>
+            <BilingualLabel
+              english={MEDICATION_LABELS.timing.en}
+              tamil={MEDICATION_LABELS.timing.ta}
+            />
+            <PillGroup
+              options={TIMING_OPTIONS}
+              value={data.timing}
+              onChange={(v) => {
+                onChange("timing", v);
+                const opt = TIMING_OPTIONS.find((t) => t.value === v);
+                if (opt) onChange("timing_tamil", opt.tamil);
+              }}
+              label="Timing"
+            />
+            {data.timing_tamil && (
+              <p lang="ta" className="mt-1 text-xs text-muted-foreground">
+                {data.timing_tamil}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Instructions — EN + Tamil side by side */}
+        <div>
           <BilingualLabel
             english={MEDICATION_LABELS.instructions.en}
             tamil={MEDICATION_LABELS.instructions.ta}
           />
-          <div className="grid gap-2 sm:grid-cols-2">
-            <Input
-              value={data.instructions}
-              onChange={(e) => onChange("instructions", e.target.value)}
-              placeholder="e.g., Mix with warm water, take before food"
-            />
-            <Input
-              value={data.instructions_ta}
-              onChange={(e) => onChange("instructions_ta", e.target.value)}
-              placeholder={`e.g., வெந்நீரில் கலந்து சாப்பிடவும்`}
-              className="border-emerald-200 bg-emerald-50/30"
-            />
-          </div>
+          <Input
+            value={data.instructions}
+            onChange={(e) => onChange("instructions", e.target.value)}
+            placeholder="e.g., Mix with warm water, take before food"
+          />
         </div>
 
         {isHomeopathy && (
-          <>
+          <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Potency
               </label>
               <Input
                 value={data.potency}
                 onChange={(e) => onChange("potency", e.target.value)}
-                placeholder="e.g., 30C, 200C, 1M, LM1"
+                placeholder="e.g., 30C, 200C, 1M"
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Dilution Scale
               </label>
-              <Select
+              <PillGroup
+                options={DILUTION_SCALE_OPTIONS.map((o) => ({ value: o.value, label: o.value }))}
                 value={data.dilution_scale}
-                onChange={(e) => onChange("dilution_scale", e.target.value)}
-              >
-                <option value="">Select scale</option>
-                {DILUTION_SCALE_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </Select>
+                onChange={(v) => onChange("dilution_scale", v)}
+                label="Dilution Scale"
+              />
             </div>
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
+              <label className="mb-1.5 block text-sm font-medium text-foreground">
                 Pellet Count
               </label>
               <Input
@@ -247,7 +223,7 @@ export function MedicationRow({
                 placeholder="e.g., 4"
               />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>

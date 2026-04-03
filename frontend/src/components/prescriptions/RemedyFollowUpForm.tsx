@@ -79,7 +79,7 @@ export function RemedyFollowUpForm({
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-2 rounded-lg border border-dashed border-emerald-300 px-4 py-2.5 text-sm text-emerald-700 hover:bg-emerald-50"
+        className="flex items-center gap-2 rounded-lg border border-dashed border-primary px-4 py-2.5 text-sm text-primary hover:bg-accent"
       >
         <FlaskConical className="h-4 w-4" />
         Record Remedy Response
@@ -88,10 +88,10 @@ export function RemedyFollowUpForm({
   }
 
   return (
-    <div className="rounded-lg border border-emerald-200 bg-emerald-50/30 p-4">
+    <div className="rounded-lg border border-input bg-muted p-4">
       <div className="mb-4 flex items-center gap-2">
-        <FlaskConical className="h-4 w-4 text-emerald-700" />
-        <h3 className="text-sm font-semibold text-emerald-900">
+        <FlaskConical className="h-4 w-4 text-primary" />
+        <h3 className="text-sm font-semibold text-foreground">
           Remedy Response
         </h3>
       </div>
@@ -99,7 +99,7 @@ export function RemedyFollowUpForm({
       <div className="grid gap-3 sm:grid-cols-2">
         {medications.length > 0 && (
           <div className="sm:col-span-2">
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               Remedy Evaluated
             </label>
             <Select
@@ -117,7 +117,7 @@ export function RemedyFollowUpForm({
         )}
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Response Type <span className="text-red-500">*</span>
           </label>
           <Select
@@ -134,7 +134,7 @@ export function RemedyFollowUpForm({
         </div>
 
         <div>
-          <label className="mb-1 block text-xs font-medium text-gray-600">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Action Taken <span className="text-red-500">*</span>
           </label>
           <Select
@@ -152,7 +152,7 @@ export function RemedyFollowUpForm({
 
         {showNewPotency && (
           <div>
-            <label className="mb-1 block text-xs font-medium text-gray-600">
+            <label className="mb-1 block text-xs font-medium text-muted-foreground">
               New Potency
             </label>
             <Input
@@ -164,7 +164,7 @@ export function RemedyFollowUpForm({
         )}
 
         <div className="sm:col-span-2">
-          <label className="mb-1 block text-xs font-medium text-gray-600">
+          <label className="mb-1 block text-xs font-medium text-muted-foreground">
             Clinical Notes
           </label>
           <textarea
@@ -172,7 +172,7 @@ export function RemedyFollowUpForm({
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Observations, rationale for action taken..."
             rows={3}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           />
         </div>
       </div>
@@ -189,7 +189,7 @@ export function RemedyFollowUpForm({
         <button
           type="button"
           onClick={() => setIsOpen(false)}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-muted-foreground hover:text-foreground"
         >
           Cancel
         </button>

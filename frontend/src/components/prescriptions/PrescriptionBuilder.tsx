@@ -296,15 +296,14 @@ export function PrescriptionBuilder({
               }
             />
           ))}
-          <Button
+          <button
             type="button"
-            variant="ghost"
             onClick={() => dispatch({ type: "ADD_MEDICATION" })}
-            className="text-emerald-700"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
             <Plus className="h-4 w-4" />
             Add Medication
-          </Button>
+          </button>
         </div>
       </FormSection>
 
@@ -314,10 +313,10 @@ export function PrescriptionBuilder({
           {state.procedures.map((proc, idx) => (
             <div
               key={idx}
-              className="grid gap-3 rounded-lg border border-gray-200 bg-white p-4 sm:grid-cols-3"
+              className="grid gap-3 border-t border-border pt-5 sm:grid-cols-3"
             >
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Procedure Name
                 </label>
                 <Input
@@ -334,7 +333,7 @@ export function PrescriptionBuilder({
                 />
               </div>
               <div>
-                <label className="mb-1 block text-xs font-medium text-gray-600">
+                <label className="mb-1 block text-xs font-medium text-muted-foreground">
                   Details
                 </label>
                 <Input
@@ -352,7 +351,7 @@ export function PrescriptionBuilder({
               </div>
               <div className="flex items-end gap-2">
                 <div className="flex-1">
-                  <label className="mb-1 block text-xs font-medium text-gray-600">
+                  <label className="mb-1 block text-xs font-medium text-muted-foreground">
                     Duration
                   </label>
                   <Input
@@ -374,22 +373,21 @@ export function PrescriptionBuilder({
                   onClick={() =>
                     dispatch({ type: "REMOVE_PROCEDURE", index: idx })
                   }
-                  className="mb-0.5 flex h-11 w-11 items-center justify-center rounded-lg text-lg text-gray-400 hover:bg-red-50 hover:text-red-600"
+                  className="mb-0.5 flex h-11 w-11 items-center justify-center rounded-lg text-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
                 >
                   &times;
                 </button>
               </div>
             </div>
           ))}
-          <Button
+          <button
             type="button"
-            variant="ghost"
             onClick={() => dispatch({ type: "ADD_PROCEDURE" })}
-            className="text-emerald-700"
+            className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-primary/80"
           >
             <Plus className="h-4 w-4" />
             Add Procedure
-          </Button>
+          </button>
         </div>
       </FormSection>
 
@@ -398,77 +396,44 @@ export function PrescriptionBuilder({
         <div className="space-y-4">
           <FormField label={`${ADVICE_LABELS.diet.ta} — ${ADVICE_LABELS.diet.en}`}>
             {(props) => (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <textarea
-                  {...props}
-                  value={state.diet_advice}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "diet_advice", value: e.target.value })
-                  }
-                  placeholder="Diet advice (English)"
-                  rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-                <textarea
-                  value={state.diet_advice_ta}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "diet_advice_ta", value: e.target.value })
-                  }
-                  placeholder="உணவுக் கட்டுப்பாடு (தமிழ்)"
-                  rows={2}
-                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-              </div>
+              <textarea
+                {...props}
+                value={state.diet_advice}
+                onChange={(e) =>
+                  dispatch({ type: "SET_FIELD", field: "diet_advice", value: e.target.value })
+                }
+                placeholder="Diet advice — you can type in Tamil too"
+                rows={2}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
             )}
           </FormField>
           <FormField label={`${ADVICE_LABELS.lifestyle.ta} — ${ADVICE_LABELS.lifestyle.en}`}>
             {(props) => (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <textarea
-                  {...props}
-                  value={state.lifestyle_advice}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "lifestyle_advice", value: e.target.value })
-                  }
-                  placeholder="Lifestyle advice (English)"
-                  rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-                <textarea
-                  value={state.lifestyle_advice_ta}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "lifestyle_advice_ta", value: e.target.value })
-                  }
-                  placeholder="வாழ்க்கைமுறை அறிவுரை (தமிழ்)"
-                  rows={2}
-                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-              </div>
+              <textarea
+                {...props}
+                value={state.lifestyle_advice}
+                onChange={(e) =>
+                  dispatch({ type: "SET_FIELD", field: "lifestyle_advice", value: e.target.value })
+                }
+                placeholder="Lifestyle advice — you can type in Tamil too"
+                rows={2}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
             )}
           </FormField>
           <FormField label={`${ADVICE_LABELS.exercise.ta} — ${ADVICE_LABELS.exercise.en}`}>
             {(props) => (
-              <div className="grid gap-2 sm:grid-cols-2">
-                <textarea
-                  {...props}
-                  value={state.exercise_advice}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "exercise_advice", value: e.target.value })
-                  }
-                  placeholder="Exercise advice (English)"
-                  rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-                <textarea
-                  value={state.exercise_advice_ta}
-                  onChange={(e) =>
-                    dispatch({ type: "SET_FIELD", field: "exercise_advice_ta", value: e.target.value })
-                  }
-                  placeholder="உடற்பயிற்சி அறிவுரை (தமிழ்)"
-                  rows={2}
-                  className="w-full rounded-lg border border-emerald-200 bg-emerald-50/30 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                />
-              </div>
+              <textarea
+                {...props}
+                value={state.exercise_advice}
+                onChange={(e) =>
+                  dispatch({ type: "SET_FIELD", field: "exercise_advice", value: e.target.value })
+                }
+                placeholder="Exercise advice — you can type in Tamil too"
+                rows={2}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
             )}
           </FormField>
         </div>
@@ -493,7 +458,7 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label="Follow-up Notes (English)">
+          <FormField label="Follow-up Notes">
             {(props) => (
               <Input
                 {...props}
@@ -505,24 +470,11 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label="மறு ஆய்வு குறிப்புகள் (தமிழ்)">
-            {(props) => (
-              <Input
-                {...props}
-                value={state.follow_up_notes_ta}
-                onChange={(e) =>
-                  dispatch({ type: "SET_FIELD", field: "follow_up_notes_ta", value: e.target.value })
-                }
-                placeholder="மறு ஆய்வு குறிப்புகள்..."
-                className="border-emerald-200 bg-emerald-50/30"
-              />
-            )}
-          </FormField>
         </div>
       </FormSection>
 
       {/* Submit */}
-      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-6">
+      <div className="flex flex-wrap items-center justify-end gap-3 border-t border-border pt-6">
         <Button
           type="button"
           variant="secondary"

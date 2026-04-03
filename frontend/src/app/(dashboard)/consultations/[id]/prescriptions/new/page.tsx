@@ -26,18 +26,18 @@ export default function NewPrescriptionPage() {
 
   if (!consultation) {
     return (
-      <div className="py-20 text-center text-gray-500">
+      <div className="py-20 text-center text-muted-foreground">
         Visit not found.
       </div>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="mx-auto w-full max-w-6xl space-y-6">
       {patient && <PatientBanner patient={patient} />}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">New Prescription</h1>
-        <p className="mt-1 text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-foreground">New Prescription</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
           Visit on{" "}
           {new Date(consultation.consultation_date).toLocaleDateString("en-IN")}
           {consultation.diagnosis && (

@@ -3,10 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
-import { Select } from "@/components/ui/Select";
+import { PillGroup } from "@/components/ui/PillGroup";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { DynamicTable } from "@/components/forms/DynamicTable";
@@ -74,6 +74,9 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
   const [phoneMatches, setPhoneMatches] = useState<PhoneMatch[]>([]);
+  const [showClinical, setShowClinical] = useState(isEdit);
+  const [showMedicalHistory, setShowMedicalHistory] = useState(isEdit && (initialData?.medical_history?.length ?? 0) > 0);
+  const [showFamilyHistory, setShowFamilyHistory] = useState(isEdit && (initialData?.family_history?.length ?? 0) > 0);
   const phoneCheckTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const dobControlsAge = !!form.date_of_birth;
 
@@ -201,158 +204,173 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
           : mutationError.non_field_errors)
       : null);
 
+  // Auto-show clinical section if any clinical field has data
+  const hasClinicalData = !!(
+    form.blood_group || form.marital_status || form.food_habits ||
+    form.activity_level || form.referred_by || form.allergies
+  );
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-10 pb-24">
       {/* Non-field server errors */}
       {nonFieldError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4 text-sm text-destructive">
           {nonFieldError}
         </div>
       )}
 
       {/* Basic Information */}
-      <FormSection title="Basic Information" id="basic-info">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Full Name" required error={allErrors.name}>
-            {(props) => (
-              <Input
-                {...props}
-                autoFocus
-                value={form.name}
-                onChange={(e) => updateField("name", e.target.value)}
-                placeholder="Patient full name"
-                hasError={!!allErrors.name}
-              />
-            )}
-          </FormField>
-          <FormField label="Date of Birth" error={allErrors.date_of_birth}>
-            {(props) => (
-              <Input
-                {...props}
-                type="date"
-                value={form.date_of_birth}
-                onChange={(e) => handleDobChange(e.target.value)}
-                max={new Date().toISOString().split("T")[0]}
-                hasError={!!allErrors.date_of_birth}
-              />
-            )}
-          </FormField>
-          <FormField label="Age" required error={allErrors.age}>
-            {(props) => (
-              <Input
-                {...props}
-                type="text"
-                inputMode="numeric"
-                pattern="[0-9]*"
-                value={form.age}
-                onChange={(e) => {
-                  if (!dobControlsAge) updateField("age", e.target.value);
-                }}
-                placeholder={dobControlsAge ? "Calculated from DOB" : "Age in years"}
-                readOnly={dobControlsAge}
-                hasError={!!allErrors.age}
-                className={dobControlsAge ? "bg-gray-50 text-gray-500" : ""}
-              />
-            )}
-          </FormField>
-          <FormField label="Gender" required error={allErrors.gender}>
-            {(props) => (
-              <Select
-                {...props}
-                value={form.gender}
-                onChange={(e) => updateField("gender", e.target.value as PatientFormState["gender"])}
-                hasError={!!allErrors.gender}
-              >
-                <option value="">Select gender</option>
-                {GENDER_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </Select>
-            )}
-          </FormField>
-          <div>
-            <FormField label="Phone" required error={allErrors.phone}>
+      <FormSection title="Basic Information">
+        <div className="space-y-6">
+          {/* Name + DOB cluster */}
+          <div className="grid gap-5 sm:grid-cols-3">
+            <div className="sm:col-span-2">
+              <FormField label="Full Name" required error={allErrors.name}>
+                {(props) => (
+                  <Input
+                    {...props}
+                    autoFocus
+                    value={form.name}
+                    onChange={(e) => updateField("name", e.target.value)}
+                    placeholder="Patient full name"
+                    hasError={!!allErrors.name}
+                  />
+                )}
+              </FormField>
+            </div>
+            <FormField label="Date of Birth" error={allErrors.date_of_birth}>
+              {(props) => (
+                <Input
+                  {...props}
+                  type="date"
+                  value={form.date_of_birth}
+                  onChange={(e) => handleDobChange(e.target.value)}
+                  max={new Date().toISOString().split("T")[0]}
+                  hasError={!!allErrors.date_of_birth}
+                />
+              )}
+            </FormField>
+          </div>
+
+          {/* Age + Gender cluster */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField label="Age" required error={allErrors.age}>
+              {(props) => (
+                <Input
+                  {...props}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={form.age}
+                  onChange={(e) => {
+                    if (!dobControlsAge) updateField("age", e.target.value);
+                  }}
+                  placeholder={dobControlsAge ? "Calculated from DOB" : "Age in years"}
+                  readOnly={dobControlsAge}
+                  hasError={!!allErrors.age}
+                  className={dobControlsAge ? "bg-muted text-muted-foreground" : ""}
+                />
+              )}
+            </FormField>
+            <FormField label="Gender" required error={allErrors.gender}>
+              {() => (
+                <PillGroup
+                  options={GENDER_OPTIONS}
+                  value={form.gender}
+                  onChange={(v) => updateField("gender", v as PatientFormState["gender"])}
+                  label="Gender"
+                />
+              )}
+            </FormField>
+          </div>
+
+          {/* Phone cluster */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <FormField label="Phone" required error={allErrors.phone}>
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="tel"
+                    inputMode="tel"
+                    maxLength={10}
+                    value={form.phone}
+                    onChange={(e) => updateField("phone", e.target.value)}
+                    placeholder="10-digit mobile number"
+                    hasError={!!allErrors.phone}
+                  />
+                )}
+              </FormField>
+              {phoneMatches.length > 0 && (
+                <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+                    <div className="text-sm text-amber-800">
+                      <p className="font-medium">
+                        This phone number is already registered for:
+                      </p>
+                      <ul className="mt-1 space-y-1">
+                        {phoneMatches.map((match) => (
+                          <li key={match.id}>
+                            <Link
+                              href={`/patients/${match.id}`}
+                              className="font-medium text-amber-900 underline hover:text-amber-700"
+                              target="_blank"
+                            >
+                              {match.name}
+                            </Link>{" "}
+                            ({match.record_id})
+                          </li>
+                        ))}
+                      </ul>
+                      <p className="mt-1 text-xs text-amber-600">
+                        If this is a different person (e.g., family member), you can continue.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            <FormField label="WhatsApp Number">
               {(props) => (
                 <Input
                   {...props}
                   type="tel"
                   inputMode="tel"
                   maxLength={10}
-                  value={form.phone}
-                  onChange={(e) => updateField("phone", e.target.value)}
-                  placeholder="10-digit mobile number"
-                  hasError={!!allErrors.phone}
+                  value={form.whatsapp_number}
+                  onChange={(e) => updateField("whatsapp_number", e.target.value)}
+                  placeholder="WhatsApp number (if different)"
                 />
               )}
             </FormField>
-            {phoneMatches.length > 0 && (
-              <div className="mt-2 rounded-lg border border-amber-200 bg-amber-50 p-3">
-                <div className="flex items-start gap-2">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-                  <div className="text-sm text-amber-800">
-                    <p className="font-medium">
-                      This phone number is already registered for:
-                    </p>
-                    <ul className="mt-1 space-y-1">
-                      {phoneMatches.map((match) => (
-                        <li key={match.id}>
-                          <Link
-                            href={`/patients/${match.id}`}
-                            className="font-medium text-amber-900 underline hover:text-amber-700"
-                            target="_blank"
-                          >
-                            {match.name}
-                          </Link>{" "}
-                          ({match.record_id})
-                        </li>
-                      ))}
-                    </ul>
-                    <p className="mt-1 text-xs text-amber-600">
-                      If this is a different person (e.g., family member), you can continue.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
           </div>
-          <FormField label="WhatsApp Number">
-            {(props) => (
-              <Input
-                {...props}
-                type="tel"
-                inputMode="tel"
-                maxLength={10}
-                value={form.whatsapp_number}
-                onChange={(e) => updateField("whatsapp_number", e.target.value)}
-                placeholder="WhatsApp number (if different)"
-              />
-            )}
-          </FormField>
-          <FormField label="Email" error={allErrors.email}>
-            {(props) => (
-              <Input
-                {...props}
-                type="email"
-                value={form.email}
-                onChange={(e) => updateField("email", e.target.value)}
-                placeholder="email@example.com"
-              />
-            )}
-          </FormField>
-          <FormField label="Occupation">
-            {(props) => (
-              <Input
-                {...props}
-                value={form.occupation}
-                onChange={(e) => updateField("occupation", e.target.value)}
-                placeholder="Occupation"
-              />
-            )}
-          </FormField>
-        </div>
-        <div className="mt-4">
+
+          {/* Contact cluster */}
+          <div className="grid gap-5 sm:grid-cols-2">
+            <FormField label="Email" error={allErrors.email}>
+              {(props) => (
+                <Input
+                  {...props}
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => updateField("email", e.target.value)}
+                  placeholder="email@example.com"
+                />
+              )}
+            </FormField>
+            <FormField label="Occupation">
+              {(props) => (
+                <Input
+                  {...props}
+                  value={form.occupation}
+                  onChange={(e) => updateField("occupation", e.target.value)}
+                  placeholder="Occupation"
+                />
+              )}
+            </FormField>
+          </div>
+
           <FormField label="Address">
             {(props) => (
               <textarea
@@ -361,103 +379,91 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
                 onChange={(e) => updateField("address", e.target.value)}
                 placeholder="Full address"
                 rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             )}
           </FormField>
         </div>
       </FormSection>
 
-      {/* Clinical Information */}
-      <FormSection title="Clinical Information" id="clinical-info">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          <FormField label="Blood Group">
-            {(props) => (
-              <Select
-                {...props}
-                value={form.blood_group}
-                onChange={(e) => updateField("blood_group", e.target.value as PatientFormState["blood_group"])}
-              >
-                <option value="">Select blood group</option>
-                {BLOOD_GROUP_OPTIONS.map((bg) => (
-                  <option key={bg} value={bg}>{bg}</option>
-                ))}
-              </Select>
-            )}
-          </FormField>
-          <FormField label="Marital Status">
-            {(props) => (
-              <Select
-                {...props}
-                value={form.marital_status}
-                onChange={(e) => updateField("marital_status", e.target.value as PatientFormState["marital_status"])}
-              >
-                <option value="">Select status</option>
-                {MARITAL_STATUS_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </Select>
-            )}
-          </FormField>
-          <FormField label="Food Habits">
-            {(props) => (
-              <Select
-                {...props}
-                value={form.food_habits}
-                onChange={(e) => updateField("food_habits", e.target.value as PatientFormState["food_habits"])}
-              >
-                <option value="">Select food habits</option>
-                {FOOD_HABIT_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </Select>
-            )}
-          </FormField>
-          <FormField label="Activity Level">
-            {(props) => (
-              <Select
-                {...props}
-                value={form.activity_level}
-                onChange={(e) => updateField("activity_level", e.target.value as PatientFormState["activity_level"])}
-              >
-                <option value="">Select level</option>
-                {ACTIVITY_LEVEL_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </Select>
-            )}
-          </FormField>
-          <FormField label="Referred By">
-            {(props) => (
-              <Input
-                {...props}
-                value={form.referred_by}
-                onChange={(e) => updateField("referred_by", e.target.value)}
-                placeholder="Referring doctor or source"
-              />
-            )}
-          </FormField>
-        </div>
-        <div className="mt-4">
-          <FormField label="Known Allergies">
-            {(props) => (
-              <textarea
-                {...props}
-                value={form.allergies}
-                onChange={(e) => updateField("allergies", e.target.value)}
-                placeholder="List any known allergies"
-                rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-              />
-            )}
-          </FormField>
-        </div>
-      </FormSection>
+      {/* Optional sections — collapsed buttons grouped, expanded sections spaced */}
+      {(showClinical || hasClinicalData) && (
+        <FormSection title="Clinical Information" subtitle="Blood group, lifestyle, and allergies">
+          <div className="space-y-6">
+            <div className="grid gap-5 sm:grid-cols-3">
+              <FormField label="Blood Group">
+                {() => (
+                  <PillGroup
+                    options={BLOOD_GROUP_OPTIONS}
+                    value={form.blood_group}
+                    onChange={(v) => updateField("blood_group", v as PatientFormState["blood_group"])}
+                    label="Blood Group"
+                  />
+                )}
+              </FormField>
+              <FormField label="Marital Status">
+                {() => (
+                  <PillGroup
+                    options={MARITAL_STATUS_OPTIONS}
+                    value={form.marital_status}
+                    onChange={(v) => updateField("marital_status", v as PatientFormState["marital_status"])}
+                    label="Marital Status"
+                  />
+                )}
+              </FormField>
+              <FormField label="Food Habits">
+                {() => (
+                  <PillGroup
+                    options={FOOD_HABIT_OPTIONS}
+                    value={form.food_habits}
+                    onChange={(v) => updateField("food_habits", v as PatientFormState["food_habits"])}
+                    label="Food Habits"
+                  />
+                )}
+              </FormField>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-3">
+              <FormField label="Activity Level">
+                {() => (
+                  <PillGroup
+                    options={ACTIVITY_LEVEL_OPTIONS}
+                    value={form.activity_level}
+                    onChange={(v) => updateField("activity_level", v as PatientFormState["activity_level"])}
+                    label="Activity Level"
+                  />
+                )}
+              </FormField>
+              <FormField label="Referred By">
+                {(props) => (
+                  <Input
+                    {...props}
+                    value={form.referred_by}
+                    onChange={(e) => updateField("referred_by", e.target.value)}
+                    placeholder="Referring doctor or source"
+                  />
+                )}
+              </FormField>
+            </div>
+            <FormField label="Known Allergies">
+              {(props) => (
+                <textarea
+                  {...props}
+                  value={form.allergies}
+                  onChange={(e) => updateField("allergies", e.target.value)}
+                  placeholder="List any known allergies"
+                  rows={2}
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                />
+              )}
+            </FormField>
+          </div>
+        </FormSection>
+      )}
 
-      {/* Menstrual History - only for female patients */}
+      {/* Menstrual History — only for female patients */}
       {form.gender === "female" && (
-        <FormSection title="Menstrual / Obstetric History" id="menstrual-history">
-          <div className="grid gap-4 sm:grid-cols-2">
+        <FormSection title="Menstrual / Obstetric History">
+          <div className="grid gap-5 sm:grid-cols-2">
             <FormField label="Menstrual History">
               {(props) => (
                 <textarea
@@ -466,7 +472,7 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
                   onChange={(e) => updateField("menstrual_history", e.target.value)}
                   placeholder="Menstrual cycle details, any irregularities"
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                  className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
                 />
               )}
             </FormField>
@@ -487,85 +493,135 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
         </FormSection>
       )}
 
-      {/* Medical History */}
-      <FormSection title="Medical History" id="medical-history" defaultOpen={isEdit}>
-        <DynamicTable
-          columns={[
-            { key: "disease", label: "Disease/Condition", placeholder: "e.g., Diabetes" },
-            { key: "duration", label: "Duration", placeholder: "e.g., 5 years" },
-            { key: "medication", label: "Current Medication", placeholder: "e.g., Metformin" },
-          ]}
-          rows={form.medical_history}
-          onAdd={() =>
-            updateField("medical_history", [
-              ...form.medical_history,
-              { disease: "", duration: "", medication: "" },
-            ])
-          }
-          onRemove={(idx) =>
-            updateField(
-              "medical_history",
-              form.medical_history.filter((_, i) => i !== idx),
-            )
-          }
-          onChange={(idx, key, value) =>
-            updateField(
-              "medical_history",
-              form.medical_history.map((row, i) =>
-                i === idx ? { ...row, [key]: value } : row,
-              ),
-            )
-          }
-          addLabel="Add Medical History"
-        />
-      </FormSection>
+      {showMedicalHistory && (
+        <FormSection title="Medical History" subtitle="Past and current conditions">
+          <DynamicTable
+            columns={[
+              { key: "disease", label: "Disease/Condition", placeholder: "e.g., Diabetes" },
+              { key: "duration", label: "Duration", placeholder: "e.g., 5 years" },
+              { key: "medication", label: "Current Medication", placeholder: "e.g., Metformin" },
+            ]}
+            rows={form.medical_history}
+            onAdd={() =>
+              updateField("medical_history", [
+                ...form.medical_history,
+                { disease: "", duration: "", medication: "" },
+              ])
+            }
+            onRemove={(idx) =>
+              updateField(
+                "medical_history",
+                form.medical_history.filter((_, i) => i !== idx),
+              )
+            }
+            onChange={(idx, key, value) =>
+              updateField(
+                "medical_history",
+                form.medical_history.map((row, i) =>
+                  i === idx ? { ...row, [key]: value } : row,
+                ),
+              )
+            }
+            addLabel="Add Medical History"
+          />
+        </FormSection>
+      )}
 
-      {/* Family History */}
-      <FormSection title="Family History" id="family-history" defaultOpen={isEdit}>
-        <DynamicTable
-          columns={[
-            { key: "relation", label: "Relation", placeholder: "e.g., Father" },
-            { key: "disease", label: "Disease", placeholder: "e.g., Hypertension" },
-            { key: "duration", label: "Duration", placeholder: "e.g., 10 years" },
-            { key: "remarks", label: "Remarks", placeholder: "Any notes" },
-          ]}
-          rows={form.family_history}
-          onAdd={() =>
-            updateField("family_history", [
-              ...form.family_history,
-              { relation: "", disease: "", duration: "", remarks: "" },
-            ])
-          }
-          onRemove={(idx) =>
-            updateField(
-              "family_history",
-              form.family_history.filter((_, i) => i !== idx),
-            )
-          }
-          onChange={(idx, key, value) =>
-            updateField(
-              "family_history",
-              form.family_history.map((row, i) =>
-                i === idx ? { ...row, [key]: value } : row,
-              ),
-            )
-          }
-          addLabel="Add Family History"
-        />
-      </FormSection>
+      {showFamilyHistory && (
+        <FormSection title="Family History" subtitle="Hereditary conditions in the family">
+          <DynamicTable
+            columns={[
+              { key: "relation", label: "Relation", placeholder: "e.g., Father" },
+              { key: "disease", label: "Disease", placeholder: "e.g., Hypertension" },
+              { key: "duration", label: "Duration", placeholder: "e.g., 10 years" },
+              { key: "remarks", label: "Remarks", placeholder: "Any notes" },
+            ]}
+            rows={form.family_history}
+            onAdd={() =>
+              updateField("family_history", [
+                ...form.family_history,
+                { relation: "", disease: "", duration: "", remarks: "" },
+              ])
+            }
+            onRemove={(idx) =>
+              updateField(
+                "family_history",
+                form.family_history.filter((_, i) => i !== idx),
+              )
+            }
+            onChange={(idx, key, value) =>
+              updateField(
+                "family_history",
+                form.family_history.map((row, i) =>
+                  i === idx ? { ...row, [key]: value } : row,
+                ),
+              )
+            }
+            addLabel="Add Family History"
+          />
+        </FormSection>
+      )}
 
-      {/* Submit */}
-      <div className="flex items-center justify-end gap-3 border-t border-gray-200 pt-6">
-        <Button
-          type="button"
-          variant="secondary"
-          onClick={() => router.back()}
-        >
-          Cancel
-        </Button>
-        <Button type="submit" isLoading={isLoading}>
-          {isEdit ? "Save Changes" : "Register Patient"}
-        </Button>
+      {/* Collapsed add buttons — grouped vertically */}
+      {(!showClinical && !hasClinicalData || !showMedicalHistory || !showFamilyHistory) && (
+        <div className="flex flex-col gap-5">
+          {!showClinical && !hasClinicalData && (
+            <button
+              type="button"
+              onClick={() => setShowClinical(true)}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add clinical details
+            </button>
+          )}
+          {!showMedicalHistory && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowMedicalHistory(true);
+                if (form.medical_history.length === 0) {
+                  updateField("medical_history", [{ disease: "", duration: "", medication: "" }]);
+                }
+              }}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add medical history
+            </button>
+          )}
+          {!showFamilyHistory && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowFamilyHistory(true);
+                if (form.family_history.length === 0) {
+                  updateField("family_history", [{ relation: "", disease: "", duration: "", remarks: "" }]);
+                }
+              }}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add family history
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Sticky bottom action bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto flex max-w-6xl items-center justify-end gap-3 px-6 py-3">
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={() => router.back()}
+          >
+            Cancel
+          </Button>
+          <Button type="submit" isLoading={isLoading}>
+            {isEdit ? "Save Changes" : "Register Patient"}
+          </Button>
+        </div>
       </div>
     </form>
   );

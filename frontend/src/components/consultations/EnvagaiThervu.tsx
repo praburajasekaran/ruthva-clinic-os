@@ -20,14 +20,14 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
       {tools.map(([key, tool]) => (
         <div
           key={key}
-          className="rounded-lg border border-gray-200 bg-gray-50 p-4"
+          className="rounded-lg border border-border p-4"
         >
           <div className="mb-3 flex items-baseline gap-2">
-            <h4 className="font-semibold text-gray-900">{tool.label}</h4>
-            <span lang="ta" className="text-xs text-gray-500">
+            <h4 className="font-semibold text-foreground">{tool.label}</h4>
+            <span lang="ta" className="text-xs text-muted-foreground">
               ({tool.labelTamil})
             </span>
-            <span className="text-xs text-gray-400">{tool.translation}</span>
+            <span className="text-xs text-muted-foreground/60">{tool.translation}</span>
             {key === "nadi" && (() => {
               const nadiType = getFieldValue(values[key] ?? "", "type").toLowerCase();
               return isDoshaType(nadiType) ? (
@@ -39,7 +39,7 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
           <div className="space-y-5">
             {Object.entries(tool.fields).map(([fieldKey, options]) => (
               <div key={fieldKey}>
-                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-gray-400">
+                <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                   {fieldKey.replace(/_/g, " ")}
                 </label>
                 <PillGroup
@@ -60,7 +60,7 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
 
             {/* Notes field */}
             <div>
-              <label className="mb-1 block text-xs font-medium text-gray-600">
+              <label className="mb-1 block text-xs font-medium text-muted-foreground">
                 Notes
               </label>
               <textarea
@@ -75,7 +75,7 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
                 }}
                 placeholder="Additional observations..."
                 rows={2}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             </div>
           </div>

@@ -24,8 +24,8 @@
   --color-warning: #d49a2a;
   --color-danger: #ae5442;
 
-  --color-canvas: #f2efe8;
-  --color-surface: #fffdf8;
+  --color-canvas: #fafafa;
+  --color-surface: #ffffff;
   --color-surface-raised: #f7f3ec;
   --color-surface-sunken: #f0ece3;
   --color-border: #ddd5c8;
@@ -33,6 +33,43 @@
   --color-text-primary: #1d261f;
   --color-text-secondary: #3d4d3f;
   --color-text-muted: #555f57;
+
+  /* shadcn/ui semantic tokens — mapped from Ruthva design tokens */
+  --radius: 0.625rem;
+  --background: #ffffff;
+  --foreground: #1d261f;
+  --card: #ffffff;
+  --card-foreground: #1d261f;
+  --popover: #ffffff;
+  --popover-foreground: #1d261f;
+  --primary: #2f5f44;
+  --primary-foreground: #ffffff;
+  --secondary: #f7f3ec;
+  --secondary-foreground: #1d261f;
+  --muted: #f0ece3;
+  --muted-foreground: #555f57;
+  --accent: #eff6f1;
+  --accent-foreground: #1a3c2a;
+  --destructive: #ae5442;
+  --destructive-foreground: #ffffff;
+  --border: #ddd5c8;
+  --input: #ddd5c8;
+  --ring: #467858;
+  --chart-1: #2f5f44;
+  --chart-2: #5f8f71;
+  --chart-3: #d49a2a;
+  --chart-4: #c56b3d;
+  --chart-5: #ae5442;
+
+  /* Sidebar tokens */
+  --sidebar: #f7f3ec;
+  --sidebar-foreground: #1d261f;
+  --sidebar-primary: #2f5f44;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eff6f1;
+  --sidebar-accent-foreground: #1a3c2a;
+  --sidebar-border: #ddd5c8;
+  --sidebar-ring: #467858;
 }
 
 @layer base {
@@ -42,9 +79,6 @@
 
   body {
     background-color: var(--color-canvas);
-    background-image:
-      radial-gradient(circle at top left, rgb(223 237 226 / 0.85), transparent 26rem),
-      radial-gradient(circle at top right, rgb(255 255 255 / 0.75), transparent 24rem);
     color: var(--color-text-primary);
     @apply antialiased;
   }
