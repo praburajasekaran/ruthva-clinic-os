@@ -9,8 +9,8 @@ type PillGroupProps = {
 
 export function PillGroup({ options, value, onChange, label }: PillGroupProps) {
   return (
-    <div className="flex flex-wrap" role="radiogroup" aria-label={label}>
-      {options.map((opt, i) => {
+    <div className="flex flex-wrap gap-1.5" role="radiogroup" aria-label={label}>
+      {options.map((opt) => {
         const isSelected = value === opt;
         return (
           <button
@@ -19,18 +19,10 @@ export function PillGroup({ options, value, onChange, label }: PillGroupProps) {
             role="radio"
             aria-checked={isSelected}
             onClick={() => onChange(isSelected ? "" : opt)}
-            className={`border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-              i === 0
-                ? "rounded-l-lg"
-                : ""
-            } ${
-              i === options.length - 1
-                ? "rounded-r-lg"
-                : "border-r-0"
-            } ${
+            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
               isSelected
                 ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
+                : "border-gray-300 bg-white text-gray-600 hover:border-gray-400 hover:bg-gray-50"
             }`}
           >
             {opt}
