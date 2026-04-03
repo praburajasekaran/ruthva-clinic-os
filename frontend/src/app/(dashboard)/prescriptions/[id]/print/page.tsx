@@ -14,27 +14,6 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { QRCodeSVG } from "qrcode.react";
 import type { Prescription, Consultation, Patient } from "@/lib/types";
 
-function SectionHeader({ en, ta }: { en: string; ta?: string }) {
-  return (
-    <div
-      className="mb-2 mt-4 flex items-baseline gap-2 border-b-2 pb-1"
-      style={{ borderColor: "var(--rx-primary)" }}
-    >
-      <span
-        className="text-[11pt] font-bold uppercase tracking-wide"
-        style={{ color: "var(--rx-primary)" }}
-      >
-        {en}
-      </span>
-      {ta && (
-        <span className="text-[9pt] text-gray-400" lang="ta">
-          {ta}
-        </span>
-      )}
-    </div>
-  );
-}
-
 function BilingualTh({ ta, en }: { ta: string; en: string }) {
   return (
     <>
@@ -75,6 +54,7 @@ export default function PrintPrescriptionPage() {
   const topMargin = user?.clinic?.top_margin_mm ?? 15;
   const bottomMargin = user?.clinic?.bottom_margin_mm ?? 15;
   const googleReviewUrl = user?.clinic?.google_review_url || "";
+  const isDigital = user?.clinic?.letterhead_mode === "digital";
 
   const hasVitals =
     consultation &&
@@ -128,7 +108,7 @@ export default function PrintPrescriptionPage() {
         }
         .print-prescription table.rx-table td {
           padding: 8px 10px;
-          border-bottom: 1px solid #d1d5db;
+          border-bottom: 1px solid #e5e7eb;
           font-size: 10pt;
           vertical-align: top;
         }
@@ -141,94 +121,93 @@ export default function PrintPrescriptionPage() {
       `}</style>
 
       {/* ── LETTERHEAD ── */}
-      <div
-        className={`mb-3 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "" : "no-print"}`}
-        style={{ borderColor: primaryColor }}
-      >
-        {user?.clinic?.logo_url && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={user.clinic.logo_url}
-            alt=""
-            className="mx-auto mb-1"
-            style={{ maxHeight: "60px", maxWidth: "200px" }}
-          />
-        )}
-        <h1
-          className="text-[16pt] font-bold"
-          style={{ color: primaryColor }}
-        >
-          {clinicName}
-        </h1>
-        {user?.clinic?.tagline && (
-          <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
-        )}
-        {user?.clinic?.address && (
-          <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
-        )}
-        {user?.clinic?.phone && (
-          <p className="text-[8pt] text-gray-500">
-            {user.clinic.phone}
-            {user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
-          </p>
-        )}
-        {user?.clinic?.letterhead_mode !== "digital" && (
+      {isDigital ? (
+        <div className="mb-6 text-center">
+          {user?.clinic?.logo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={user.clinic.logo_url}
+              alt=""
+              className="mx-auto mb-1"
+              style={{ maxHeight: "60px", maxWidth: "200px" }}
+            />
+          )}
+          <h1
+            className="text-[16pt] font-bold"
+            style={{ color: primaryColor }}
+          >
+            {clinicName}
+          </h1>
+          {user?.clinic?.tagline && (
+            <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
+          )}
+          {user?.clinic?.address && (
+            <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
+          )}
+          {user?.clinic?.phone && (
+            <p className="text-[8pt] text-gray-500">
+              {user.clinic.phone}
+              {user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
+            </p>
+          )}
+        </div>
+      ) : (
+        <div className="no-print mb-4 text-center">
           <p className="text-[8pt] italic text-gray-400">
             Header hidden on print — pre-printed letterhead
           </p>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* ── PATIENT INFO BAR ── */}
+      {/* ── PATIENT INFO ── */}
       {patient && (
-        <div
-          className="mb-1 flex items-center justify-between border-b px-1 pb-2"
-          style={{ borderColor: "#d1d5db" }}
-        >
-          <div>
-            <span className="text-[13pt] font-bold">{patient.name}</span>
-            <span className="ml-2 text-[10pt] text-gray-500">
-              {patient.age}y &bull; {patient.gender.charAt(0).toUpperCase()}
-            </span>
-            <span className="ml-2 text-[9pt] text-gray-400">
-              {patient.record_id}
-            </span>
-          </div>
-          <div className="text-[10pt] font-medium">
-            {consultation
-              ? new Date(consultation.consultation_date).toLocaleDateString(
-                  "en-IN",
-                  { day: "numeric", month: "short", year: "numeric" },
-                )
-              : new Date().toLocaleDateString("en-IN")}
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="text-[14pt] font-bold">{patient.name}</span>
+              <span className="ml-3 text-[10pt] text-gray-500">
+                {patient.age}y &bull; {patient.gender.charAt(0).toUpperCase()}
+              </span>
+              <span className="ml-2 text-[9pt] text-gray-400">
+                {patient.record_id}
+              </span>
+            </div>
+            <div className="text-[11pt] font-semibold">
+              {consultation
+                ? new Date(consultation.consultation_date).toLocaleDateString(
+                    "en-IN",
+                    { day: "numeric", month: "short", year: "numeric" },
+                  )
+                : new Date().toLocaleDateString("en-IN")}
+            </div>
           </div>
         </div>
       )}
 
-      {/* ── VITALS BAR ── */}
+      {/* ── VITALS ── */}
       {hasVitals && (
-        <div className="mb-1 flex flex-wrap gap-x-5 gap-y-0.5 border-b border-dashed border-gray-300 px-1 py-1.5 text-[9pt]">
+        <div className="mb-4 flex flex-wrap gap-x-6 gap-y-1 text-[9pt] text-gray-600">
           {consultation.weight && (
             <span>
-              <span className="font-bold text-gray-600">Wt</span>{" "}
+              <span className="font-bold">Weight:</span>{" "}
               {String(consultation.weight)} kg
             </span>
           )}
           {consultation.pulse_rate && (
             <span>
-              <span className="font-bold text-gray-600">Pulse</span>{" "}
+              <span className="font-bold">Pulse:</span>{" "}
               {consultation.pulse_rate}/min
             </span>
           )}
           {consultation.bp_systolic && (
             <span>
-              <span className="font-bold text-gray-600">BP</span>{" "}
+              <span className="font-bold">BP:</span>{" "}
               {consultation.bp_systolic}/{consultation.bp_diastolic} mmHg
             </span>
           )}
           {consultation.temperature && (
             <span>
-              <span className="font-bold text-gray-600">Temp</span>{" "}
+              <span className="font-bold">Temp:</span>{" "}
               {String(consultation.temperature)}&deg;F
             </span>
           )}
@@ -238,16 +217,16 @@ export default function PrintPrescriptionPage() {
       {/* ── COMPLAINTS & DIAGNOSIS ── */}
       {consultation &&
         (consultation.chief_complaints || consultation.diagnosis) && (
-          <div className="mb-2 border-b border-gray-200 px-1 py-1.5 text-[10pt]">
+          <div className="mb-5 text-[10pt]">
             {consultation.chief_complaints && (
               <div>
-                <span className="font-bold">C/O:</span>{" "}
+                <span className="font-bold text-gray-600">Complaints:</span>{" "}
                 {consultation.chief_complaints}
               </div>
             )}
             {consultation.diagnosis && (
-              <div>
-                <span className="font-bold">Diagnosis:</span>{" "}
+              <div className="mt-0.5">
+                <span className="font-bold text-gray-600">Diagnosis:</span>{" "}
                 <span className="font-semibold">{consultation.diagnosis}</span>
               </div>
             )}
@@ -256,8 +235,8 @@ export default function PrintPrescriptionPage() {
 
       {/* ── Rx MEDICATIONS ── */}
       {medications.length > 0 && (
-        <>
-          <div className="mb-1 mt-3 flex items-baseline gap-2">
+        <div className="mb-5">
+          <div className="mb-2">
             <span
               className="text-[20pt] font-bold italic leading-none"
               style={{ color: primaryColor }}
@@ -266,7 +245,7 @@ export default function PrintPrescriptionPage() {
             </span>
           </div>
 
-          <table className="rx-table mb-3">
+          <table className="rx-table">
             <thead>
               <tr>
                 <th style={{ width: "28px" }}>#</th>
@@ -337,16 +316,21 @@ export default function PrintPrescriptionPage() {
               })}
             </tbody>
           </table>
-        </>
+        </div>
       )}
 
       {/* ── PROCEDURES ── */}
       {procedures.length > 0 && (
-        <>
-          <SectionHeader
-            en={PRINT_LABELS.procedures.en}
-            ta={PRINT_LABELS.procedures.ta}
-          />
+        <div className="mb-5">
+          <p
+            className="mb-1 text-[11pt] font-bold uppercase tracking-wide"
+            style={{ color: primaryColor }}
+          >
+            {PRINT_LABELS.procedures.en}{" "}
+            <span className="text-[9pt] font-normal text-gray-400" lang="ta">
+              {PRINT_LABELS.procedures.ta}
+            </span>
+          </p>
           <ul className="list-inside list-disc pl-1 text-[10pt]">
             {procedures.map((proc) => (
               <li key={proc.id}>
@@ -356,7 +340,7 @@ export default function PrintPrescriptionPage() {
               </li>
             ))}
           </ul>
-        </>
+        </div>
       )}
 
       {/* ── ADVICE ── */}
@@ -366,11 +350,16 @@ export default function PrintPrescriptionPage() {
         prescription.lifestyle_advice_ta ||
         prescription.exercise_advice ||
         prescription.exercise_advice_ta) && (
-        <>
-          <SectionHeader
-            en={PRINT_LABELS.advice.en}
-            ta={PRINT_LABELS.advice.ta}
-          />
+        <div className="mb-5">
+          <p
+            className="mb-1 text-[11pt] font-bold uppercase tracking-wide"
+            style={{ color: primaryColor }}
+          >
+            {PRINT_LABELS.advice.en}{" "}
+            <span className="text-[9pt] font-normal text-gray-400" lang="ta">
+              {PRINT_LABELS.advice.ta}
+            </span>
+          </p>
           <div className="space-y-0.5 pl-1 text-[10pt]">
             {(prescription.diet_advice_ta || prescription.diet_advice) && (
               <p>
@@ -399,21 +388,13 @@ export default function PrintPrescriptionPage() {
               </p>
             )}
           </div>
-        </>
+        </div>
       )}
 
       {/* ── FOLLOW-UP ── */}
       {prescription.follow_up_date && (
-        <div
-          className="mt-4 rounded border-l-4 px-3 py-2"
-          style={{
-            borderColor: "#f59e0b",
-            background: "#fffbeb",
-          }}
-        >
-          <span className="text-[10pt] font-bold">
-            Follow-up:{" "}
-          </span>
+        <div className="mb-5 rounded bg-amber-50 px-3 py-2">
+          <span className="text-[10pt] font-bold">Follow-up: </span>
           <span className="text-[10pt] font-semibold">
             {new Date(prescription.follow_up_date).toLocaleDateString("en-IN", {
               day: "numeric",
@@ -421,7 +402,8 @@ export default function PrintPrescriptionPage() {
               year: "numeric",
             })}
           </span>
-          {(prescription.follow_up_notes || prescription.follow_up_notes_ta) && (
+          {(prescription.follow_up_notes ||
+            prescription.follow_up_notes_ta) && (
             <span className="text-[10pt]">
               {" — "}
               {prescription.follow_up_notes || prescription.follow_up_notes_ta}
@@ -431,7 +413,7 @@ export default function PrintPrescriptionPage() {
       )}
 
       {/* ── FOOTER ── */}
-      <div className="mt-6 flex items-end justify-between border-t border-gray-300 pt-2">
+      <div className="mt-8 flex items-end justify-between pt-2">
         <div className="text-[7pt] text-gray-400">
           Powered by Ruthva.com — AYUSH Clinic OS
         </div>
