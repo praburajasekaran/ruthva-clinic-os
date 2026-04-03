@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Printer, ArrowLeft } from "lucide-react";
 
 type PrintTriggerProps = {
@@ -9,18 +9,25 @@ type PrintTriggerProps = {
 };
 
 export function PrintTrigger({ patientName, consultationDate }: PrintTriggerProps) {
+  const hasPrinted = useRef(false);
+
+  // Set document title for filename when data is available
   useEffect(() => {
+    if (!patientName || !consultationDate) return;
+
     const originalTitle = document.title;
+    const safeName = patientName.replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "_");
+    document.title = `${safeName}_${consultationDate}`;
 
-    if (patientName && consultationDate) {
-      const safeName = patientName.replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "_");
-      document.title = `${safeName}_${consultationDate}`;
+    // Auto-print once when data is ready
+    if (!hasPrinted.current) {
+      hasPrinted.current = true;
+      const timer = setTimeout(async () => {
+        await document.fonts.ready;
+        window.print();
+      }, 500);
+      return () => clearTimeout(timer);
     }
-
-    const timer = setTimeout(async () => {
-      await document.fonts.ready;
-      window.print();
-    }, 500);
 
     const restoreTitle = () => {
       document.title = originalTitle;
@@ -28,7 +35,6 @@ export function PrintTrigger({ patientName, consultationDate }: PrintTriggerProp
     window.addEventListener("afterprint", restoreTitle, { once: true });
 
     return () => {
-      clearTimeout(timer);
       window.removeEventListener("afterprint", restoreTitle);
     };
   }, [patientName, consultationDate]);
