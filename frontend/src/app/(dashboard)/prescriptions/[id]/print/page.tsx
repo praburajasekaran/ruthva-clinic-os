@@ -54,7 +54,7 @@ export default function PrintPrescriptionPage() {
   const topMargin = user?.clinic?.top_margin_mm ?? 15;
   const bottomMargin = user?.clinic?.bottom_margin_mm ?? 15;
   const googleReviewUrl = user?.clinic?.google_review_url || "";
-  const isDigital = user?.clinic?.letterhead_mode === "digital";
+  const isDigital = user?.clinic?.letterhead_mode !== "preprinted";
 
   const hasVitals =
     consultation &&
@@ -136,16 +136,27 @@ export default function PrintPrescriptionPage() {
           <h1 className="text-[16pt] font-bold text-gray-900">
             {clinicName}
           </h1>
+          {user && (user.first_name || user.last_name) && (
+            <p className="text-[10pt] font-semibold text-gray-700">
+              Dr. {user.first_name} {user.last_name}
+            </p>
+          )}
+          {user?.clinic?.registration_number && (
+            <p className="text-[8pt] text-gray-500">
+              Reg. No: {user.clinic.registration_number}
+            </p>
+          )}
           {user?.clinic?.tagline && (
             <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
           )}
           {user?.clinic?.address && (
             <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
           )}
-          {user?.clinic?.phone && (
+          {(user?.clinic?.phone || user?.clinic?.email) && (
             <p className="text-[8pt] text-gray-500">
-              {user.clinic.phone}
-              {user?.clinic?.email ? ` | ${user.clinic.email}` : ""}
+              {user?.clinic?.phone}
+              {user?.clinic?.phone && user?.clinic?.email ? " | " : ""}
+              {user?.clinic?.email}
             </p>
           )}
         </div>
