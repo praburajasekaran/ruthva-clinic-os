@@ -11,6 +11,7 @@ import {
 import { PrintTrigger } from "./PrintTrigger";
 import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { QRCodeSVG } from "qrcode.react";
 import type { Prescription, Consultation, Patient } from "@/lib/types";
 
 function TamilHeader({ ta, en }: { ta: string; en: string }) {
@@ -58,20 +59,24 @@ export default function PrintPrescriptionPage() {
   const clinicName = user?.clinic?.name ?? "AYUSH Clinic";
   const medications = prescription.medications ?? [];
   const procedures = prescription.procedures ?? [];
+  const primaryColor = user?.clinic?.primary_color || "#059669";
+  const topMargin = user?.clinic?.top_margin_mm ?? 15;
+  const bottomMargin = user?.clinic?.bottom_margin_mm ?? 15;
+  const googleReviewUrl = user?.clinic?.google_review_url || "";
 
   return (
     <div className="print-prescription mx-auto bg-white p-[10mm]">
       <style>{`
         .print-prescription {
           max-width: 210mm;
-          font-size: 11pt;
+          font-size: 12pt;
           line-height: 1.4;
           color: black;
         }
         @media print {
           @page {
             size: ${user?.clinic?.paper_size || "A4"} portrait;
-            margin: ${user?.clinic?.letterhead_mode === "digital" ? "15mm 12mm 20mm 12mm" : "52mm 12mm 20mm 12mm"};
+            margin: ${topMargin}mm 12mm ${bottomMargin}mm 12mm;
           }
           body {
             background: white;
@@ -92,15 +97,22 @@ export default function PrintPrescriptionPage() {
         }
         .print-prescription th,
         .print-prescription td {
-          border: 1px solid #ccc;
-          padding: 4px 8px;
+          padding: 8px 10px;
           text-align: left;
-          font-size: 10pt;
+          font-size: 11pt;
         }
         .print-prescription th {
-          background: #f5f5f5;
+          background: ${primaryColor}15;
+          color: ${primaryColor};
           font-weight: 600;
-          font-size: 9pt;
+          font-size: 10pt;
+          border-bottom: 2px solid ${primaryColor};
+        }
+        .print-prescription td {
+          border-bottom: 1px solid #e5e7eb;
+        }
+        .print-prescription tr:nth-child(even) {
+          background: #f9fafb;
         }
         .medication-item {
           break-inside: avoid;
@@ -109,7 +121,7 @@ export default function PrintPrescriptionPage() {
 
       {/* Letterhead header — digital mode prints it, preprinted mode hides on print */}
       <div className={`mb-4 border-b-2 pb-3 text-center ${user?.clinic?.letterhead_mode === "digital" ? "border-gray-300" : "no-print border-gray-300"}`}
-        style={user?.clinic?.letterhead_mode === "digital" ? { borderColor: user?.clinic?.primary_color || "#059669" } : undefined}
+        style={user?.clinic?.letterhead_mode === "digital" ? { borderColor: primaryColor } : undefined}
       >
         {user?.clinic?.logo_url && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -120,7 +132,7 @@ export default function PrintPrescriptionPage() {
             style={{ maxHeight: "60px", maxWidth: "200px" }}
           />
         )}
-        <h1 className="text-lg font-bold" style={user?.clinic?.letterhead_mode === "digital" ? { color: user?.clinic?.primary_color || "#059669" } : undefined}>
+        <h1 className="text-lg font-bold" style={user?.clinic?.letterhead_mode === "digital" ? { color: primaryColor } : undefined}>
           {clinicName}
         </h1>
         {user?.clinic?.tagline && (
@@ -173,7 +185,7 @@ export default function PrintPrescriptionPage() {
       )}
 
       {/* Rx Symbol */}
-      <div className="mb-3 text-xl font-bold">&#8478;</div>
+      <div className="mb-3 text-[18pt] font-bold italic" style={{ color: primaryColor }}>&#8478;</div>
 
       {/* Medications Table */}
       {medications.length > 0 && (
@@ -214,10 +226,10 @@ export default function PrintPrescriptionPage() {
                 <tr key={med.id} className="medication-item">
                   <td>{idx + 1}</td>
                   <td>
-                    {med.drug_name}
+                    <div className="text-[13pt] font-bold">{med.drug_name}</div>
                     {instrText && (
                       <div
-                        className="text-[8pt] text-gray-500"
+                        className="text-[10pt] italic text-gray-500"
                         {...(med.instructions_ta ? { lang: "ta" } : {})}
                       >
                         ({instrText})
@@ -252,7 +264,7 @@ export default function PrintPrescriptionPage() {
       {/* Procedures */}
       {procedures.length > 0 && (
         <div className="mb-4">
-          <p className="font-semibold">
+          <p className="font-semibold" style={{ color: primaryColor, borderBottom: `1px solid ${primaryColor}`, paddingBottom: "3px", marginBottom: "8px" }}>
             <TamilHeader
               ta={PRINT_LABELS.procedures.ta + ":"}
               en={PRINT_LABELS.procedures.en}
@@ -278,7 +290,7 @@ export default function PrintPrescriptionPage() {
         prescription.exercise_advice ||
         prescription.exercise_advice_ta) && (
         <div className="mb-4 text-[10pt]">
-          <p className="font-semibold">
+          <p className="font-semibold" style={{ color: primaryColor, borderBottom: `1px solid ${primaryColor}`, paddingBottom: "3px", marginBottom: "8px" }}>
             <TamilHeader
               ta={PRINT_LABELS.advice.ta + ":"}
               en={PRINT_LABELS.advice.en}
@@ -332,7 +344,24 @@ export default function PrintPrescriptionPage() {
         </div>
       )}
 
-      <PrintTrigger />
+      {/* Google Review QR */}
+      {googleReviewUrl && (
+        <div className="mt-3 flex items-center justify-end gap-2">
+          <span className="text-[8pt] text-gray-400">Leave us a review</span>
+          <QRCodeSVG
+            value={googleReviewUrl}
+            size={94}
+            level="M"
+          />
+        </div>
+      )}
+
+      {/* Footer branding */}
+      <div className="mt-6 border-t border-gray-200 pt-2 text-center text-[8pt] text-gray-400">
+        Powered by Ruthva.com — AYUSH Clinic OS
+      </div>
+
+      <PrintTrigger patientName={patient?.name} consultationDate={consultation?.consultation_date} />
     </div>
   );
 }

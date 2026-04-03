@@ -5,15 +5,11 @@
     <style>
         @page {
             size: {{ clinic.paper_size|default:"A4" }};
-            {% if letterhead_mode == "preprinted" %}
-            margin: 52mm 15mm 15mm 15mm;
-            {% else %}
-            margin: 15mm;
-            {% endif %}
+            margin: {{ clinic.top_margin_mm|default:15 }}mm 12mm {{ clinic.bottom_margin_mm|default:15 }}mm 12mm;
         }
         body {
             font-family: 'Google Sans', sans-serif;
-            font-size: 11pt;
+            font-size: 12pt;
             color: #1a1a1a;
             line-height: 1.5;
         }
@@ -61,8 +57,9 @@
             border-bottom: 1px solid {{ clinic.primary_color|default:"#059669" }};
         }
         .rx-symbol {
-            font-size: 16pt;
+            font-size: 18pt;
             font-weight: 700;
+            font-style: italic;
             color: {{ clinic.primary_color|default:"#059669" }};
         }
         table.medications {
@@ -71,20 +68,31 @@
             margin-bottom: 16px;
         }
         table.medications th {
-            background: {{ clinic.primary_color|default:"#059669" }};
-            color: white;
-            padding: 6px 8px;
+            background: {{ clinic.primary_color|default:"#059669" }}15;
+            color: {{ clinic.primary_color|default:"#059669" }};
+            padding: 8px 10px;
             text-align: left;
-            font-size: 9pt;
+            font-size: 10pt;
             font-weight: 600;
+            border-bottom: 2px solid {{ clinic.primary_color|default:"#059669" }};
         }
         table.medications td {
-            padding: 6px 8px;
+            padding: 8px 10px;
             border-bottom: 1px solid #e5e7eb;
-            font-size: 10pt;
+            font-size: 11pt;
         }
         table.medications tr:nth-child(even) {
             background: #f9fafb;
+        }
+        .med-name {
+            font-size: 13pt;
+            font-weight: 700;
+        }
+        .med-instructions {
+            font-size: 10pt;
+            font-style: italic;
+            color: #555;
+            margin-top: 2px;
         }
         .procedures {
             margin-bottom: 16px;
@@ -121,6 +129,26 @@
             padding-top: 4px;
             text-align: center;
             font-size: 10pt;
+        }
+        .footer-branding {
+            text-align: center;
+            font-size: 8pt;
+            color: #9ca3af;
+            margin-top: 24px;
+            padding-top: 8px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .footer-qr {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .footer-qr-label {
+            font-size: 8pt;
+            color: #6b7280;
+            text-align: right;
         }
     </style>
 </head>
@@ -163,23 +191,24 @@
     <table class="medications">
         <thead>
             <tr>
-                <th>#</th>
+                <th style="width:30px">#</th>
                 <th>Drug Name</th>
                 <th>Dosage</th>
                 <th>Frequency</th>
                 <th>Duration</th>
-                <th>Instructions</th>
             </tr>
         </thead>
         <tbody>
             {% for med in medications %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ med.drug_name }}</td>
+                <td>
+                    <div class="med-name">{{ med.drug_name }}</div>
+                    {% if med.instructions %}<div class="med-instructions">({{ med.instructions }})</div>{% endif %}
+                </td>
                 <td>{{ med.dosage }}</td>
                 <td>{{ med.get_frequency_display }}</td>
                 <td>{{ med.duration }}</td>
-                <td>{{ med.instructions }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -229,6 +258,17 @@
         <div class="signature-line">
             {% if conducted_by %}{{ conducted_by.get_full_name }}{% else %}Doctor's Signature{% endif %}
         </div>
+    </div>
+
+    {% if qr_code_data_uri %}
+    <div class="footer-qr">
+        <div class="footer-qr-label">Leave us a review</div>
+        <img src="{{ qr_code_data_uri }}" alt="Google Review QR" style="width: 25mm; height: 25mm;" />
+    </div>
+    {% endif %}
+
+    <div class="footer-branding">
+        Powered by Ruthva.com &mdash; AYUSH Clinic OS
     </div>
 </body>
 </html>

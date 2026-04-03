@@ -3,14 +3,35 @@
 import { useEffect } from "react";
 import { Printer, ArrowLeft } from "lucide-react";
 
-export function PrintTrigger() {
+type PrintTriggerProps = {
+  patientName?: string;
+  consultationDate?: string;
+};
+
+export function PrintTrigger({ patientName, consultationDate }: PrintTriggerProps) {
   useEffect(() => {
+    const originalTitle = document.title;
+
+    if (patientName && consultationDate) {
+      const safeName = patientName.replace(/[^\w\s-]/g, "").trim().replace(/\s+/g, "_");
+      document.title = `${safeName}_${consultationDate}`;
+    }
+
     const timer = setTimeout(async () => {
       await document.fonts.ready;
       window.print();
     }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+
+    const restoreTitle = () => {
+      document.title = originalTitle;
+    };
+    window.addEventListener("afterprint", restoreTitle, { once: true });
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("afterprint", restoreTitle);
+    };
+  }, [patientName, consultationDate]);
 
   return (
     <div className="no-print mt-6 flex items-center justify-center gap-3">

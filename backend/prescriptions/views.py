@@ -1,3 +1,5 @@
+import re
+
 from django.db.models import Count
 from django.http import HttpResponse
 from rest_framework import viewsets
@@ -63,10 +65,10 @@ class PrescriptionViewSet(TenantQuerySetMixin, viewsets.ModelViewSet):
     def pdf(self, request, pk=None):
         prescription = self.get_object()
         pdf_bytes = generate_prescription_pdf(prescription)
-        filename = (
-            f"rx-{prescription.consultation.patient.record_id}"
-            f"-{prescription.consultation.consultation_date}.pdf"
-        )
+        patient_name = prescription.consultation.patient.name
+        safe_name = re.sub(r"[^\w\s-]", "", patient_name).strip().replace(" ", "_")
+        date_str = prescription.consultation.consultation_date.strftime("%Y-%m-%d")
+        filename = f"{safe_name}_{date_str}.pdf"
         response = HttpResponse(pdf_bytes, content_type="application/pdf")
         response["Content-Disposition"] = f'inline; filename="{filename}"'
         return response
