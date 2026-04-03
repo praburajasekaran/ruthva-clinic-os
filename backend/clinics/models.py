@@ -2,6 +2,7 @@ import uuid
 from datetime import timedelta
 
 from django.conf import settings
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 from django.utils import timezone
 
@@ -42,6 +43,21 @@ class Clinic(models.Model):
     registration_number = models.CharField(max_length=50, blank=True, default="")
     letterhead_mode = models.CharField(
         max_length=10, choices=LETTERHEAD_CHOICES, default="digital"
+    )
+    top_margin_mm = models.PositiveIntegerField(
+        default=15,
+        help_text="Top margin in mm for prescription PDF/print",
+        validators=[MinValueValidator(5), MaxValueValidator(100)],
+    )
+    bottom_margin_mm = models.PositiveIntegerField(
+        default=15,
+        help_text="Bottom margin in mm for prescription PDF/print",
+        validators=[MinValueValidator(5), MaxValueValidator(100)],
+    )
+    google_review_url = models.URLField(
+        blank=True,
+        default="",
+        help_text="Google Review URL for QR code on prescriptions",
     )
     plan = models.CharField(max_length=10, choices=PLAN_CHOICES, default="free")
     active_patient_limit = models.PositiveIntegerField(default=200)

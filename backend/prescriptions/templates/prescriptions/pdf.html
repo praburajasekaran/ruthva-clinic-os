@@ -5,23 +5,20 @@
     <style>
         @page {
             size: {{ clinic.paper_size|default:"A4" }};
-            {% if letterhead_mode == "preprinted" %}
-            margin: 52mm 15mm 15mm 15mm;
-            {% else %}
-            margin: 15mm;
-            {% endif %}
+            margin: {{ clinic.top_margin_mm|default:15 }}mm 12mm {{ clinic.bottom_margin_mm|default:15 }}mm 12mm;
         }
         body {
             font-family: 'Google Sans', sans-serif;
-            font-size: 11pt;
+            font-size: 12pt;
             color: #1a1a1a;
             line-height: 1.5;
+            margin: 0;
         }
         .header {
             text-align: center;
             border-bottom: 2px solid {{ clinic.primary_color|default:"#059669" }};
             padding-bottom: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .header h1 {
             margin: 0;
@@ -34,9 +31,8 @@
             margin: 2px 0;
         }
         .patient-info {
-            display: flex;
-            margin-bottom: 16px;
-            padding: 10px;
+            margin-bottom: 10px;
+            padding: 8px 10px;
             background: #f8faf8;
             border-radius: 4px;
         }
@@ -52,66 +48,111 @@
             color: #555;
             width: 120px;
         }
+        .vitals-row {
+            display: flex;
+            gap: 16px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+            padding: 6px 10px;
+            background: #f0fdf4;
+            border-radius: 4px;
+            font-size: 10pt;
+        }
+        .vital-item {
+            display: inline;
+        }
+        .vital-label {
+            font-weight: 600;
+            color: #555;
+        }
+        .complaints-section {
+            margin-bottom: 10px;
+            font-size: 10pt;
+        }
+        .complaints-label {
+            font-weight: 600;
+            color: #555;
+        }
         .section-title {
             font-size: 12pt;
             font-weight: 700;
             color: {{ clinic.primary_color|default:"#059669" }};
-            margin: 15px 0 8px 0;
+            margin: 12px 0 6px 0;
             padding-bottom: 3px;
             border-bottom: 1px solid {{ clinic.primary_color|default:"#059669" }};
         }
         .rx-symbol {
-            font-size: 16pt;
+            font-size: 18pt;
             font-weight: 700;
+            font-style: italic;
             color: {{ clinic.primary_color|default:"#059669" }};
         }
         table.medications {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         table.medications th {
-            background: {{ clinic.primary_color|default:"#059669" }};
-            color: white;
-            padding: 6px 8px;
+            background: {{ clinic.primary_color|default:"#059669" }}15;
+            color: {{ clinic.primary_color|default:"#059669" }};
+            padding: 6px 10px;
             text-align: left;
-            font-size: 9pt;
+            font-size: 10pt;
             font-weight: 600;
+            border-bottom: 2px solid {{ clinic.primary_color|default:"#059669" }};
         }
         table.medications td {
-            padding: 6px 8px;
+            padding: 6px 10px;
             border-bottom: 1px solid #e5e7eb;
-            font-size: 10pt;
+            font-size: 11pt;
+            vertical-align: top;
         }
         table.medications tr:nth-child(even) {
             background: #f9fafb;
         }
+        .med-name {
+            font-size: 13pt;
+            font-weight: 700;
+        }
+        .med-sub {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 1px;
+        }
+        .freq-english {
+            font-size: 11pt;
+        }
+        .freq-tamil {
+            font-size: 9pt;
+            color: #666;
+            margin-top: 1px;
+        }
         .procedures {
-            margin-bottom: 16px;
+            margin-bottom: 12px;
         }
         .procedure-item {
-            padding: 6px 0;
+            padding: 4px 0;
             border-bottom: 1px solid #e5e7eb;
         }
         .procedure-name {
             font-weight: 600;
         }
         .advice-section {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
         }
         .advice-label {
             font-weight: 600;
             color: #555;
         }
         .follow-up {
-            margin-top: 16px;
-            padding: 10px;
+            margin-top: 12px;
+            padding: 8px 10px;
             background: #fef3c7;
             border-radius: 4px;
             border-left: 4px solid #f59e0b;
         }
         .footer {
-            margin-top: 40px;
+            margin-top: 30px;
             text-align: right;
         }
         .signature-line {
@@ -121,6 +162,26 @@
             padding-top: 4px;
             text-align: center;
             font-size: 10pt;
+        }
+        .footer-bottom {
+            margin-top: 16px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+        }
+        .footer-branding {
+            font-size: 8pt;
+            color: #9ca3af;
+        }
+        .footer-qr {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .footer-qr-label {
+            font-size: 8pt;
+            color: #6b7280;
+            text-align: right;
         }
     </style>
 </head>
@@ -138,48 +199,64 @@
     <div class="patient-info">
         <table>
             <tr>
-                <td class="label">Patient Name:</td>
-                <td>{{ patient.name }}</td>
+                <td class="label">Patient:</td>
+                <td><strong>{{ patient.name }}</strong></td>
                 <td class="label">Record ID:</td>
                 <td>{{ patient.record_id }}</td>
             </tr>
             <tr>
                 <td class="label">Age / Gender:</td>
-                <td>{{ patient.age }} / {{ patient.get_gender_display }}</td>
+                <td>{{ patient.age }}y / {{ patient.get_gender_display }}</td>
                 <td class="label">Date:</td>
                 <td>{{ consultation.consultation_date }}</td>
             </tr>
-            <tr>
-                <td class="label">Phone:</td>
-                <td>{{ patient.phone }}</td>
-                <td class="label">Diagnosis:</td>
-                <td>{{ consultation.diagnosis }}</td>
-            </tr>
         </table>
     </div>
+
+    {# Vitals row #}
+    {% if consultation.weight or consultation.pulse_rate or consultation.bp_systolic or consultation.temperature %}
+    <div class="vitals-row">
+        {% if consultation.weight %}<span class="vital-item"><span class="vital-label">Weight:</span> {{ consultation.weight }} kg</span>{% endif %}
+        {% if consultation.pulse_rate %}<span class="vital-item"><span class="vital-label">Pulse:</span> {{ consultation.pulse_rate }}/min</span>{% endif %}
+        {% if consultation.bp_systolic %}<span class="vital-item"><span class="vital-label">BP:</span> {{ consultation.bp_systolic }}/{{ consultation.bp_diastolic }} mmHg</span>{% endif %}
+        {% if consultation.temperature %}<span class="vital-item"><span class="vital-label">Temp:</span> {{ consultation.temperature }}°F</span>{% endif %}
+    </div>
+    {% endif %}
+
+    {# Chief complaints & Diagnosis #}
+    {% if consultation.chief_complaints or consultation.diagnosis %}
+    <div class="complaints-section">
+        {% if consultation.chief_complaints %}<div><span class="complaints-label">Complaints:</span> {{ consultation.chief_complaints }}</div>{% endif %}
+        {% if consultation.diagnosis %}<div><span class="complaints-label">Diagnosis:</span> {{ consultation.diagnosis }}</div>{% endif %}
+    </div>
+    {% endif %}
 
     {% if medications %}
     <div class="section-title"><span class="rx-symbol">&#8478;</span> Medications</div>
     <table class="medications">
         <thead>
             <tr>
-                <th>#</th>
+                <th style="width:30px">#</th>
                 <th>Drug Name</th>
                 <th>Dosage</th>
                 <th>Frequency</th>
                 <th>Duration</th>
-                <th>Instructions</th>
             </tr>
         </thead>
         <tbody>
             {% for med in medications %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ med.drug_name }}</td>
+                <td>
+                    <div class="med-name">{{ med.drug_name }}</div>
+                    {% if med.instructions %}<div class="med-sub">({{ med.instructions }})</div>{% endif %}
+                </td>
                 <td>{{ med.dosage }}</td>
-                <td>{{ med.get_frequency_display }}</td>
+                <td>
+                    <div class="freq-english">{{ med.freq_english }}</div>
+                    {% if med.freq_tamil %}<div class="freq-tamil">{{ med.freq_tamil }}</div>{% endif %}
+                </td>
                 <td>{{ med.duration }}</td>
-                <td>{{ med.instructions }}</td>
             </tr>
             {% endfor %}
         </tbody>
@@ -220,7 +297,7 @@
 
     {% if prescription.follow_up_date %}
     <div class="follow-up">
-        <strong>Follow-up Date:</strong> {{ prescription.follow_up_date }}
+        <strong>Follow-up:</strong> {{ prescription.follow_up_date }}
         {% if prescription.follow_up_notes %}<br>{{ prescription.follow_up_notes }}{% endif %}
     </div>
     {% endif %}
@@ -229,6 +306,18 @@
         <div class="signature-line">
             {% if conducted_by %}{{ conducted_by.get_full_name }}{% else %}Doctor's Signature{% endif %}
         </div>
+    </div>
+
+    <div class="footer-bottom">
+        <div class="footer-branding">
+            Powered by Ruthva.com &mdash; AYUSH Clinic OS
+        </div>
+        {% if qr_code_data_uri %}
+        <div class="footer-qr">
+            <div class="footer-qr-label">Leave us a review</div>
+            <img src="{{ qr_code_data_uri }}" alt="Google Review QR" style="width: 22mm; height: 22mm;" />
+        </div>
+        {% endif %}
     </div>
 </body>
 </html>

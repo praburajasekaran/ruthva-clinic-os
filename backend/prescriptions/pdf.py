@@ -1,12 +1,15 @@
 from __future__ import annotations
 
 import base64
+import io
 import logging
 import ssl
 import urllib.request
 from typing import TYPE_CHECKING, Any
 from urllib.error import URLError
 from urllib.parse import urlparse
+
+import segno
 
 from django.template.loader import render_to_string
 from weasyprint import HTML
@@ -82,6 +85,17 @@ def _safe_url_fetcher(
     raise ValueError(f"Blocked non-data URI in PDF render: {url}")
 
 
+def _generate_qr_data_uri(url: str) -> str:
+    """Generate a QR code as a base64 SVG data URI."""
+    if not url:
+        return ""
+    qr = segno.make(url)
+    buffer = io.BytesIO()
+    qr.save(buffer, kind="svg", scale=3, border=1)
+    b64 = base64.b64encode(buffer.getvalue()).decode("ascii")
+    return f"data:image/svg+xml;base64,{b64}"
+
+
 def generate_prescription_pdf(prescription: Prescription) -> bytes:
     """Render prescription as bilingual PDF (Tamil + English)."""
     clinic = prescription.clinic
@@ -94,6 +108,16 @@ def generate_prescription_pdf(prescription: Prescription) -> bytes:
 
     letterhead_mode = getattr(clinic, "letterhead_mode", "digital")
 
+    # Pre-process medications to split frequency display into English/Tamil
+    meds = []
+    for med in prescription.medications.all():
+        display = med.get_frequency_display()
+        # Display format: "Once daily / ஒரு முறை" — split on " / "
+        parts = display.split(" / ", 1) if display else [""]
+        med.freq_english = parts[0] if parts else ""
+        med.freq_tamil = parts[1] if len(parts) > 1 else (med.frequency_tamil or "")
+        meds.append(med)
+
     context = {
         "prescription": prescription,
         "patient": prescription.consultation.patient,
@@ -102,8 +126,11 @@ def generate_prescription_pdf(prescription: Prescription) -> bytes:
         "clinic_logo_url": clinic_logo_url,
         "letterhead_mode": letterhead_mode,
         "conducted_by": prescription.consultation.conducted_by,
-        "medications": prescription.medications.all(),
+        "medications": meds,
         "procedures": prescription.procedures.all(),
+        "qr_code_data_uri": _generate_qr_data_uri(
+            getattr(clinic, "google_review_url", "")
+        ),
     }
     html_string = render_to_string("prescriptions/pdf.html", context)
     return HTML(string=html_string).write_pdf(url_fetcher=_safe_url_fetcher)

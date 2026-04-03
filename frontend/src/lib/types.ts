@@ -29,6 +29,9 @@ export type ClinicInfo = {
   tagline: string;
   registration_number: string;
   letterhead_mode: "digital" | "preprinted";
+  top_margin_mm: number;
+  bottom_margin_mm: number;
+  google_review_url: string;
   plan: ClinicPlan;
   is_active: boolean;
 };
