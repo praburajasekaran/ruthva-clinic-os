@@ -121,52 +121,49 @@ export default function PrintPrescriptionPage() {
         }
       `}</style>
 
-      {/* ── LETTERHEAD ── */}
-      {isDigital ? (
-        <div className="mb-6 text-center">
-          {user?.clinic?.logo_url && (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={user.clinic.logo_url}
-              alt=""
-              className="mx-auto mb-1"
-              style={{ maxHeight: "60px", maxWidth: "200px" }}
-            />
-          )}
-          <h1 className="text-[16pt] font-bold text-gray-900">
-            {clinicName}
-          </h1>
-          {user && (user.first_name || user.last_name) && (
-            <p className="text-[10pt] font-semibold text-gray-700">
-              Dr. {user.first_name} {user.last_name}
-            </p>
-          )}
-          {user?.clinic?.registration_number && (
-            <p className="text-[8pt] text-gray-500">
-              Reg. No: {user.clinic.registration_number}
-            </p>
-          )}
-          {user?.clinic?.tagline && (
-            <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
-          )}
-          {user?.clinic?.address && (
-            <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
-          )}
-          {(user?.clinic?.phone || user?.clinic?.email) && (
-            <p className="text-[8pt] text-gray-500">
-              {user?.clinic?.phone}
-              {user?.clinic?.phone && user?.clinic?.email ? " | " : ""}
-              {user?.clinic?.email}
-            </p>
-          )}
-        </div>
-      ) : (
-        <div className="no-print mb-4 text-center">
-          <p className="text-[8pt] italic text-gray-400">
-            Header hidden on print — pre-printed letterhead
+      {/* ── LETTERHEAD — always visible on screen; hidden on print if preprinted ── */}
+      <div className={`mb-6 text-center ${isDigital ? "" : "no-print"}`}>
+        {user?.clinic?.logo_url && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={user.clinic.logo_url}
+            alt=""
+            className="mx-auto mb-1"
+            style={{ maxHeight: "60px", maxWidth: "200px" }}
+          />
+        )}
+        <h1 className="text-[16pt] font-bold text-gray-900">
+          {clinicName}
+        </h1>
+        {user && (user.first_name || user.last_name) && (
+          <p className="text-[10pt] font-semibold text-gray-700">
+            Dr. {user.first_name} {user.last_name}
           </p>
-        </div>
-      )}
+        )}
+        {user?.clinic?.registration_number && (
+          <p className="text-[8pt] text-gray-500">
+            Reg. No: {user.clinic.registration_number}
+          </p>
+        )}
+        {user?.clinic?.tagline && (
+          <p className="text-[9pt] text-gray-500">{user.clinic.tagline}</p>
+        )}
+        {user?.clinic?.address && (
+          <p className="text-[8pt] text-gray-500">{user.clinic.address}</p>
+        )}
+        {(user?.clinic?.phone || user?.clinic?.email) && (
+          <p className="text-[8pt] text-gray-500">
+            {user?.clinic?.phone}
+            {user?.clinic?.phone && user?.clinic?.email ? " | " : ""}
+            {user?.clinic?.email}
+          </p>
+        )}
+        {!isDigital && (
+          <p className="mt-1 text-[7pt] italic text-gray-400">
+            (Hidden on print — pre-printed letterhead)
+          </p>
+        )}
+      </div>
 
       {/* ── PATIENT INFO ── */}
       {patient && (
