@@ -35,12 +35,12 @@ export function FormField({
     <div>
       <label
         htmlFor={id}
-        className="mb-1.5 block text-sm font-medium text-gray-700"
+        className="mb-1.5 block text-sm font-medium text-foreground"
       >
         {label}
-        {required && (
-          <span className="ml-1 text-red-500" aria-hidden="true">
-            *
+        {!required && (
+          <span className="ml-1 text-muted-foreground font-normal">
+            (optional)
           </span>
         )}
       </label>
@@ -51,12 +51,12 @@ export function FormField({
         "aria-required": required,
       })}
       {hint && !error && (
-        <p id={hintId} className="mt-1 text-sm text-gray-500">
+        <p id={hintId} className="mt-1 text-sm text-muted-foreground">
           {hint}
         </p>
       )}
       {error && (
-        <p id={errorId} role="alert" className="mt-1 text-sm text-red-600">
+        <p id={errorId} role="alert" className="mt-1 text-sm text-destructive">
           {error}
         </p>
       )}

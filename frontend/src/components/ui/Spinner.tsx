@@ -23,7 +23,7 @@ export function Spinner({ size = "md", label = "Loading…" }: SpinnerProps) {
   return (
     <div role="status" className="flex items-center justify-center">
       <div
-        className={`${sizeStyles[size]} motion-safe:animate-spin rounded-full border-emerald-200 border-t-emerald-600`}
+        className={`${sizeStyles[size]} motion-safe:animate-spin rounded-full border-brand-200 border-t-brand-600`}
       />
       <span className="sr-only">{label}</span>
     </div>

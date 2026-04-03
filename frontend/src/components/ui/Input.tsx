@@ -1,21 +1,24 @@
 "use client";
 
 import { type InputHTMLAttributes, forwardRef } from "react";
+import { cn } from "@/lib/utils";
 
 type InputProps = InputHTMLAttributes<HTMLInputElement> & {
   hasError?: boolean;
 };
 
-export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ hasError = false, className = "", ...props }, ref) => {
+const Input = forwardRef<HTMLInputElement, InputProps>(
+  ({ hasError = false, className, ...props }, ref) => {
     return (
       <input
         ref={ref}
-        className={`h-11 w-full rounded-lg border px-3 text-base placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:bg-gray-50 disabled:text-gray-500 ${
+        className={cn(
+          "flex h-11 w-full rounded-lg border bg-background px-3 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
           hasError
-            ? "border-red-300 focus-visible:border-red-500 focus-visible:ring-red-500"
-            : "border-gray-300 focus-visible:border-emerald-500 focus-visible:ring-emerald-500"
-        } ${className}`}
+            ? "border-destructive focus-visible:ring-destructive"
+            : "border-input",
+          className,
+        )}
         {...props}
       />
     );
@@ -23,3 +26,6 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
 );
 
 Input.displayName = "Input";
+
+export { Input };
+export type { InputProps };

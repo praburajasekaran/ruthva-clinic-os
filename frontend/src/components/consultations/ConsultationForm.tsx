@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { type FormEvent, useCallback, useEffect, useReducer, useRef, useState } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
@@ -10,7 +11,6 @@ import { FormSection } from "@/components/forms/FormSection";
 import { DiagnosticFormRouter } from "./DiagnosticFormRouter";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useAutoSave, loadDraft, clearDraft } from "@/hooks/useAutoSave";
-import { useScrollSpy } from "@/hooks/useScrollSpy";
 import { useMutation } from "@/hooks/useMutation";
 import {
   SECTION_LABELS,
@@ -88,15 +88,8 @@ function reducer(
   }
 }
 
-function getSections(discipline: Discipline) {
-  const diagLabel = DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha;
-  return [
-    { id: "vitals", label: SECTION_LABELS.vitals.en, labelTamil: SECTION_LABELS.vitals.ta },
-    { id: "general-assessment", label: SECTION_LABELS.generalAssessment.en, labelTamil: SECTION_LABELS.generalAssessment.ta },
-    { id: "diagnostics", label: diagLabel.en, labelTamil: diagLabel.ta },
-    { id: "diagnosis-section", label: SECTION_LABELS.diagnosis.en, labelTamil: SECTION_LABELS.diagnosis.ta },
-  ];
-}
+const textareaClasses =
+  "w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 type ConsultationFormProps = {
   patientId: number;
@@ -113,8 +106,7 @@ export function ConsultationForm({
 }: ConsultationFormProps) {
   const router = useRouter();
   const { user } = useAuth();
-  const discipline = user?.clinic?.discipline ?? "siddha";
-  const sections = getSections(discipline);
+  const discipline = (user?.clinic?.discipline ?? "siddha") as Discipline;
   const isEdit = mode === "edit";
   const draftKey = isEdit
     ? `consultation-edit-draft-${consultationId}`
@@ -128,9 +120,16 @@ export function ConsultationForm({
   const [showDraftBanner, setShowDraftBanner] = useState(false);
   const draftLoadedRef = useRef(false);
 
-  const { activeSection, scrollToSection } = useScrollSpy(
-    sections.map((s) => s.id),
-  );
+  // Progressive disclosure state
+  const hasAssessmentData = !!(state.appetite || state.bowel || state.micturition || state.sleep_quality || state.mental_state);
+  const hasDiagnosticData = Object.keys(state.diagnostic_data).length > 0;
+  const hasDiagnosisData = !!(state.chief_complaints || state.history_of_present_illness || state.diagnosis);
+
+  const [showAssessment, setShowAssessment] = useState(isEdit || hasAssessmentData);
+  const [showDiagnostics, setShowDiagnostics] = useState(isEdit || hasDiagnosticData);
+  const [showDiagnosis, setShowDiagnosis] = useState(isEdit || hasDiagnosisData);
+
+  const diagLabel = DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha;
 
   const { mutate, isLoading } = useMutation<unknown, Consultation>(
     isEdit ? "patch" : "post",
@@ -154,6 +153,10 @@ export function ConsultationForm({
     const draft = loadDraft<ConsultationFormState>(draftKey);
     if (draft) {
       dispatch({ type: "LOAD_DRAFT", data: draft.data });
+      // Show all sections when resuming a draft
+      setShowAssessment(true);
+      setShowDiagnostics(true);
+      setShowDiagnosis(true);
     }
     setShowDraftBanner(false);
   }, [draftKey]);
@@ -195,215 +198,179 @@ export function ConsultationForm({
   }
 
   return (
-    <div className="flex gap-6">
-      {/* Section Navigator - desktop */}
-      <nav className="hidden w-48 shrink-0 lg:block">
-        <div className="sticky top-0 space-y-1">
-          {sections.map((section) => (
-            <button
-              key={section.id}
+    <form
+      onSubmit={(e) => handleSubmit(e, false)}
+      className="space-y-10 pb-24"
+    >
+      {/* Draft Recovery Banner */}
+      {showDraftBanner && (
+        <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+          <p className="text-sm text-amber-800">
+            You have an unsaved draft. Resume where you left off?
+          </p>
+          <div className="flex gap-2">
+            <Button
               type="button"
-              onClick={() => scrollToSection(section.id)}
-              className={`block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors ${
-                activeSection === section.id
-                  ? "bg-emerald-50 font-medium text-emerald-700"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`}
+              variant="secondary"
+              size="sm"
+              onClick={handleDiscardDraft}
             >
-              {section.label}
-              <span lang="ta" className="block text-xs opacity-60">
-                {section.labelTamil}
-              </span>
-            </button>
-          ))}
+              Discard
+            </Button>
+            <Button type="button" size="sm" onClick={handleResumeDraft}>
+              Resume
+            </Button>
+          </div>
         </div>
-      </nav>
+      )}
 
-      {/* Section Navigator - mobile pill bar */}
-      <div className="fixed left-0 right-0 top-14 z-30 overflow-x-auto border-b border-gray-200 bg-white px-4 py-2 md:top-0 lg:hidden">
-        <div className="flex gap-2">
-          {sections.map((section) => (
-            <button
-              key={section.id}
-              type="button"
-              title={section.labelTamil}
-              onClick={() => scrollToSection(section.id)}
-              className={`whitespace-nowrap rounded-full px-3 py-1 text-xs font-medium ${
-                activeSection === section.id
-                  ? "bg-emerald-100 text-emerald-700"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {section.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Form */}
-      <form
-        onSubmit={(e) => handleSubmit(e, false)}
-        className="min-w-0 flex-1 space-y-6"
+      {/* Vitals — always visible */}
+      <FormSection
+        title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" />}
+        id="vitals"
       >
-        {/* Draft Recovery Banner */}
-        {showDraftBanner && (
-          <div className="flex items-center justify-between rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
-            <p className="text-sm text-amber-800">
-              You have an unsaved draft. Resume where you left off?
-            </p>
-            <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={handleDiscardDraft}
-              >
-                Discard
-              </Button>
-              <Button type="button" size="sm" onClick={handleResumeDraft}>
-                Resume
-              </Button>
+        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          <FormField label="Weight (kg)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                value={state.weight}
+                onChange={(e) => setField("weight", e.target.value)}
+                placeholder="e.g., 65.5"
+              />
+            )}
+          </FormField>
+          <FormField label="Height (cm)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                value={state.height}
+                onChange={(e) => setField("height", e.target.value)}
+                placeholder="e.g., 170"
+              />
+            )}
+          </FormField>
+          <FormField label="Pulse Rate (bpm)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={state.pulse_rate}
+                onChange={(e) => setField("pulse_rate", e.target.value)}
+                placeholder="e.g., 72"
+              />
+            )}
+          </FormField>
+          <FormField label="Temperature (\u00b0F)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="decimal"
+                pattern="[0-9]*\.?[0-9]*"
+                value={state.temperature}
+                onChange={(e) => setField("temperature", e.target.value)}
+                placeholder="e.g., 98.6"
+              />
+            )}
+          </FormField>
+          <FormField label="BP Systolic (mmHg)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={state.bp_systolic}
+                onChange={(e) => setField("bp_systolic", e.target.value)}
+                placeholder="e.g., 120"
+              />
+            )}
+          </FormField>
+          <FormField label="BP Diastolic (mmHg)">
+            {(props) => (
+              <Input
+                {...props}
+                type="text"
+                inputMode="numeric"
+                pattern="[0-9]*"
+                value={state.bp_diastolic}
+                onChange={(e) => setField("bp_diastolic", e.target.value)}
+                placeholder="e.g., 80"
+              />
+            )}
+          </FormField>
+        </div>
+      </FormSection>
+
+      {/* General Assessment */}
+      {(showAssessment || hasAssessmentData) && (
+        <FormSection
+          title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" />}
+          subtitle="Appetite, bowel, sleep, and mental state"
+          id="general-assessment"
+        >
+          <div className="space-y-5">
+            <div className="grid gap-5 sm:grid-cols-2">
+              {(
+                [
+                  { field: "appetite" as const, notesField: "appetite_notes" as const, label: ASSESSMENT_LABELS.appetite.en, labelTamil: ASSESSMENT_LABELS.appetite.ta },
+                  { field: "bowel" as const, notesField: "bowel_notes" as const, label: ASSESSMENT_LABELS.bowel.en, labelTamil: ASSESSMENT_LABELS.bowel.ta },
+                  { field: "micturition" as const, notesField: "micturition_notes" as const, label: ASSESSMENT_LABELS.micturition.en, labelTamil: ASSESSMENT_LABELS.micturition.ta },
+                  { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: ASSESSMENT_LABELS.sleep.en, labelTamil: ASSESSMENT_LABELS.sleep.ta },
+                ] as const
+              ).map(({ field, notesField, label, labelTamil }) => (
+                <div key={field}>
+                  <BilingualLabel english={label} tamil={labelTamil} as="label" className="mb-2" />
+                  <div className="flex gap-2" role="group" aria-label={`${label} status`}>
+                    <button
+                      type="button"
+                      aria-pressed={state[field] === "normal"}
+                      onClick={() => setField(field, state[field] === "normal" ? "" : "normal")}
+                      className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        state[field] === "normal"
+                          ? "bg-accent text-primary ring-1 ring-primary"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      Normal
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={state[field] === "abnormal"}
+                      onClick={() => setField(field, state[field] === "abnormal" ? "" : "abnormal")}
+                      className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                        state[field] === "abnormal"
+                          ? "bg-amber-50 text-amber-700 ring-1 ring-amber-500"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}
+                    >
+                      Abnormal
+                    </button>
+                  </div>
+                  <div aria-live="polite">
+                    {state[field] === "abnormal" && (
+                      <textarea
+                        aria-label={`${label} abnormality notes`}
+                        value={state[notesField]}
+                        onChange={(e) => setField(notesField, e.target.value)}
+                        placeholder={`Describe ${label.toLowerCase()} abnormality...`}
+                        rows={2}
+                        className={`mt-2 ${textareaClasses}`}
+                      />
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        )}
-
-        {/* Vitals */}
-        <FormSection title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" />} id="vitals">
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            <FormField label="Weight (kg)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  value={state.weight}
-                  onChange={(e) => setField("weight", e.target.value)}
-                  placeholder="e.g., 65.5"
-                />
-              )}
-            </FormField>
-            <FormField label="Height (cm)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  value={state.height}
-                  onChange={(e) => setField("height", e.target.value)}
-                  placeholder="e.g., 170"
-                />
-              )}
-            </FormField>
-            <FormField label="Pulse Rate (bpm)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={state.pulse_rate}
-                  onChange={(e) => setField("pulse_rate", e.target.value)}
-                  placeholder="e.g., 72"
-                />
-              )}
-            </FormField>
-            <FormField label="Temperature (\u00b0F)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="decimal"
-                  pattern="[0-9]*\.?[0-9]*"
-                  value={state.temperature}
-                  onChange={(e) => setField("temperature", e.target.value)}
-                  placeholder="e.g., 98.6"
-                />
-              )}
-            </FormField>
-            <FormField label="BP Systolic (mmHg)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={state.bp_systolic}
-                  onChange={(e) => setField("bp_systolic", e.target.value)}
-                  placeholder="e.g., 120"
-                />
-              )}
-            </FormField>
-            <FormField label="BP Diastolic (mmHg)">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="text"
-                  inputMode="numeric"
-                  pattern="[0-9]*"
-                  value={state.bp_diastolic}
-                  onChange={(e) => setField("bp_diastolic", e.target.value)}
-                  placeholder="e.g., 80"
-                />
-              )}
-            </FormField>
-          </div>
-        </FormSection>
-
-        {/* General Assessment */}
-        <FormSection title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" />} id="general-assessment">
-          <div className="space-y-4">
-            {(
-              [
-                { field: "appetite" as const, notesField: "appetite_notes" as const, label: ASSESSMENT_LABELS.appetite.en, labelTamil: ASSESSMENT_LABELS.appetite.ta },
-                { field: "bowel" as const, notesField: "bowel_notes" as const, label: ASSESSMENT_LABELS.bowel.en, labelTamil: ASSESSMENT_LABELS.bowel.ta },
-                { field: "micturition" as const, notesField: "micturition_notes" as const, label: ASSESSMENT_LABELS.micturition.en, labelTamil: ASSESSMENT_LABELS.micturition.ta },
-                { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: ASSESSMENT_LABELS.sleep.en, labelTamil: ASSESSMENT_LABELS.sleep.ta },
-              ] as const
-            ).map(({ field, notesField, label, labelTamil }) => (
-              <div key={field}>
-                <BilingualLabel english={label} tamil={labelTamil} as="label" className="mb-2" />
-                <div className="flex gap-2" role="group" aria-label={`${label} status`}>
-                  <button
-                    type="button"
-                    aria-pressed={state[field] === "normal"}
-                    onClick={() => setField(field, state[field] === "normal" ? "" : "normal")}
-                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                      state[field] === "normal"
-                        ? "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-500"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Normal
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={state[field] === "abnormal"}
-                    onClick={() => setField(field, state[field] === "abnormal" ? "" : "abnormal")}
-                    className={`min-h-[44px] rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
-                      state[field] === "abnormal"
-                        ? "bg-amber-100 text-amber-700 ring-1 ring-amber-500"
-                        : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    }`}
-                  >
-                    Abnormal
-                  </button>
-                </div>
-                <div aria-live="polite">
-                  {state[field] === "abnormal" && (
-                    <textarea
-                      aria-label={`${label} abnormality notes`}
-                      value={state[notesField]}
-                      onChange={(e) => setField(notesField, e.target.value)}
-                      placeholder={`Describe ${label.toLowerCase()} abnormality...`}
-                      rows={2}
-                      className="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
-                    />
-                  )}
-                </div>
-              </div>
-            ))}
 
             <FormField label="Mental State / Attitude">
               {(props) => (
@@ -413,22 +380,18 @@ export function ConsultationForm({
                   onChange={(e) => setField("mental_state", e.target.value)}
                   placeholder="Observations about patient's mental state and attitude..."
                   rows={2}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                  className={textareaClasses}
                 />
               )}
             </FormField>
           </div>
         </FormSection>
+      )}
 
-        {/* Discipline-specific Diagnostics */}
+      {/* Discipline-specific Diagnostics */}
+      {(showDiagnostics || hasDiagnosticData) && (
         <FormSection
-          title={
-            <BilingualLabel
-              english={(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).en}
-              tamil={(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).ta}
-              as="span"
-            />
-          }
+          title={<BilingualLabel english={diagLabel.en} tamil={diagLabel.ta} as="span" />}
           id="diagnostics"
         >
           <DiagnosticFormRouter
@@ -437,11 +400,16 @@ export function ConsultationForm({
             onChange={(data) => setField("diagnostic_data", data)}
           />
         </FormSection>
+      )}
 
-        {/* Diagnosis */}
-        <FormSection title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" />} id="diagnosis-section">
-          <div className="space-y-4">
-            <FormField label="Chief Complaints">
+      {/* Diagnosis */}
+      {(showDiagnosis || hasDiagnosisData) && (
+        <FormSection
+          title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" />}
+          id="diagnosis-section"
+        >
+          <div className="space-y-5">
+            <FormField label="Chief Complaints" required>
               {(props) => (
                 <textarea
                   {...props}
@@ -449,7 +417,7 @@ export function ConsultationForm({
                   onChange={(e) => setField("chief_complaints", e.target.value)}
                   placeholder="Patient's main complaints and duration"
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                  className={textareaClasses}
                 />
               )}
             </FormField>
@@ -463,11 +431,12 @@ export function ConsultationForm({
                   }
                   placeholder="Detailed history of the current illness"
                   rows={3}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-base placeholder:text-gray-400 focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-emerald-500"
+                  className={textareaClasses}
                 />
               )}
             </FormField>
-            <FormField label="Diagnosis">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <FormField label="Diagnosis">
                 {(props) => (
                   <Input
                     {...props}
@@ -477,26 +446,65 @@ export function ConsultationForm({
                   />
                 )}
               </FormField>
-            <FormField label="Visit Date" required>
-              {(props) => (
-                <Input
-                  {...props}
-                  type="date"
-                  value={state.consultation_date}
-                  onChange={(e) =>
-                    setField("consultation_date", e.target.value)
-                  }
-                />
-              )}
-            </FormField>
+              <FormField label="Visit Date" required>
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="date"
+                    value={state.consultation_date}
+                    onChange={(e) =>
+                      setField("consultation_date", e.target.value)
+                    }
+                  />
+                )}
+              </FormField>
+            </div>
           </div>
         </FormSection>
+      )}
 
-        {/* Submit */}
-        <div className="flex flex-wrap items-center justify-end gap-3 border-t border-gray-200 pt-6">
+      {/* Collapsed add buttons — grouped vertically */}
+      {(!showAssessment && !hasAssessmentData || !showDiagnostics && !hasDiagnosticData || !showDiagnosis && !hasDiagnosisData) && (
+        <div className="flex flex-col gap-5">
+          {!showAssessment && !hasAssessmentData && (
+            <button
+              type="button"
+              onClick={() => setShowAssessment(true)}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add general assessment
+            </button>
+          )}
+          {!showDiagnostics && !hasDiagnosticData && (
+            <button
+              type="button"
+              onClick={() => setShowDiagnostics(true)}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add {diagLabel.en.toLowerCase()}
+            </button>
+          )}
+          {!showDiagnosis && !hasDiagnosisData && (
+            <button
+              type="button"
+              onClick={() => setShowDiagnosis(true)}
+              className="inline-flex w-full items-center gap-2 border-b border-border pb-2 text-base font-semibold text-primary transition-colors hover:text-primary/80"
+            >
+              <Plus className="h-4 w-4" />
+              Add diagnosis
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Sticky bottom action bar */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        <div className="mx-auto flex max-w-6xl items-center justify-end gap-3 px-6 py-3">
           <Button
             type="button"
-            variant="secondary"
+            variant="ghost"
             onClick={() => router.back()}
           >
             Cancel
@@ -520,7 +528,7 @@ export function ConsultationForm({
             </>
           )}
         </div>
-      </form>
-    </div>
+      </div>
+    </form>
   );
 }
