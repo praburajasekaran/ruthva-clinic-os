@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import api from "@/lib/api";
 import type { SessionPlanEntry, TreatmentPlan } from "@/lib/types";
@@ -133,11 +134,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700">Start Date</label>
-          <input
-            type="date"
+          <DatePicker
             value={startDate}
-            onChange={(e) => setStartDate(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
+            onChange={(v) => setStartDate(v)}
           />
         </div>
       </div>

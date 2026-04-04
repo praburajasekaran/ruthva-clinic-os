@@ -7,6 +7,7 @@ import api from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import { JourneysOverview } from "./components/JourneysOverview";
 import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
@@ -700,15 +701,13 @@ export default function FollowUpsPage() {
                                 </div>
                                 <div>
                                   <label className="block text-xs font-medium text-gray-600">Start Date</label>
-                                  <input
-                                    type="date"
+                                  <DatePicker
                                     value={draft.start_date}
-                                    onChange={(e) =>
+                                    onChange={(v) =>
                                       updateBlockDraft(item.doctor_action_task_id, {
-                                        start_date: e.target.value,
+                                        start_date: v,
                                       })
                                     }
-                                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
                                   />
                                 </div>
                               </div>

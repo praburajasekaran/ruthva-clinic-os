@@ -5,6 +5,7 @@ import { type FormEvent, useReducer } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
@@ -444,15 +445,16 @@ export function PrescriptionBuilder({
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Follow-up Date">
             {(props) => (
-              <Input
-                {...props}
-                type="date"
+              <DatePicker
+                id={props.id}
+                aria-describedby={props["aria-describedby"]}
+                aria-invalid={props["aria-invalid"]}
                 value={state.follow_up_date}
-                onChange={(e) =>
+                onChange={(v) =>
                   dispatch({
                     type: "SET_FIELD",
                     field: "follow_up_date",
-                    value: e.target.value,
+                    value: v,
                   })
                 }
               />

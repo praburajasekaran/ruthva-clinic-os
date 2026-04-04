@@ -1,5 +1,6 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
+import { DatePicker } from "@/components/ui/DatePicker";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -541,20 +542,18 @@ export default function TreatmentPlanDetailPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700">Start Date</label>
-                  <input
-                    type="date"
+                  <DatePicker
                     value={blockDraft.start_date}
-                    onChange={(event) =>
+                    onChange={(v) =>
                       setBlockDraft((current) =>
                         current
                           ? {
                             ...current,
-                            start_date: event.target.value,
+                            start_date: v,
                           }
                           : current,
                       )
                     }
-                    className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-emerald-500 focus:ring-emerald-500"
                   />
                 </div>
               </div>
