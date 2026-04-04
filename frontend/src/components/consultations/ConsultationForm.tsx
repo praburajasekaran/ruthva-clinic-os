@@ -5,6 +5,7 @@ import { type FormEvent, useCallback, useEffect, useReducer, useRef, useState } 
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
@@ -448,13 +449,12 @@ export function ConsultationForm({
               </FormField>
               <FormField label="Visit Date" required>
                 {(props) => (
-                  <Input
-                    {...props}
-                    type="date"
+                  <DatePicker
+                    id={props.id}
+                    aria-describedby={props["aria-describedby"]}
+                    aria-invalid={props["aria-invalid"]}
                     value={state.consultation_date}
-                    onChange={(e) =>
-                      setField("consultation_date", e.target.value)
-                    }
+                    onChange={(v) => setField("consultation_date", v)}
                   />
                 )}
               </FormField>

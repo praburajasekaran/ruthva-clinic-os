@@ -6,6 +6,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import { AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { PillGroup } from "@/components/ui/PillGroup";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
@@ -240,13 +241,12 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
             </div>
             <FormField label="Date of Birth" error={allErrors.date_of_birth}>
               {(props) => (
-                <Input
-                  {...props}
-                  type="date"
+                <DatePicker
+                  id={props.id}
+                  aria-describedby={props["aria-describedby"]}
+                  aria-invalid={props["aria-invalid"]}
                   value={form.date_of_birth}
-                  onChange={(e) => handleDobChange(e.target.value)}
-                  max={new Date().toISOString().split("T")[0]}
-                  hasError={!!allErrors.date_of_birth}
+                  onChange={(v) => handleDobChange(v)}
                 />
               )}
             </FormField>

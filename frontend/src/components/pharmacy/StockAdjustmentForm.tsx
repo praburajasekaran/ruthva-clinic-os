@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { DatePicker } from "@/components/ui/DatePicker";
 import { pharmacyApi } from "@/lib/api";
 
 type Props = {
@@ -110,11 +111,9 @@ export function StockAdjustmentForm({ medicineId, onClose, onSaved }: Props) {
             </div>
             <div>
               <label className="mb-1 block text-xs font-medium text-gray-600">Expiry Date</label>
-              <input
-                type="date"
+              <DatePicker
                 value={expiryDate}
-                onChange={(e) => setExpiryDate(e.target.value)}
-                className="rounded-lg border px-3 py-2 text-sm"
+                onChange={(v) => setExpiryDate(v)}
               />
               <p className="mt-1 text-xs text-gray-400">Adding expiry date helps track medicine shelf life</p>
             </div>
