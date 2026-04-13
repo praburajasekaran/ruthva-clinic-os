@@ -32,21 +32,21 @@ class TreatmentBlockAdmin(admin.ModelAdmin):
         "status",
         "replan_required",
     ]
-    list_filter = ["status", "replan_required"]
+    list_filter = ["treatment_plan__clinic", "status", "replan_required"]
     inlines = [TreatmentSessionInline]
 
 
 @admin.register(TreatmentSession)
 class TreatmentSessionAdmin(admin.ModelAdmin):
     list_display = ["id", "treatment_block", "day_number", "sequence_number", "session_date", "procedure_name", "execution_status"]
-    list_filter = ["execution_status", "medium_type"]
+    list_filter = ["treatment_block__treatment_plan__clinic", "execution_status", "medium_type"]
     search_fields = ["procedure_name", "medium_name"]
 
 
 @admin.register(SessionFeedback)
 class SessionFeedbackAdmin(admin.ModelAdmin):
     list_display = ["id", "treatment_session", "therapist", "completion_status", "response_score", "review_requested", "created_at"]
-    list_filter = ["completion_status", "review_requested"]
+    list_filter = ["treatment_session__treatment_block__treatment_plan__clinic", "completion_status", "review_requested"]
     search_fields = ["treatment_session__procedure_name", "therapist__username"]
 
 
