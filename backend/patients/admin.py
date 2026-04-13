@@ -15,8 +15,8 @@ class FamilyHistoryInline(admin.TabularInline):
 
 @admin.register(Patient)
 class PatientAdmin(admin.ModelAdmin):
-    list_display = ["record_id", "name", "age", "gender", "phone", "created_at"]
-    list_filter = ["gender", "blood_group", "created_at"]
+    list_display = ["record_id", "name", "clinic", "age", "gender", "phone", "created_at"]
+    list_filter = ["clinic", "gender", "blood_group", "created_at"]
     search_fields = ["name", "phone", "record_id"]
     readonly_fields = ["record_id", "created_at", "updated_at"]
     inlines = [MedicalHistoryInline, FamilyHistoryInline]
