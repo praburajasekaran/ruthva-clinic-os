@@ -26,7 +26,7 @@ class MedicineAdmin(admin.ModelAdmin):
 @admin.register(StockEntry)
 class StockEntryAdmin(admin.ModelAdmin):
     list_display = ["medicine", "entry_type", "quantity_change", "balance_after", "actor", "created_at"]
-    list_filter = ["entry_type"]
+    list_filter = ["medicine__clinic", "entry_type"]
     readonly_fields = ["created_at"]
 
 
