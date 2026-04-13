@@ -339,7 +339,7 @@ def me(request):
     data["clinic"] = (
         ClinicSerializer(request.user.clinic).data if request.user.clinic else None
     )
-    data["onboarding_complete"] = request.user.clinic_id is not None
+    data["onboarding_complete"] = request.user.is_superuser or request.user.clinic_id is not None
     return Response(data)
 
 
