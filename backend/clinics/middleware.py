@@ -9,7 +9,7 @@ class TenantMiddleware:
 
     EXEMPT_SUBDOMAINS = {"www", "api", "admin", ""}
     RESERVED_SUBDOMAINS = {"www", "api", "admin", "demo", "app"}
-    EXEMPT_PATH_PREFIXES = ("/api/health/", "/api/cron/", "/api/schema/", "/api/docs/", "/api/v1/auth/", "/api/v1/invite/", "/api/v1/integrations/webhooks/")
+    EXEMPT_PATH_PREFIXES = ("/admin/", "/api/health/", "/api/cron/", "/api/schema/", "/api/docs/", "/api/v1/auth/", "/api/v1/invite/", "/api/v1/integrations/webhooks/")
     CACHE_TTL = 300  # 5 minutes
 
     def __init__(self, get_response):
