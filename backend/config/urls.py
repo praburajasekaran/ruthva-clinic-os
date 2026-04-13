@@ -5,6 +5,7 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from clinics.urls import invite_urlpatterns
 from integrations.urls import app_urlpatterns as integrations_urlpatterns
 from integrations.urls import webhook_urlpatterns as integrations_webhook_urlpatterns
+from reminders.views import cron_send_reminders
 from config.views import (
     dashboard_stats,
     export_all_zip,
@@ -47,6 +48,8 @@ urlpatterns = [
     # API docs
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    # Cron (called by cron-job.org)
+    path("api/cron/", cron_send_reminders, name="cron-send-reminders"),
     # Health check
     path("api/health/", health_check, name="health-check"),
 ]

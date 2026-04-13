@@ -157,6 +157,9 @@ GITHUB_FEEDBACK_REPO = config("GITHUB_FEEDBACK_REPO", default="")
 AWS_S3_BUCKET_NAME = config("AWS_S3_BUCKET_NAME", default="")
 AWS_S3_REGION = config("AWS_S3_REGION", default="ap-south-1")
 
+# Cron secret (cron-job.org sends this as Bearer token)
+CRON_SECRET = config("CRON_SECRET", default="")
+
 # JWT
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
