@@ -34,6 +34,8 @@ export interface Env {
   AWS_SESSION_TOKEN?: string;
   GITHUB_TOKEN?: string;
   GITHUB_FEEDBACK_REPO?: string;
+  QUACKBACK_URL?: string;
+  QUACKBACK_WIDGET_SECRET?: string;
   RUTHVA_API_URL?: string;
   RUTHVA_INTEGRATION_SECRET?: string;
   RUTHVA_CLINIC_SUBDOMAIN?: string;

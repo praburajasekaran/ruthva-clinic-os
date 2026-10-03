@@ -28,6 +28,7 @@
     "DEFAULT_FROM_EMAIL": "noreply@ruthva.com",
     "AWS_SES_REGION": "ap-south-1",
     "RUTHVA_API_URL": "",
+    "QUACKBACK_URL": "https://ruthva-clinic-os.quackback.io",
   },
   "observability": { "enabled": true },
 }

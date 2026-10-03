@@ -1,12 +1,14 @@
 import { Hono } from "hono";
 import { launch } from "@cloudflare/playwright";
 import QRCode from "qrcode";
+import { SignJWT } from "jose";
 import { prescriptionHtml, base64 } from "./pdf";
 import {
   all,
   check,
   clinicOf,
   dbOf,
+  flag,
   get,
   insert,
   now,
@@ -110,6 +112,52 @@ resources.get("/media/*", async (c) => {
     ETag: object.httpEtag,
   });
   return new Response(object.body, { headers });
+});
+resources.get("/feedback/widget/", async (c) => {
+  const secret = c.env.QUACKBACK_WIDGET_SECRET;
+  if (!c.env.QUACKBACK_URL || !secret || flag(c.get("clinic"), "is_demo"))
+    return c.json({ provider: "legacy" });
+
+  let url: URL;
+  try {
+    url = new URL(c.env.QUACKBACK_URL);
+  } catch {
+    check(false, "Feedback workspace is not configured correctly.", 503);
+  }
+  const loopback = (hostname: string) =>
+    ["localhost", "127.0.0.1", "[::1]"].includes(hostname);
+  check(
+    (url.protocol === "https:" ||
+      (url.protocol === "http:" &&
+        loopback(url.hostname) &&
+        loopback(new URL(c.req.url).hostname))) &&
+      !url.username &&
+      !url.password &&
+      url.pathname === "/" &&
+      !url.search &&
+      !url.hash &&
+      secret.length >= 32,
+    "Feedback workspace is not configured correctly.",
+    503,
+  );
+  const user = c.get("user"),
+    email = str(user, "email"),
+    name =
+      [str(user, "first_name"), str(user, "last_name")]
+        .filter(Boolean)
+        .join(" ") || str(user, "username");
+  check(email, "A staff email is required for product feedback.", 503);
+  const token = await new SignJWT({ email, name })
+    .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+    .setSubject(`ruthva:user:${user.id}`)
+    .setIssuedAt()
+    .setExpirationTime("5m")
+    .sign(new TextEncoder().encode(secret));
+  return c.json({
+    provider: "quackback",
+    instance_url: url.origin,
+    sso_token: token,
+  });
 });
 resources.post("/feedback/", async (c) => {
   await throttle(c, `feedback:${c.get("user").id}`, 20);

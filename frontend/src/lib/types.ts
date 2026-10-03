@@ -643,3 +643,7 @@ export type FeedbackResponse = {
   id: number;
   status: string;
 };
+
+export type FeedbackWidgetSession =
+  | { provider: "legacy" }
+  | { provider: "quackback"; instance_url: string; sso_token: string };
