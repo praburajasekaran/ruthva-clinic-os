@@ -25,10 +25,8 @@ function SsoContent() {
 
     async function validateToken() {
       try {
-        // Frontend calls Django's public SSO exchange endpoint.
-        // Django internally calls ruthva /api/sso/validate with X-Ruthva-Secret.
         const res = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_URL}/auth/sso/exchange/`,
+          `${process.env.NEXT_PUBLIC_API_URL || "/api/v1"}/auth/sso/exchange/`,
           { token }
         );
 

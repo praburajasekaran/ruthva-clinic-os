@@ -11,8 +11,10 @@ import type {
   UsageDashboard,
 } from "@/lib/types";
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || "/api/v1";
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: apiUrl,
   headers: {
     "Content-Type": "application/json",
   },
@@ -96,7 +98,7 @@ api.interceptors.response.use(
 
     try {
       const res = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/token/refresh/`,
+        `${apiUrl}/auth/token/refresh/`,
         { refresh: refreshToken },
       );
       const newAccess: string = res.data.access;

@@ -1,0 +1,33 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "ruthva-api",
+  "account_id": "b9280202abca9ff6d2865379031ddb31",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-03",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": false,
+  "preview_urls": false,
+  "limits": { "cpu_ms": 30000 },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ruthva-clinic",
+      "database_id": "26a79231-b999-4e24-b0c9-9af3f221b63c",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "r2_buckets": [
+    { "binding": "UPLOADS", "bucket_name": "ruthva-clinic-uploads" },
+  ],
+  "browser": { "binding": "BROWSER" },
+  "rules": [{ "type": "Data", "globs": ["**/*.ttf"], "fallthrough": true }],
+  "triggers": { "crons": [] },
+  "vars": {
+    "FRONTEND_URL": "https://ruthva-clinic.prabu-b92.workers.dev",
+    "CORS_ALLOWED_ORIGINS": "https://ruthva-clinic.prabu-b92.workers.dev",
+    "DEFAULT_FROM_EMAIL": "noreply@ruthva.com",
+    "AWS_SES_REGION": "ap-south-1",
+    "RUTHVA_API_URL": "",
+  },
+  "observability": { "enabled": true },
+}

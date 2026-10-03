@@ -51,7 +51,7 @@ export default function SignupPage() {
     setEmailChecking(true);
     try {
       const { data } = await axios.post(
-        `${process.env.NEXT_PUBLIC_API_URL}/auth/check-availability/`,
+        `${process.env.NEXT_PUBLIC_API_URL || "/api/v1"}/auth/check-availability/`,
         { field: "email", value: value.trim().toLowerCase() },
       );
       setEmailTaken(!data.available);

@@ -1,7 +1,16 @@
 {
   "private": true,
   "scripts": {
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev": "node scripts/dev.mjs",
+    "check": "npm --prefix worker run typecheck && npm --prefix frontend run ci:check",
+    "test": "npm --prefix worker test && npm --prefix worker run verify:pdf && python3 -m unittest discover -s scripts/tests -v",
+    "build": "npm --prefix worker run build && npm --prefix frontend run build:cloudflare",
+    "preview": "npm run build && npm --prefix worker run preview",
+    "deploy:check": "node scripts/cloudflare-preflight.mjs",
+    "deploy:api": "npm --prefix worker run deploy",
+    "deploy:frontend": "npm --prefix frontend run deploy",
+    "migrate:local": "npm --prefix worker run db:migrate"
   },
   "devDependencies": {
     "husky": "^9"

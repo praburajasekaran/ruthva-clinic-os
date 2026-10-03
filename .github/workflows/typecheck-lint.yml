@@ -1,15 +1,15 @@
-name: Typecheck & Lint
+name: Cloudflare checks
 
 on:
   pull_request:
-    branches: [main]
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  typecheck-lint:
+  frontend:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -27,3 +27,24 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint
+      - run: npm run build:cloudflare
+  api:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: worker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+          cache-dependency-path: worker/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run verify:pdf
+      - run: python3 -m unittest discover -s ../scripts/tests -v

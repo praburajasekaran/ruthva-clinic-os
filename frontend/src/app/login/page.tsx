@@ -25,13 +25,13 @@ export default function LoginPage() {
     return () => clearTimeout(timer);
   }, [resendCooldown]);
 
-  async function handleRequestOTP(e?: React.FormEvent) {
+  async function handleRequestOTP(e?: React.FormEvent, requestedEmail = email) {
     e?.preventDefault();
     setError(null);
     setLoading(true);
 
     try {
-      const result = await requestOTP({ email: email.trim().toLowerCase() });
+      const result = await requestOTP({ email: requestedEmail.trim().toLowerCase() });
       setIsDemo(!!result?.is_demo);
       setStep("otp");
     } catch (err: unknown) {
@@ -247,7 +247,7 @@ export default function LoginPage() {
             type="button"
             onClick={() => {
               setEmail("demo@ruthva.com");
-              setTimeout(() => handleRequestOTP(), 0);
+              void handleRequestOTP(undefined, "demo@ruthva.com");
             }}
             className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
           >

@@ -1,0 +1,1150 @@
+[
+  {
+    "path": "api/v1/patients/^$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "patient-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/patients/^\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "patient-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/patients/^bulk-delete/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-bulk-delete",
+    "actions": {
+      "post": "bulk_delete"
+    }
+  },
+  {
+    "path": "api/v1/patients/^bulk-delete\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-bulk-delete",
+    "actions": {
+      "post": "bulk_delete"
+    }
+  },
+  {
+    "path": "api/v1/patients/^bulk-toggle-active/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-bulk-toggle-active",
+    "actions": {
+      "post": "bulk_toggle_active"
+    }
+  },
+  {
+    "path": "api/v1/patients/^bulk-toggle-active\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-bulk-toggle-active",
+    "actions": {
+      "post": "bulk_toggle_active"
+    }
+  },
+  {
+    "path": "api/v1/patients/^check_phone/$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-check-phone",
+    "actions": {
+      "get": "check_phone"
+    }
+  },
+  {
+    "path": "api/v1/patients/^check_phone\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-check-phone",
+    "actions": {
+      "get": "check_phone"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/confirm/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-import-confirm",
+    "actions": {
+      "post": "import_confirm"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/confirm\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-import-confirm",
+    "actions": {
+      "post": "import_confirm"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/preview/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-import-preview",
+    "actions": {
+      "post": "import_preview"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/preview\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-import-preview",
+    "actions": {
+      "post": "import_preview"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/retry-ruthva-sync/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-retry-ruthva-sync",
+    "actions": {
+      "post": "retry_ruthva_sync"
+    }
+  },
+  {
+    "path": "api/v1/patients/^import/retry-ruthva-sync\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-retry-ruthva-sync",
+    "actions": {
+      "post": "retry_ruthva_sync"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "patient-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "patient-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/consultations/$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-consultations",
+    "actions": {
+      "get": "consultations"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/consultations\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-consultations",
+    "actions": {
+      "get": "consultations"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/remedy-history/$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-remedy-history",
+    "actions": {
+      "get": "remedy_history"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/remedy-history\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "patient-remedy-history",
+    "actions": {
+      "get": "remedy_history"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/toggle-active/$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-toggle-active",
+    "actions": {
+      "post": "toggle_active"
+    }
+  },
+  {
+    "path": "api/v1/patients/^(?P<pk>[^/.]+)/toggle-active\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "patient-toggle-active",
+    "actions": {
+      "post": "toggle_active"
+    }
+  },
+  {
+    "path": "api/v1/patients/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/patients/<drf_format_suffix:format>",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/consultations/^$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "consultation-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/consultations/^\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "consultation-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/consultations/^(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "consultation-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/consultations/^(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "consultation-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/consultations/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/consultations/<drf_format_suffix:format>",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/prescriptions/^remedy-followup/$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "remedy-followup-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^remedy-followup\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "remedy-followup-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^remedy-followup/(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "remedy-followup-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^remedy-followup/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "remedy-followup-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "prescription-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "prescription-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "prescription-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "prescription-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^(?P<pk>[^/.]+)/pdf/$",
+    "methods": [
+      "get"
+    ],
+    "name": "prescription-pdf",
+    "actions": {
+      "get": "pdf"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/^(?P<pk>[^/.]+)/pdf\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "prescription-pdf",
+    "actions": {
+      "get": "pdf"
+    }
+  },
+  {
+    "path": "api/v1/prescriptions/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/prescriptions/<drf_format_suffix:format>",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/treatments/^plans/$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "treatment-plan-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^plans\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "treatment-plan-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^plans/(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "name": "treatment-plan-detail",
+    "actions": {
+      "get": "retrieve",
+      "patch": "partial_update"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^plans/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "patch"
+    ],
+    "name": "treatment-plan-detail",
+    "actions": {
+      "get": "retrieve",
+      "patch": "partial_update"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^plans/(?P<pk>[^/.]+)/blocks/$",
+    "methods": [
+      "post"
+    ],
+    "name": "treatment-plan-add-block",
+    "actions": {
+      "post": "add_block"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^plans/(?P<pk>[^/.]+)/blocks\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "treatment-plan-add-block",
+    "actions": {
+      "post": "add_block"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions/$",
+    "methods": [
+      "get"
+    ],
+    "name": "treatment-session-list",
+    "actions": {
+      "get": "list"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "treatment-session-list",
+    "actions": {
+      "get": "list"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions/(?P<pk>[^/.]+)/$",
+    "methods": [
+      "patch"
+    ],
+    "name": "treatment-session-detail",
+    "actions": {
+      "patch": "partial_update"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "patch"
+    ],
+    "name": "treatment-session-detail",
+    "actions": {
+      "patch": "partial_update"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions/(?P<pk>[^/.]+)/feedback/$",
+    "methods": [
+      "post"
+    ],
+    "name": "treatment-session-feedback",
+    "actions": {
+      "post": "feedback"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^sessions/(?P<pk>[^/.]+)/feedback\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "treatment-session-feedback",
+    "actions": {
+      "post": "feedback"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^doctor-tasks/(?P<pk>[^/.]+)/resolve/$",
+    "methods": [
+      "post"
+    ],
+    "name": "doctor-task-resolve",
+    "actions": {
+      "post": "resolve"
+    }
+  },
+  {
+    "path": "api/v1/treatments/^doctor-tasks/(?P<pk>[^/.]+)/resolve\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "doctor-task-resolve",
+    "actions": {
+      "post": "resolve"
+    }
+  },
+  {
+    "path": "api/v1/treatments/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/treatments/<drf_format_suffix:format>",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "medicine-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "medicine-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/low-stock/$",
+    "methods": [
+      "get"
+    ],
+    "name": "medicine-low-stock",
+    "actions": {
+      "get": "low_stock"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/low-stock\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get"
+    ],
+    "name": "medicine-low-stock",
+    "actions": {
+      "get": "low_stock"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/(?P<pk>[^/.]+)/$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "medicine-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/(?P<pk>[^/.]+)\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "put",
+      "patch",
+      "delete"
+    ],
+    "name": "medicine-detail",
+    "actions": {
+      "get": "retrieve",
+      "put": "update",
+      "patch": "partial_update",
+      "delete": "destroy"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/(?P<pk>[^/.]+)/adjust-stock/$",
+    "methods": [
+      "post"
+    ],
+    "name": "medicine-adjust-stock",
+    "actions": {
+      "post": "adjust_stock"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^medicines/(?P<pk>[^/.]+)/adjust-stock\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "post"
+    ],
+    "name": "medicine-adjust-stock",
+    "actions": {
+      "post": "adjust_stock"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^dispensing/$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "dispensing-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/^dispensing\\.(?P<format>[a-z0-9]+)/?$",
+    "methods": [
+      "get",
+      "post"
+    ],
+    "name": "dispensing-list",
+    "actions": {
+      "get": "list",
+      "post": "create"
+    }
+  },
+  {
+    "path": "api/v1/pharmacy/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/pharmacy/<drf_format_suffix:format>",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "api-root",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/limits/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "team-limits",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "team-list",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/invite/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "team-invite",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/<int:member_id>/role/",
+    "methods": [
+      "PATCH",
+      "OPTIONS"
+    ],
+    "name": "team-update-role",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/<int:member_id>/",
+    "methods": [
+      "DELETE",
+      "OPTIONS"
+    ],
+    "name": "team-remove",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/invitations/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "invitation-list",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/team/invitations/<int:invitation_id>/",
+    "methods": [
+      "DELETE",
+      "OPTIONS"
+    ],
+    "name": "invitation-cancel",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/dashboard/stats/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "dashboard-stats",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/dashboard/follow-ups/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "follow-ups-list",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/usage/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "usage-dashboard",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/export/patients/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "export-patients",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/export/consultations/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "export-consultations",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/export/prescriptions/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "export-prescriptions",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/export/all/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "export-all",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/signup/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-signup",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/initiate-signup/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-initiate-signup",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/verify-signup-otp/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-verify-signup-otp",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/complete-onboarding/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-complete-onboarding",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/check-availability/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-check-availability",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/token/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "token_obtain_pair",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/token/refresh/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "token_refresh",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/request-otp/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-request-otp",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/verify-otp/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-verify-otp",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/me/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "auth-me",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/me/update/",
+    "methods": [
+      "PATCH",
+      "OPTIONS"
+    ],
+    "name": "auth-me-update",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/clinic/update/",
+    "methods": [
+      "PATCH",
+      "OPTIONS"
+    ],
+    "name": "auth-clinic-update",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/clinic/logo/upload/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-clinic-logo-upload",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/clinic/logo/",
+    "methods": [
+      "DELETE",
+      "OPTIONS"
+    ],
+    "name": "auth-clinic-logo-delete",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/auth/demo/switch-clinic/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "auth-demo-switch-clinic",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/invite/details/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "invite-details",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/invite/accept/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "invite-accept",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/integrations/journeys/start/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "integration-start-journey",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/integrations/journeys/<int:journey_ref_id>/status/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "integration-journey-status",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/integrations/journeys/<int:journey_ref_id>/confirm-visit/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "integration-confirm-visit",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/integrations/patients/<int:patient_id>/journeys/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "integration-patient-journeys",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/integrations/webhooks/ruthva/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "integration-webhook-ruthva",
+    "actions": {}
+  },
+  {
+    "path": "api/v1/feedback/",
+    "methods": [
+      "POST",
+      "OPTIONS"
+    ],
+    "name": "submit-feedback",
+    "actions": {}
+  },
+  {
+    "path": "api/schema/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "schema",
+    "actions": {}
+  },
+  {
+    "path": "api/docs/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "swagger-ui",
+    "actions": {}
+  },
+  {
+    "path": "api/cron/",
+    "methods": [],
+    "name": "cron-send-reminders",
+    "actions": {}
+  },
+  {
+    "path": "api/health/",
+    "methods": [
+      "GET",
+      "OPTIONS"
+    ],
+    "name": "health-check",
+    "actions": {}
+  }
+]

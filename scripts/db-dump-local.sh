@@ -1,23 +1,12 @@
 #!/bin/bash
-# Dump local PostgreSQL database for Railway migration.
-# This preserves all data including the ayurveda doctor credentials and patients.
-#
-# Usage:
-#   ./scripts/db-dump-local.sh
-#
-# Then restore on Railway:
-#   pg_restore --no-owner --no-acl -d "$DATABASE_URL" ruthva_clinic_os.dump
-
 set -euo pipefail
+umask 077
 
-DB_NAME="ruthva_clinic_os"
-DUMP_FILE="ruthva_clinic_os.dump"
-
-echo "Dumping local database: $DB_NAME"
-pg_dump -Fc --no-owner --no-acl "$DB_NAME" > "$DUMP_FILE"
-
-echo "Done! Created: $DUMP_FILE ($(du -h "$DUMP_FILE" | cut -f1))"
-echo ""
-echo "To restore on Railway Postgres:"
-echo "  1. Get the DATABASE_URL from Railway dashboard"
-echo "  2. Run: pg_restore --no-owner --no-acl -d \"\$DATABASE_URL\" $DUMP_FILE"
+dump_file="${1:-.cloudflare-migration/legacy.dump}"
+if [ -e "$dump_file" ]; then
+  echo "Use a new backup path. The existing file was preserved." >&2
+  exit 1
+fi
+rtk proxy mkdir -p "$(rtk proxy dirname "$dump_file")"
+rtk proxy pg_dump --format=custom --no-owner --no-acl "${DATABASE_URL:-ruthva_clinic_os}" --file "$dump_file"
+echo "Saved PostgreSQL backup to $dump_file. Use CLOUDFLARE-DEPLOY.md for D1 conversion."
