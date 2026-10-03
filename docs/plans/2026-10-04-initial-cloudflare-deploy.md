@@ -34,3 +34,7 @@ Cloudflare account `b9280202abca9ff6d2865379031ddb31` uses the Workers subdomain
 The deployed API version is `cb4a523e-b7da-4956-9f62-7e801dfc1fe4`. Wrangler confirmed its D1, R2, and Browser Rendering bindings. `wrangler secret list` confirms `JWT_SECRET` and `CRON_SECRET` are `secret_text` bindings. D1 has four applied migrations and no foreign-key violations.
 
 The final frontend configuration check found a signup availability request that used `NEXT_PUBLIC_API_URL` without a default. It now uses `/api/v1` when the variable is unset, consistent with the deployed frontend API client.
+
+## Runtime correction
+
+Remote signup reached the account's effective API CPU limit at approximately 2,010 ms. API tail events reported `exceededCpu`. The service-binding error appeared as HTTP 500 through the frontend. Successful password hashing took 1,994 ms, so repeated calls crossed the limit. Configure an explicit 30,000 ms API limit to preserve the existing Django-compatible PBKDF2 hashes. Repeat remote signup and password login after deployment.
