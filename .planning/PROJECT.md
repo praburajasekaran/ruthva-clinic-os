@@ -1,94 +1,108 @@
 # AYUSH SaaS Multi-Tenant Clinic Platform
 
-## What This Is
+## What this is
 
-A multi-tenant SaaS platform serving all five AYUSH disciplines (Ayurveda, Yoga & Naturopathy, Unani, Siddha, Homeopathy). Each clinic signs up, picks their discipline, gets a subdomain (`myclinic.platform.com`), and manages patients, consultations, and prescriptions within their isolated tenant. Built on Django REST Framework + Next.js with shared-schema multi-tenancy.
+Ruthva Clinic OS is a Django REST Framework and Next.js clinic application with shared-schema multi-tenancy. Clinics select an AYUSH discipline and manage patients, consultations, prescriptions, pharmacy records, and treatment follow-ups within their clinic context.
 
-## Core Value
+Siddha, Ayurveda, and Homeopathy have dedicated diagnostic forms. Unani and Yoga & Naturopathy use generic diagnostic notes. Clinic records include a subdomain, branding, prescription settings, and capacity limits.
 
-Any AYUSH clinic can sign up, get a subdomain, and immediately manage their patients with complete data isolation — no clinic ever sees another clinic's data.
+## Core value
 
-## Requirements
+AYUSH clinics can register staff and manage clinical care within their clinic's data boundary.
 
-### Validated
+## Implementation status
 
-<!-- Shipped and confirmed valuable (Phase 1 complete). -->
+Reviewed on 2026-10-03. Status describes the current source snapshot. It does not confirm deployment, production migration state, or external service operation.
 
-- Custom User model with clinic FK and role (doctor/therapist/admin)
-- Clinic model with discipline, branding fields, subdomain
-- Tenant FK (`clinic`) on Patient, Consultation, Prescription models
-- Composite indexes on all tenant-scoped query patterns
-- Clinic-scoped patient record IDs (PAT-{year}-{NNNN}) with transaction safety
-- TenantMiddleware: subdomain resolution with 5-min cache, dev `X-Clinic-Slug` header
-- TenantQuerySetMixin: fail-closed (returns `none()` when no clinic context)
-- JWT authentication with `clinic_id` cross-validation against subdomain
-- Signup flow: creates Clinic + owner User, returns JWT tokens
-- Login/logout with token persistence across sessions
-- Frontend AuthProvider + AuthGuard with 401 interceptor
-- Dynamic clinic name in sidebar, dashboard, page title
-- Dynamic PDF branding (clinic name, address, paper size, doctor name)
-- Dashboard stats consolidated to 3 queries with tenant filtering
-- Follow-ups endpoint bounded by date range
-- CSV patient import with preview/validate/confirm flow and duplicate detection
-- Denormalized `clinic_id` on Prescription for query performance
+The original v1 requirements have 25 implementations and three retired history import requirements. All six roadmap phases have implementation for their current scope. [REQUIREMENTS.md](REQUIREMENTS.md) contains the requirement ledger. [ROADMAP.md](ROADMAP.md) contains phase evidence and verification limits.
 
-### Active
+### Implemented foundation and access
 
-<!-- Current scope: Phases 2-6 for launch readiness. -->
+- Clinic and User models with doctor, therapist, and admin roles. Owner access uses a separate flag.
+- Clinic foreign keys, tenant middleware, clinic-filtered queries, and JWT clinic context.
+- Clinic-scoped patient record IDs.
+- Email-verified signup and progressive clinic onboarding.
+- Email code login, token persistence, AuthProvider, and AuthGuard.
+- Password token login through the API.
+- Demo switching across Ayurveda, Siddha, and Homeopathy clinics.
+- Clinic name and logo display in the sidebar and prescription output paths.
 
-- [ ] Team management: invite members, list/update/remove clinic members
-- [ ] Role-based permissions: doctor, therapist, admin enforcement in views
-- [ ] Logo upload to S3/R2 with size constraints
-- [ ] Clinic settings page: branding, address, color, paper size
-- [ ] Full CSV import for consultations and prescriptions
-- [ ] Data export: per-entity CSV + full ZIP download
-- [ ] Pharmacy: medicine catalog, stock tracking, low-stock alerts, prescription auto-suggest, dispensing records
-- [ ] Multi-discipline diagnostic forms (abstract Envagai Thervu to JSON)
-- [ ] Ayurveda Prakriti analysis form
-- [ ] Billing: active patient counting, limits, Razorpay integration
-- [ ] Usage dashboard for clinic owners
+### Implemented clinic workflows
 
-### Out of Scope
+- Patient records, medical and family history, search, keyboard shortcuts, archive and bulk actions.
+- Consultations with vitals, general assessment, diagnosis, diagnostic JSON, and browser-session draft recovery.
+- Prescriptions with medication rows, catalog autocomplete, care advice, procedure entries, print, and PDF paths.
+- Homeopathy case taking, prescribing fields, remedy response, and remedy history.
+- Treatment plans, blocks, scheduled sessions, therapist feedback, and doctor review tasks.
+- Dashboard statistics and role-specific follow-up queues.
+- Medicine catalog, stock movement history, low-stock alerts, and dispensing.
+- Team member management and email invitations.
+- Staff profile editing and owner clinic branding, letterhead, margins, paper size, and review URL settings.
+- Active patient capacity checks and owner usage display.
 
-<!-- Explicit boundaries. -->
+### Implemented portability and integrations
 
-- Real-time chat between clinic members — not core to clinic management
-- Patient-facing portal — clinics manage patients, not the reverse
-- Schema-per-tenant / database-per-tenant — overkill for current scale
-- Google OAuth login — email/password sufficient for AYUSH practitioners
-- Mobile native app — web-first, responsive design covers mobile use
-- Multi-branch clinics (one clinic = multiple locations) — premature complexity
+- Patient CSV import with template, preview, validation, duplicate handling, confirmation, and results.
+- Baseline consultation creation when imported patient data includes a diagnosis.
+- Owner exports for patients, consultations, and prescriptions. The ZIP contains those three CSVs.
+- Reminder email command and cron endpoint.
+- External Ruthva journey start, status, visit confirmation, webhook updates, and import sync retry.
+- Feedback submission with optional screenshot and best-effort GitHub issue sync.
 
-## Context
+External email, storage, PDF runtime, Ruthva API, reminder scheduling, and GitHub integration need verification in the target environment.
 
-- **Origin:** Started as a single-tenant Siddha clinic app ("Sivanethram") for one practitioner
-- **Phase 1 shipped:** Full multi-tenant foundation is live — custom User, Clinic model, tenant middleware, JWT auth, fail-closed mixin, frontend auth flow, dynamic PDF, CSV import
-- **Target market:** Solo/small-clinic AYUSH practitioners (1-3 doctors) in India
-- **Existing codebase:** Django 5.1 + DRF backend, Next.js 14 + Tailwind frontend, PostgreSQL database
-- **Email service:** Resend SDK for follow-up reminders (already integrated)
-- **PDF generation:** WeasyPrint (already integrated with dynamic branding)
-- **Brainstorm reference:** `docs/plans/2026-02-27-saas-multi-tenant-brainstorm.md` — deep technical spec with security/performance research
+### Retired scope
 
-## Constraints
+Separate consultation and prescription history import controls, endpoints, and services were deliberately removed on 2026-03-18. IMPT-01, IMPT-02, and IMPT-03 remain in the requirements ledger as retired items. Patient import is the supported import flow. The [completed removal plan](../docs/plans/2026-03-18-refactor-remove-settings-import-ui-plan.md) records this decision.
 
-- **Tech stack**: Django 5.1 + DRF backend, Next.js 14 + React 18 frontend — established, not changing
-- **Multi-tenancy**: Shared-schema with tenant FK — architecture is locked from Phase 1
-- **Icons**: Lucide React for all icon usage
-- **Auth**: JWT via SimpleJWT with clinic_id cross-validation — pattern established
-- **File storage**: S3/R2 for uploads (Phase 3) — Cloudflare R2 preferred for cost
-- **Payments**: Razorpay (Phase 6) — standard for Indian SaaS
+### Remaining decisions and work
 
-## Key Decisions
+- Resolve the disconnected SSO flow. The frontend calls `/auth/sso/exchange/`, but current auth routes do not register that endpoint.
+- Align public pricing, trial, and unlimited-patient claims with implemented capacity rules and the deferred subscription flow.
+- Verify the diagnostic migrations and retained data in the target database.
+- Verify configured services and clinic workflows in the target environment.
+- Reconcile admin access to the planned-session editor with the API permission rule.
 
-| Decision | Rationale | Outcome |
-|----------|-----------|---------|
-| Shared-schema multi-tenancy | Simpler ops, easier cross-tenant analytics, sufficient at current scale | Validated |
-| Denormalize clinic_id on Prescription | Eliminates 3-4 table joins for prescription queries | Validated |
-| Fail-closed tenant mixin (returns none()) | Security-first: missing clinic context never leaks data | Validated |
-| JWT cross-validation against subdomain | Prevents token reuse across clinics | Validated |
-| Lock clinic row for record ID generation | O(1) contention vs O(n) locking patient rows | Validated |
-| Defer Phases 2-6 until demand | YAGNI — Phase 1 foundation first, rest when needed | Revisit (building for launch readiness now) |
-| CSV import over Google Sheets API | Simpler, universal format; Sheets users can export to CSV | Validated |
+Razorpay subscriptions, multi-clinic membership, direct Google Sheets import, historical prescribing suggestions, and staff profile pictures remain future work or recorded requests.
 
----
-*Last updated: 2026-02-28 after project initialization (Phase 1 complete, Phases 2-6 scoped)*
+## Current implementation limits
+
+- Logo upload checks a 2 MB byte limit and PNG or JPEG content type. The old 200 KB and 400x400 pixel specification is superseded.
+- Patient archive state uses Patient.is_active, rather than a separate is_archived field.
+- Active patient enforcement uses Clinic.active_patient_limit, which defaults to 200. The plan table alone does not implement a paid subscription lifecycle.
+- Stock entries capture batch numbers and expiry dates. Dispensing deducts the medicine total without choosing a batch.
+- The three clinical CSV exports omit other tables and some fields. They are not a complete backup or a lossless import and export workflow.
+- The five discipline choices have different form depth. Unani and Yoga & Naturopathy currently use generic notes.
+
+## Out of scope
+
+- Real-time staff chat.
+- A patient-facing portal in this clinic application.
+- Separate schemas or databases for each tenant.
+- Google OAuth login.
+- A native mobile application.
+- Multi-branch clinic management.
+
+## Context and constraints
+
+The application started as the single-clinic Siddha app Sivanethram. Its target users are independent AYUSH practitioners and small clinics in India.
+
+The established stack uses Django REST Framework, Next.js, React, Tailwind, PostgreSQL, Lucide React, and JWT authentication. Multi-tenancy uses a shared schema with clinic foreign keys. File uploads use the configured Django storage backend. Existing integration code includes Resend email and WeasyPrint PDF generation. Razorpay remains a planned payment provider.
+
+The [original multi-tenant brainstorm](../docs/plans/2026-02-27-saas-multi-tenant-brainstorm.md) records the earlier design. Its phase status and some feature scopes have been superseded by the current roadmap.
+
+## Key decisions
+
+| Decision | Current record |
+|---|---|
+| Shared-schema multi-tenancy | Clinic foreign keys and tenant filtering remain the implementation approach |
+| Clinic FK on Prescription | Prescription records retain direct clinic context |
+| Query mixin returns no records without clinic context | The source retains the fail-closed query behavior |
+| JWT clinic context | Authentication carries clinic identity for request scoping |
+| Clinic-scoped patient record IDs | The implementation keeps record generation within a clinic |
+| Patient CSV import | The supported import flow has a dedicated patient page |
+| Remove separate history imports | The completed 2026-03-18 plan retired consultation and prescription import flows |
+| Clinical CSV ZIP | The export contract contains three clinical CSVs and excludes other tables |
+| Separate code status from deployment status | This review records implementation evidence and leaves runtime verification explicit |
+
+Last reviewed on 2026-10-03 against the current local implementation.

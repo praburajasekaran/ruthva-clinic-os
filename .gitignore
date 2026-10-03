@@ -26,6 +26,19 @@ media/
 # Node
 node_modules/
 .next/
+.next.stale*/
+.open-next/
+.wrangler/
+coverage/
+*.tsbuildinfo
+.codegraph/
+.audit/
+.cloudflare-migration/
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+*.dump
+*.sqlite3
 out/
 .vercel
 

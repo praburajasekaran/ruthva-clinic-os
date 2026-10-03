@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint src --ext .ts,.tsx",
     "typecheck": "tsc --noEmit",
-    "ci:check": "npm run typecheck && npm run lint"
+    "ci:check": "npm run typecheck && npm run lint",
+    "build:cloudflare": "opennextjs-cloudflare build",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "node ../scripts/cloudflare-preflight.mjs && opennextjs-cloudflare build && wrangler deploy"
   },
   "dependencies": {
     "@radix-ui/react-dialog": "^1.1.15",
@@ -23,7 +26,7 @@
     "framer-motion": "^11.18.0",
     "html2canvas": "^1.4.1",
     "lucide-react": "^0.564.0",
-    "next": "14.2.35",
+    "next": "^15.5.27",
     "qrcode.react": "^4.2.0",
     "react": "^18",
     "react-day-picker": "^9.14.0",
@@ -31,18 +34,25 @@
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7"
   },
+  "overrides": {
+    "adm-zip": "^0.6.1",
+    "next": { "postcss": "^8.5.28" }
+  },
   "lint-staged": {
-    "*.{ts,tsx}": "next lint --fix --file"
+    "*.{ts,tsx}": "eslint --fix"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^1.20.8",
     "@types/node": "^20",
     "@types/react": "18.3.28",
     "@types/react-dom": "^18",
     "eslint": "^8",
-    "eslint-config-next": "14.2.35",
+    "eslint-config-next": "^15.5.27",
     "lint-staged": "^16.4.0",
     "postcss": "^8",
+    "rclone.js": "^0.6.6",
     "tailwindcss": "^3.4.1",
-    "typescript": "5.9.3"
+    "typescript": "5.9.3",
+    "wrangler": "^4.125.0"
   }
 }

@@ -1,67 +1,68 @@
 # Project State
 
-## Project Reference
+## Project reference
 
-See: .planning/PROJECT.md (updated 2026-02-28)
+See [PROJECT.md](PROJECT.md), [ROADMAP.md](ROADMAP.md), and [REQUIREMENTS.md](REQUIREMENTS.md). Implementation review date is 2026-10-03.
 
-**Core value:** Any AYUSH clinic can sign up, get a subdomain, and immediately manage their patients with complete data isolation.
-**Current focus:** Phase 3 - Branding & Settings
+**Core value:** AYUSH clinics manage patients and clinical care within their clinic's data boundary.
+**Current focus:** Resolve recorded implementation gaps and product scope decisions, then verify the target runtime and configured services.
 
-## Current Position
+## Current position
 
-Phase: 3 of 6 (Branding & Settings)
-Plan: 0 of ? in current phase
-Status: Ready to plan
-Last activity: 2026-02-28 — Phase 2 (Team & Roles) complete, PR #13
+All six roadmap phases have implementation for their current scope. The original v1 list contains 25 implemented requirements and three deliberately retired requirements. No original v1 requirement remains unmapped.
 
-Progress: [████░░░░░░] 33% (Phases 1-2 complete)
+TEAM-06 and IMPT-05 were previously deferred and now have implementation. They are outside the original 28-item v1 count.
 
-## Performance Metrics
+Phase 4 changed scope on 2026-03-18. Consultation and prescription history import flows were removed. Patient CSV import and owner clinical exports remain.
 
-**Velocity:**
-- Total plans completed: 1 (Phases 2-6)
-- Average duration: 1 session
-- Total execution time: 1 session
+This is a source review. It does not verify deployment, production migration state, service configuration, or runtime behavior. No release dates, completion durations, or velocity estimates were inferred from file presence.
 
-**By Phase:**
+| Area | Current source state |
+|---|---|
+| Foundation and access | Implemented; signup and staff login use email codes |
+| Team and roles | Implemented; invitation delivery needs configured email |
+| Branding and settings | Implemented; current upload limit is 2 MB |
+| Data portability | Patient import and three clinical CSV exports implemented; separate history imports retired |
+| Diagnostic forms | Implemented for all discipline selections; form depth varies |
+| Pharmacy and usage | Implemented; paid subscriptions remain deferred |
+| Treatment plans and follow-ups | Implemented beyond the original phase list |
+| External integrations | Code exists; configured service behavior remains unverified |
+| SSO | Partial; frontend exchange endpoint is absent from current auth routes |
 
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| Phase 2 | 1 | 1 session | 1 session |
+## Decisions carried forward
 
-**Recent Trend:**
-- Last 5 plans: Phase 2 complete
-- Trend: On track
+- Shared-schema tenancy retains clinic foreign keys and clinic-scoped queries.
+- Clinic owner is separate from doctor, therapist, and admin roles.
+- Clinical writes are doctor-restricted. Patient actions, stock adjustment, and dispensing use clinic-member permissions.
+- Session feedback is therapist-only. Planned session edits are allowed for doctors and admins in the API.
+- Separate consultation and prescription imports are retired. Restoring them requires a new scope decision.
+- Patient.is_active is the archive flag. Clinic.active_patient_limit controls active capacity.
+- The ZIP contains patients.csv, consultations.csv, and prescriptions.csv. It is not a complete backup.
+- Unani and Yoga & Naturopathy use generic diagnostic notes.
 
-*Updated after each plan completion*
+## Pending work
 
-## Accumulated Context
+- [ ] Resolve the SSO contract. Implement `/auth/sso/exchange/` or remove the disconnected `/sso` entry point after a scope decision.
+- [ ] Reconcile the INR 999 per month offer, unlimited-patient claim, and 14-day trial with the current limits and deferred payment implementation.
+- [ ] Verify migrations 0004 through 0006 and retained diagnostic data in the target database.
+- [ ] Verify email code login, signup, invitations, and reminder delivery with the configured provider.
+- [ ] Verify logo storage and access, prescription print and PDF output, and reminder scheduling in the target environment.
+- [ ] Verify configured Ruthva journey requests, webhook updates, import sync retries, and GitHub feedback sync.
+- [ ] Reconcile the planned-session editor for admins with the API's doctor and admin permission rule.
 
-### Decisions
+Deferred product work remains Razorpay subscriptions, multi-clinic membership, and direct Google Sheets import. Historical dosage and instruction suggestions and staff profile pictures remain recorded requests in [TO-DOS.md](../TO-DOS.md).
 
-Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+## Verification evidence
 
-- Phase 1: Shared-schema multi-tenancy with tenant FK — architecture locked
-- Phase 1: JWT cross-validation against subdomain — security pattern established
-- Phase 1: Fail-closed TenantQuerySetMixin — security baseline set
-- Phase 2: Token-based invite flow (UUID token, 7-day expiry, Resend email)
-- Phase 2: Full role enforcement — IsDoctorOrReadOnly on consultations/prescriptions, IsClinicMember on all ViewSets
-- Phase 2: Permission classes in clinics/permissions.py (reusable across phases)
-- Roadmap: Phase 3 depends on Phase 2 (logo upload needs owner-only access enforcement)
-- Roadmap: Phase 4 depends on Phase 2 (import/export needs authenticated member access)
+The feature map reviewed source references across 75 files. Those file hashes still matched at the start of this update. This update also inspected the diagnostic migration chain and the completed history import-removal plan.
 
-### Pending Todos
+Source inspection confirmed current models, routes, forms, permissions, and service calls. The earlier feature map's browser checks verified the generated map, not the clinic application's runtime.
 
-None yet.
+Phase evidence is linked in [ROADMAP.md](ROADMAP.md). The removal decision is recorded in the [completed 2026-03-18 plan](../docs/plans/2026-03-18-refactor-remove-settings-import-ui-plan.md).
 
-### Blockers/Concerns
+## Session continuity
 
-- Phase 3: Logo upload to Cloudflare R2 requires configuring R2 bucket and credentials (pre-requisite work before coding)
-- Phase 5: DISC-02 is a 3-step data migration (add JSONField, migrate existing Envagai Thervu data, drop old columns) — run in production requires careful sequencing and a rollback plan
-
-## Session Continuity
-
-Last session: 2026-02-28
-Stopped at: Phase 2 complete, PR #13 created, ready for Phase 3
-Resume file: None
+**Last activity:** 2026-10-03 implementation and planning reconciliation.
+**Stopped at:** Planning documents now describe the current source and retired scope.
+**Next work:** Address pending decisions and verification items after selecting the target task.
+**Resume file:** None.
