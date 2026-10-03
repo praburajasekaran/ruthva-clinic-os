@@ -53,6 +53,8 @@ For Ruthva journeys and SSO, set `RUTHVA_API_URL` to the Ruthva HTTPS base URL. 
 
 For GitHub feedback, set `GITHUB_FEEDBACK_REPO` and store `GITHUB_TOKEN` as a secret. Without those values, feedback stays in D1 with status `failed` for later review.
 
+For hosted Quackback product feedback, `QUACKBACK_URL` selects `https://ruthva-clinic-os.quackback.io`. Store the workspace's existing `QUACKBACK_WIDGET_SECRET` on the API Worker after deployment approval. Follow [the Quackback setup and verification guide](docs/quackback.md). Without the secret, Ruthva uses its existing feedback form.
+
 Keep `TEST_EMAIL` out of remote variables and secrets. `.dev.vars` is local only. Confirm that all required secrets appear in `wrangler secret list`. Do not place secret values in committed configuration.
 
 ## Deploy the API and frontend
