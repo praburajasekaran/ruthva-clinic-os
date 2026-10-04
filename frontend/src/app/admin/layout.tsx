@@ -42,14 +42,12 @@ function AdminContent({ children }: { children: React.ReactNode }) {
             </span>
           </div>
           <div className="flex items-center gap-5 text-sm">
-            {user.clinic?.is_active && (
-              <Link
-                href="/dashboard"
-                className="text-emerald-700 hover:underline"
-              >
-                My clinic
-              </Link>
-            )}
+            <Link
+              href="/dashboard"
+              className="text-emerald-700 hover:underline"
+            >
+              Dashboard
+            </Link>
             <span className="text-gray-500">{user.email}</span>
             <button onClick={logout} className="text-gray-700 hover:underline">
               Sign out
