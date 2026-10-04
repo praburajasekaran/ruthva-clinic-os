@@ -10,8 +10,12 @@ const bindings = {
   JWT_SECRET: "local-feedback-test-auth-secret-at-least-32-characters",
   FRONTEND_URL: "https://clinic.test",
   CORS_ALLOWED_ORIGINS: "https://clinic.test",
+  DEFAULT_FROM_EMAIL: "noreply@clinic.test",
+  AWS_SES_REGION: "us-east-1",
+  AWS_ACCESS_KEY_ID: "AKIDEXAMPLE",
+  AWS_SECRET_ACCESS_KEY: "local-feedback-test-ses-secret",
 };
-let mf, db, options, staff;
+let mf, db, options, staff, signupCode;
 const configure = async (url, secret = widgetSecret) => {
   options.bindings = {
     ...bindings,
@@ -44,20 +48,42 @@ before(async () => {
     d1Databases: { DB: "feedback-test" },
     r2Buckets: ["UPLOADS"],
     bindings,
+    outboundService: async (request) => {
+      assert.equal(new URL(request.url).hostname, "email.us-east-1.amazonaws.com");
+      const body = await request.json();
+      assert.deepEqual(body.Destination.ToAddresses, ["staff@clinic.test"]);
+      signupCode = body.Content.Simple.Body.Html.Data.match(
+        /<strong>(\d{6})<\/strong>/,
+      )?.[1];
+      assert.ok(signupCode, "The signup email contains a verification code");
+      return Response.json({ MessageId: "feedback-test-signup" });
+    },
   };
   mf = new Miniflare(convertV4MiniflareOptions({ workers: [options] }));
   db = await mf.getD1Database("DB");
   for (const name of (await readdir("migrations")).sort()) {
     const sql = await readFile(`migrations/${name}`, "utf8");
     for (const statement of sql.match(
-      /CREATE TRIGGER[\s\S]*?END;|CREATE (?!TRIGGER)[\s\S]*?;/g,
+      /CREATE TRIGGER[\s\S]*?END;|(?:CREATE (?!TRIGGER)|ALTER TABLE )[\s\S]*?;/g,
     ) || [])
       await db.prepare(statement).run();
   }
+  const pending = await request("/api/v1/auth/initiate-signup/", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "staff@clinic.test",
+      first_name: "Sample",
+      last_name: "Doctor",
+      discipline: "siddha",
+    }),
+  });
+  assert.equal(pending.response.status, 201);
   const created = await request("/api/v1/auth/signup/", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
+      code: signupCode,
       clinic_name: "Feedback Test Clinic",
       subdomain: "feedback-test",
       discipline: "siddha",

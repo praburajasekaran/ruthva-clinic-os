@@ -1,0 +1,15 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "ses:SendEmail",
+      "Resource": "arn:aws:ses:us-east-1:356182278336:identity/ruthva.com",
+      "Condition": {
+        "StringEquals": {
+          "ses:FromAddress": "noreply@ruthva.com"
+        }
+      }
+    }
+  ]
+}

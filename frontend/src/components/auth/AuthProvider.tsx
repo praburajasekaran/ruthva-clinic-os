@@ -30,7 +30,9 @@ type AuthContextValue = AuthState & {
   verifyOTP: (data: VerifyOTPRequest) => Promise<void>;
   signup: (data: SignupRequest) => Promise<void>;
   initiateSignup: (data: InitiateSignupRequest) => Promise<void>;
-  verifySignupOTP: (data: VerifySignupOTPRequest) => Promise<{ discipline: string }>;
+  verifySignupOTP: (
+    data: VerifySignupOTPRequest,
+  ) => Promise<{ discipline: string; is_platform_admin: boolean }>;
   completeOnboarding: (data: OnboardingRequest) => Promise<void>;
   logout: () => void;
   refreshUser: () => Promise<void>;
@@ -92,13 +94,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [fetchUser],
   );
 
-  const requestOTP = useCallback(
-    async (data: RequestOTPRequest) => {
-      const res = await api.post("/auth/request-otp/", data);
-      return res.data as { is_demo?: boolean };
-    },
-    [],
-  );
+  const requestOTP = useCallback(async (data: RequestOTPRequest) => {
+    const res = await api.post("/auth/request-otp/", data);
+    return res.data as { is_demo?: boolean };
+  }, []);
 
   const verifyOTP = useCallback(
     async (data: VerifyOTPRequest) => {
@@ -108,7 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         refresh: res.data.refresh,
         clinic_slug: res.data.clinic_slug,
       });
-      router.push("/dashboard");
+      router.push(res.data.is_platform_admin ? "/admin/clinics" : "/dashboard");
     },
     [setTokens, router],
   );
@@ -126,12 +125,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [setTokens, router],
   );
 
-  const initiateSignup = useCallback(
-    async (data: InitiateSignupRequest) => {
-      await api.post("/auth/initiate-signup/", data);
-    },
-    [],
-  );
+  const initiateSignup = useCallback(async (data: InitiateSignupRequest) => {
+    await api.post("/auth/initiate-signup/", data);
+  }, []);
 
   const verifySignupOTP = useCallback(
     async (data: VerifySignupOTPRequest) => {
@@ -140,7 +136,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         access: res.data.access,
         refresh: res.data.refresh,
       });
-      return { discipline: res.data.discipline };
+      return {
+        discipline: res.data.discipline,
+        is_platform_admin: !!res.data.is_platform_admin,
+      };
     },
     [setTokens],
   );
@@ -168,7 +167,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthContext.Provider
-      value={{ ...state, requestOTP, verifyOTP, signup, initiateSignup, verifySignupOTP, completeOnboarding, logout, refreshUser: fetchUser, setTokens }}
+      value={{
+        ...state,
+        requestOTP,
+        verifyOTP,
+        signup,
+        initiateSignup,
+        verifySignupOTP,
+        completeOnboarding,
+        logout,
+        refreshUser: fetchUser,
+        setTokens,
+      }}
     >
       {children}
     </AuthContext.Provider>

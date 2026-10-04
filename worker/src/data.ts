@@ -18,6 +18,8 @@ export interface User extends Row {
   is_clinic_owner: number;
   is_active: number;
   password: string;
+  email_verified_at: string | null;
+  session_version: number;
 }
 export interface Env {
   DB: D1Database;
@@ -39,6 +41,7 @@ export interface Env {
   RUTHVA_API_URL?: string;
   RUTHVA_INTEGRATION_SECRET?: string;
   RUTHVA_CLINIC_SUBDOMAIN?: string;
+  RUTHVA_ADMIN_EMAIL?: string;
   TEST_EMAIL?: string;
 }
 export type App = {

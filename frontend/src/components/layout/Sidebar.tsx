@@ -13,6 +13,7 @@ import {
   Search,
   LogOut,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -46,8 +47,12 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   const { openSearch } = useShortcuts();
   const { user, logout } = useAuth();
   const [logoError, setLogoError] = useState(false);
-  const { data: followUpsData } = useApi<FollowUpsResponse>("/dashboard/follow-ups/?tab=all");
-  const { data: lowStockData } = useApi<Medicine[]>("/pharmacy/medicines/low-stock/");
+  const { data: followUpsData } = useApi<FollowUpsResponse>(
+    "/dashboard/follow-ups/?tab=all",
+  );
+  const { data: lowStockData } = useApi<Medicine[]>(
+    "/pharmacy/medicines/low-stock/",
+  );
   const triggerRef = useRef<HTMLElement | null>(null);
 
   const clinicName = user?.clinic?.name ?? "Clinic";
@@ -124,7 +129,18 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         </button>
 
         <nav className="space-y-1">
-          {navItems.map((item) => {
+          {[
+            ...navItems,
+            ...(user?.is_platform_admin
+              ? [
+                  {
+                    href: "/admin/clinics",
+                    label: "Ruthva admin",
+                    icon: ShieldCheck,
+                  },
+                ]
+              : []),
+          ].map((item) => {
             const active = isActive(item.href);
             return (
               <Link

@@ -11,6 +11,8 @@ export type User = {
   is_clinic_owner: boolean;
   clinic: ClinicInfo | null;
   onboarding_complete: boolean;
+  readonly email_verified_at: string | null;
+  readonly is_platform_admin: boolean;
 };
 
 export type ClinicPlan = "free" | "pro";
@@ -68,6 +70,7 @@ export type VerifyOTPRequest = {
 };
 
 export type SignupRequest = {
+  code: string;
   clinic_name: string;
   subdomain: string;
   discipline: Discipline;
@@ -97,6 +100,25 @@ export type VerifySignupOTPRequest = {
 export type VerifySignupOTPResponse = AuthTokens & {
   discipline: Discipline;
   onboarding_required: boolean;
+  is_platform_admin: boolean;
+};
+
+export type ClinicAccount = {
+  id: number;
+  name: string;
+  subdomain: string;
+  discipline: Discipline;
+  is_active: boolean;
+  status: "active" | "inactive" | "pending_verification";
+  created_at: string;
+  member_count: number;
+  can_activate: boolean;
+  owner: {
+    id: number;
+    name: string;
+    email: string;
+    email_verified_at: string | null;
+  } | null;
 };
 
 export type OnboardingRequest = {
@@ -215,11 +237,7 @@ export type PatientFormState = {
 
 // ── Discipline ──
 export type Discipline =
-  | "siddha"
-  | "ayurveda"
-  | "yoga_naturopathy"
-  | "unani"
-  | "homeopathy";
+  "siddha" | "ayurveda" | "yoga_naturopathy" | "unani" | "homeopathy";
 
 // ── Consultation ──
 export type DiagnosticData = Record<string, unknown>;
@@ -411,9 +429,7 @@ export type DoctorActionItem = {
 };
 
 export type FollowUpQueueItem =
-  | LegacyFollowUpItem
-  | TherapistWorklistItem
-  | DoctorActionItem;
+  LegacyFollowUpItem | TherapistWorklistItem | DoctorActionItem;
 
 export type FollowUpsResponse = {
   items: FollowUpQueueItem[];

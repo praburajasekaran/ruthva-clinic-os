@@ -152,7 +152,7 @@ export default function SignupPage() {
       });
       // Store discipline for onboarding
       sessionStorage.setItem("signup_discipline", result.discipline);
-      router.push("/onboarding");
+      router.push(result.is_platform_admin ? "/admin/clinics" : "/onboarding");
     } catch (err: unknown) {
       const msg =
         err && typeof err === "object" && "response" in err

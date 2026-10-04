@@ -1,11 +1,25 @@
 # Deploy Ruthva on Cloudflare
 
-Run these steps from the repository root after deployment approval. The first deployment uses an empty D1 database and synthetic clinic data. Move live records only after staging checks pass.
+The initial staging deployment is live at [ruthva-clinic.prabu-b92.workers.dev](https://ruthva-clinic.prabu-b92.workers.dev). Its resources and results are recorded in [Cloudflare migration verification](docs/cloudflare-verification.md).
+
+Run these steps from the repository root for later deployments and the live data cutover. Reuse the existing staging resources and secrets. Staging contains synthetic records. Move live records only after staging checks pass.
+
+Existing production accounts have not been imported into staging. To test email delivery, register a staging account at [Register your clinic](https://ruthva-clinic.prabu-b92.workers.dev/signup) first. Login sends a code only for an active registered account.
+
+## Use Ruthva admin controls
+
+Register `ekalaivan@gmail.com` on staging and verify the emailed code. That verified account opens [Clinic accounts](https://ruthva-clinic.prabu-b92.workers.dev/admin/clinics). Admin access does not require clinic onboarding.
+
+Search for the clinic and select **Deactivate** or **Activate**. Confirm the change in the dialog. Deactivation blocks the owner and all staff, revokes their sessions, and retains clinic records. Reactivation requires a verified active owner and a new staff login. The admin can restore their own clinic while it is inactive.
+
+The private API Worker secret `RUTHVA_ADMIN_EMAIL` selects the admin identity. Clinic role `admin` does not grant Ruthva admin access. Verified trusted superusers also retain platform access. Keep this identity out of public frontend configuration.
+
+Signup creates an account only after it consumes a valid email code. The legacy password signup endpoint also requires that code. Existing imported accounts must verify through email OTP login before password login, SSO, or refresh can succeed. Changing an account email clears proof and revokes its sessions. Demo access remains read-only.
 
 ## Prepare the account
 
 1. Use Cloudflare account `b9280202abca9ff6d2865379031ddb31`. Both Wrangler files select that account.
-2. Select the Workers plan for the generated bundle sizes and expected traffic. Amazon SES replaces Cloudflare Email Service.
+2. Use Workers Paid. The approved plan costs $5 per month plus usage. The API requires its configured `limits.cpu_ms=30000` to complete password hashing. Amazon SES replaces Cloudflare Email Service.
 3. Use the SES region with your approved sending quota. Confirm the sender identity in that region and production access for recipient addresses.
 4. Enable Browser Rendering for the account.
 5. Choose the public frontend HTTPS origin. Use its assigned `workers.dev` address for initial verification, or configure a Cloudflare custom domain.
@@ -28,11 +42,11 @@ rtk npm --prefix worker exec -- wrangler d1 create ruthva-clinic --config worker
 rtk npm --prefix worker exec -- wrangler r2 bucket create ruthva-clinic-uploads --config worker/wrangler.jsonc
 ```
 
-Copy the returned D1 ID into `worker/wrangler.jsonc`. Keep the `DB` binding and `migrations_dir` intact. The R2 bucket remains private. The API exposes clinic logos publicly and requires clinic authentication for feedback screenshots.
+For a new environment, copy the returned D1 ID into `worker/wrangler.jsonc`. The existing staging ID is `26a79231-b999-4e24-b0c9-9af3f221b63c`. Keep the `DB` binding and `migrations_dir` intact. The R2 bucket remains private. The API exposes clinic logos publicly and requires clinic authentication for feedback screenshots.
 
 Set `FRONTEND_URL` and `CORS_ALLOWED_ORIGINS` in `worker/wrangler.jsonc` to the public HTTPS origin. Use a comma-separated list for additional allowed origins. Set `DEFAULT_FROM_EMAIL` to the verified address.
 
-Set `AWS_SES_REGION` to the SES region with your quota and verified identity. The configured region is `us-east-1`, where `ruthva.com` is verified. The account dashboard showed a daily quota of 50,000 messages and a send rate of 14 messages per second on 4 October 2026. SES quotas apply per region. The application does not hardcode a daily limit or assume that the quota is unused.
+Set `AWS_SES_REGION` to the SES region with your quota and verified identity. The configured region is `us-east-1`, and the sender is `noreply@ruthva.com`. On 4 October 2026, the SES console confirmed that `ruthva.com` is verified, with DKIM enabled. It also confirmed a quota of 50,000 emails per 24-hour period and a maximum send rate of 14 emails per second. SES quotas apply per region. The application does not hardcode a daily limit or assume that the quota is unused.
 
 Set `triggers.crons` to `[]` during staging and data cutover. Restore `["*/15 * * * *"]` after the live switch. This prevents reminder emails before cutover.
 
@@ -43,9 +57,12 @@ rtk npm --prefix worker exec -- wrangler secret put JWT_SECRET --config worker/w
 rtk npm --prefix worker exec -- wrangler secret put CRON_SECRET --config worker/wrangler.jsonc
 rtk npm --prefix worker exec -- wrangler secret put AWS_ACCESS_KEY_ID --config worker/wrangler.jsonc
 rtk npm --prefix worker exec -- wrangler secret put AWS_SECRET_ACCESS_KEY --config worker/wrangler.jsonc
+rtk npm --prefix worker exec -- wrangler secret put RUTHVA_ADMIN_EMAIL --config worker/wrangler.jsonc
 ```
 
 Use IAM credentials with permission for `ses:SendEmail` on the sender identity. SES SMTP credentials do not work with the HTTPS API. For temporary AWS credentials, also store `AWS_SESSION_TOKEN` with `wrangler secret put` and renew the credentials before expiry.
+
+The dedicated IAM user `ruthva-cloudflare-ses` has console access disabled. Its inline policy `RuthvaCloudflareSendEmail` matches [worker/ses-policy.json](worker/ses-policy.json). The policy permits only `ses:SendEmail` through the verified `ruthva.com` identity in `us-east-1`, with `ses:FromAddress` restricted to `noreply@ruthva.com`. Its access key is configured in the API Worker secrets.
 
 `worker/src/email.ts` signs SESv2 HTTPS requests with AWS SigV4. It sends UTF-8 HTML for OTPs, invitations, and reminders. It has a 10-second timeout and does not automatically retry SendEmail. SES throttling and rejected deliveries propagate to the caller. The D1 reminder outbox retries failed reminders on later scheduled runs.
 
@@ -83,7 +100,9 @@ Leave `NEXT_PUBLIC_API_URL` unset during the frontend build. Production uses `/a
 9. Check the Ruthva webhook and SSO exchange against the real upstream service if those integrations are enabled.
 10. Exercise one synthetic reminder through `/api/cron/` with `X-Cron-Secret`. Confirm that the second request does not send a second reminder.
 
-Do not switch the live domain until SES email delivery and Browser Rendering pass. Local tests verify signed SES requests against a mock service and check PDF HTML. They do not verify SES identity activation, actual quota, or inbox delivery.
+The deployed API has passed SES invitation, OTP, and reminder checks against `success@simulator.amazonses.com`. A repeated reminder sends nothing. The deployed frontend also accepts the OTP request and displays the verification-code form. Browser Rendering has produced an authenticated PDF with legible Tamil text and an embedded font.
+
+Before the live domain switch, verify delivery to a controlled human inbox and complete the production data checks below. Simulator acceptance does not verify inbox placement. Local tests verify request signatures and failure handling against a mock service.
 
 ## Move existing records
 
