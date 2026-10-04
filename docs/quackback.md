@@ -37,6 +37,14 @@ Product feedback is visible according to the board's access settings. Staff must
 
 Closing the panel removes the iframe and token from panel state. Staff or clinic changes remount the panel. A new attempt obtains a fresh signed token. API requests have a ten-second timeout. Widget identity has a fifteen-second timeout. Both failure paths expose the Ruthva form.
 
+## Hosted verification
+
+On 4 October 2026, the deployed widget identified a verified staff account in its test clinic. The widget displayed the staff email and opened the feedback entry view with an empty ideas list. No feedback post was submitted.
+
+API version `d2fdf099-78ef-4c33-ad6f-be57ad9d9109` and frontend version `1362bff2-0a88-47a0-9e74-7d7fb348f339` contain both Quackback and the clinic activation controls from [PR 108](https://github.com/praburajasekaran/ruthva-clinic-os/pull/108). [PR 106](https://github.com/praburajasekaran/ruthva-clinic-os/pull/106) is stacked on that branch.
+
+Later deployments must include both changes and retain `QUACKBACK_URL` and `QUACKBACK_WIDGET_SECRET`. A deployment from a branch without the integration replaces the frontend and can omit the workspace URL even when the secret remains stored.
+
 ## Verify locally
 
 Run `rtk npm run check`, `rtk npm test` and `rtk npm run build`. The API runtime tests verify signing, authentication, clinic isolation, demo fallback and URL restrictions.
