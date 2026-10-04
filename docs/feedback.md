@@ -21,4 +21,6 @@ The runtime tests exercise native submission, exact screenshot bytes, platform-a
 
 ## Retired external feedback
 
-Ruthva no longer loads the Quackback widget or creates its signed identity tokens. Its URL and signing-key bindings were removed from application configuration. The hosted workspace at `https://ruthva-clinic-os.quackback.io/` and its existing posts are retained. Those posts are separate from the D1 inbox and are not automatically imported.
+Ruthva no longer loads the Quackback widget or creates its signed identity tokens. Its URL and signing-key bindings were removed from application configuration. The unused signing secret was removed from the API Worker.
+
+The existing **Registration form** feature request was copied once into the D1 inbox with its original title, description, author, clinic, and source link. Its received time records the import. The hosted workspace at `https://ruthva-clinic-os.quackback.io/` retains the original post and its vote. New hosted posts are not synchronized into Ruthva.
