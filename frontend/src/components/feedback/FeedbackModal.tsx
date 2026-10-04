@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   AlertTriangle,
@@ -22,13 +23,22 @@ type FeedbackModalProps = {
   onClose: () => void;
 };
 
-const CATEGORIES: { value: FeedbackCategory; label: string; icon: typeof Bug }[] = [
+const CATEGORIES: {
+  value: FeedbackCategory;
+  label: string;
+  icon: typeof Bug;
+}[] = [
   { value: "bug", label: "Bug Report", icon: Bug },
   { value: "feature", label: "Feature Request", icon: Lightbulb },
 ];
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
-const ALLOWED_TYPES = new Set(["image/png", "image/jpeg", "image/gif", "image/webp"]);
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = new Set([
+  "image/png",
+  "image/jpeg",
+  "image/gif",
+  "image/webp",
+]);
 
 export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const pathname = usePathname();
@@ -38,6 +48,17 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [screenshot, setScreenshot] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState("");
+  useEffect(() => {
+    if (!screenshot) {
+      setPreviewUrl("");
+      return;
+    }
+    const url = URL.createObjectURL(screenshot);
+    setPreviewUrl(url);
+    return () => URL.revokeObjectURL(url);
+  }, [screenshot]);
+
   const [fileError, setFileError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
@@ -109,7 +130,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
       const axiosErr = err as { response?: { data?: { detail?: string } } };
       setError(
         axiosErr?.response?.data?.detail ??
-        "Something went wrong. Please try again."
+          "Something went wrong. Please try again.",
       );
     } finally {
       setIsLoading(false);
@@ -130,9 +151,17 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
 
   if (success) {
     return (
-      <Modal open={open} onClose={handleClose} title="Feedback Submitted" size="sm">
+      <Modal
+        open={open}
+        onClose={handleClose}
+        title="Feedback Submitted"
+        size="sm"
+      >
         <div className="flex flex-col items-center gap-3 py-4">
-          <CheckCircle aria-hidden="true" className="h-12 w-12 text-emerald-500" />
+          <CheckCircle
+            aria-hidden="true"
+            className="h-12 w-12 text-emerald-500"
+          />
           <p className="text-sm text-gray-600">
             Thank you! Your feedback has been submitted.
           </p>
@@ -143,8 +172,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
 
   return (
     <Modal open={open} onClose={handleClose} title="Send Feedback" size="md">
-      <div className="space-y-4">
-        {/* Category selector */}
+      <div className="max-h-[70dvh] space-y-4 overflow-y-auto">
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">
             Category
@@ -155,6 +183,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 key={cat.value}
                 type="button"
                 onClick={() => setCategory(cat.value)}
+                aria-pressed={category === cat.value}
                 className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
                   category === cat.value
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
@@ -168,7 +197,6 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           </div>
         </div>
 
-        {/* Title */}
         <div>
           <label
             htmlFor="feedback-title"
@@ -191,7 +219,6 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           />
         </div>
 
-        {/* Description */}
         <div>
           <label
             htmlFor="feedback-description"
@@ -209,19 +236,22 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           />
         </div>
 
-        {/* Screenshot upload */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-gray-700">
             Screenshot (optional)
           </label>
           {screenshot ? (
             <div className="flex items-center gap-3 rounded-lg border border-gray-200 p-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={URL.createObjectURL(screenshot)}
-                alt="Screenshot preview"
-                className="h-16 w-16 rounded object-cover"
-              />
+              {previewUrl && (
+                <Image
+                  unoptimized
+                  width={64}
+                  height={64}
+                  src={previewUrl}
+                  alt="Screenshot preview"
+                  className="h-16 w-16 rounded object-cover"
+                />
+              )}
               <span className="flex-1 truncate text-sm text-gray-600">
                 {screenshot.name}
               </span>
@@ -246,7 +276,10 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
               >
                 {isCapturing ? (
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Loader2
+                    className="h-4 w-4 animate-spin"
+                    aria-hidden="true"
+                  />
                 ) : (
                   <Camera className="h-4 w-4" aria-hidden="true" />
                 )}
@@ -277,7 +310,6 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           </p>
         </div>
 
-        {/* Error */}
         {error && (
           <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
             <AlertTriangle aria-hidden="true" className="h-4 w-4 shrink-0" />
@@ -285,7 +317,6 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           </div>
         )}
 
-        {/* Actions */}
         <div className="flex justify-end gap-3 pt-1">
           <Button variant="secondary" size="sm" onClick={handleClose}>
             Cancel

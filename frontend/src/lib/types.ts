@@ -660,6 +660,15 @@ export type FeedbackResponse = {
   status: string;
 };
 
-export type FeedbackWidgetSession =
-  | { provider: "legacy" }
-  | { provider: "quackback"; instance_url: string; sso_token: string };
+export type AdminFeedback = {
+  id: number;
+  category: FeedbackCategory;
+  title: string;
+  description: string;
+  created_at: string;
+  page_url: string;
+  user_role: UserRole;
+  screenshot_available: boolean;
+  clinic: { id: number; name: string };
+  submitter: { name: string; email: string } | null;
+};

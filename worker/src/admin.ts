@@ -48,6 +48,89 @@ admin.use("*", async (c, next) => {
   );
   await next();
 });
+admin.get("/feedback/", async (c) => {
+  const category = c.req.query("category") ?? "all",
+    search = (c.req.query("search") ?? "").trim(),
+    page = Number(c.req.query("page") ?? 1);
+  check(
+    ["all", "bug", "feature"].includes(category),
+    "Invalid feedback category.",
+  );
+  check(search.length <= 254, "Search is too long.");
+  check(
+    Number.isSafeInteger(page) && page > 0 && page <= 100000,
+    "Invalid page.",
+  );
+  const where = ["1=1"],
+    values: unknown[] = [];
+  if (category !== "all") {
+    where.push("f.category=?");
+    values.push(category);
+  }
+  if (search) {
+    where.push(
+      "(f.title LIKE ? ESCAPE '\\' OR f.description LIKE ? ESCAPE '\\' OR c.name LIKE ? ESCAPE '\\' OR u.email LIKE ? ESCAPE '\\')",
+    );
+    const term = `%${search.replace(/[\\%_]/g, "\\$&")}%`;
+    values.push(term, term, term, term);
+  }
+  const from = `FROM feedback_feedback f JOIN clinics_clinic c ON c.id=f.clinic_id LEFT JOIN users_user u ON u.id=f.user_id WHERE ${where.join(" AND ")}`,
+    count = await one(dbOf(c), `SELECT count(*) AS total ${from}`, values),
+    results = await all(
+      dbOf(c),
+      `SELECT f.id,f.category,f.title,f.description,f.created_at,f.page_url,f.user_role,f.screenshot_url,c.id AS clinic_id,c.name AS clinic_name,u.id AS submitter_id,u.first_name,u.last_name,u.email ${from} ORDER BY f.created_at DESC,f.id DESC LIMIT 25 OFFSET ?`,
+      [...values, (page - 1) * 25],
+    );
+  return c.json({
+    count: num(count!, "total"),
+    page,
+    results: results.map((row) => ({
+      id: row.id,
+      category: row.category,
+      title: row.title,
+      description: row.description,
+      created_at: row.created_at,
+      page_url: row.page_url,
+      user_role: row.user_role,
+      screenshot_available: !!row.screenshot_url,
+      clinic: { id: row.clinic_id, name: row.clinic_name },
+      submitter: row.submitter_id
+        ? {
+            name: `${str(row, "first_name")} ${str(row, "last_name")}`.trim(),
+            email: row.email,
+          }
+        : null,
+    })),
+  });
+});
+admin.get("/feedback/:pk/screenshot/", async (c) => {
+  const feedback = await get(dbOf(c), "feedback_feedback", c.req.param("pk"));
+  let key = "";
+  try {
+    key = new URL(str(feedback, "screenshot_url")).pathname.slice(
+      "/api/v1/media/".length,
+    );
+  } catch {
+    check(false, "Screenshot not found.", 404);
+  }
+  check(
+    new RegExp(
+      `^feedback/${num(feedback, "clinic_id")}/[a-f0-9-]+\\.(png|jpg|gif|webp)$`,
+    ).test(key),
+    "Screenshot not found.",
+    404,
+  );
+  const object = await c.env.UPLOADS.get(key);
+  check(object, "Screenshot not found.", 404);
+  return new Response(object.body, {
+    headers: {
+      "Content-Type":
+        object.httpMetadata?.contentType || "application/octet-stream",
+      "X-Content-Type-Options": "nosniff",
+      ETag: object.httpEtag,
+    },
+  });
+});
 admin.get("/clinics/", async (c) => {
   const search = (c.req.query("search") ?? "").trim(),
     status = c.req.query("status") ?? "all",

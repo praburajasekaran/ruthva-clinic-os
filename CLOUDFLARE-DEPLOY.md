@@ -12,6 +12,8 @@ Register `ekalaivan@gmail.com` on staging and verify the emailed code. That veri
 
 Search for the clinic and select **Deactivate** or **Activate**. Confirm the change in the dialog. Deactivation blocks the owner and all staff, revokes their sessions, and retains clinic records. Reactivation requires a verified active owner and a new staff login. The admin can restore their own clinic while it is inactive.
 
+Select **Feedback** in the admin navigation to review bug reports and feature requests. Filter by category or search the title, description, clinic, or staff email. Select **View details** to read the request and view its private screenshot. Follow [the native feedback guide](docs/feedback.md) for verification.
+
 The private API Worker secret `RUTHVA_ADMIN_EMAIL` selects the admin identity. Clinic role `admin` does not grant Ruthva admin access. Verified trusted superusers also retain platform access. Keep this identity out of public frontend configuration.
 
 Signup creates an account only after it consumes a valid email code. The legacy password signup endpoint also requires that code. Existing imported accounts must verify through email OTP login before password login, SSO, or refresh can succeed. Changing an account email clears proof and revokes its sessions. Demo access remains read-only.
@@ -70,7 +72,7 @@ For Ruthva journeys and SSO, set `RUTHVA_API_URL` to the Ruthva HTTPS base URL. 
 
 For GitHub feedback, set `GITHUB_FEEDBACK_REPO` and store `GITHUB_TOKEN` as a secret. Without those values, feedback stays in D1 with status `failed` for later review.
 
-For hosted Quackback product feedback, `QUACKBACK_URL` selects `https://ruthva-clinic-os.quackback.io`. Store the workspace's existing `QUACKBACK_WIDGET_SECRET` on the API Worker after deployment approval. Follow [the Quackback setup and verification guide](docs/quackback.md). Without the secret, Ruthva uses its existing feedback form.
+Feedback uses the Ruthva form and the existing D1 and R2 bindings. It requires no external workspace or signing secret. The platform admin can read screenshots through the authenticated admin endpoint. Ordinary staff can read screenshots only for their own active clinic.
 
 Keep `TEST_EMAIL` out of remote variables and secrets. `.dev.vars` is local only. Confirm that all required secrets appear in `wrangler secret list`. Do not place secret values in committed configuration.
 
