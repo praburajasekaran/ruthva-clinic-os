@@ -91,7 +91,11 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Task 4: Always-rendered live region for step transition announcements */}
         <div aria-live="polite" className="sr-only" aria-atomic="true">
-          {step === "otp" ? "A verification code has been sent to your email." : ""}
+          {step === "otp"
+            ? isDemo
+              ? "Demo mode. Use code 123456."
+              : "If your email is registered, a login code has been sent."
+            : ""}
         </div>
 
         <div className="mb-8 text-center">
@@ -115,7 +119,7 @@ export default function LoginPage() {
             <>
               <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
               <p className="mt-1 text-sm text-gray-500">
-                Sign in to your clinic dashboard
+                Sign in with your registered email
               </p>
             </>
           ) : isDemo ? (
@@ -130,7 +134,7 @@ export default function LoginPage() {
             <>
               <h1 className="text-2xl font-bold text-gray-900">Check your email</h1>
               <p className="mt-1 text-sm text-gray-500">
-                We sent a code to <strong>{email}</strong>
+                If <strong>{email}</strong> is registered, we sent a login code.
               </p>
             </>
           )}
