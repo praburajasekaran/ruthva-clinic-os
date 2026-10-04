@@ -70,6 +70,7 @@ class DataMigrationTest(unittest.TestCase):
             db.executescript((output / "data.sql").read_text())
             self.assertEqual(db.execute("SELECT name,record_id FROM patients_patient WHERE id=21").fetchone(), ("தமிழ் O'Connor", "PAT-2024-0021"))
             self.assertEqual(db.execute("SELECT password FROM users_user WHERE id=11").fetchone()[0], PASSWORD)
+            self.assertEqual(db.execute("SELECT email_verified_at,session_version FROM users_user WHERE id=11").fetchone(), (None, 0))
             self.assertEqual(db.execute("SELECT created_at FROM patients_patient WHERE id=21").fetchone()[0], "2026-10-03T04:30:00.123456Z")
             self.assertEqual(db.execute("SELECT active_patient_limit FROM clinics_clinic WHERE id=1").fetchone()[0], 1)
             self.assertEqual(db.execute("SELECT unit_price FROM pharmacy_medicine WHERE id=51").fetchone()[0], 12.3)

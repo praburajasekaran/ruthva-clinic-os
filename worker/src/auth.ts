@@ -69,6 +69,18 @@ export async function tokens(
   user: User,
   clinic: Clinic | null,
 ): Promise<Row> {
+  check(user.is_active, "Account is inactive.", 401);
+  check(
+    user.email_verified_at ||
+      (demoUser(user) && clinic && flag(clinic, "is_demo")),
+    "Verify your email before signing in.",
+    403,
+  );
+  check(
+    !clinic || clinic.is_active || platformAdmin(env, user),
+    "Clinic account is inactive. Contact Ruthva support.",
+    403,
+  );
   const create = (type: string, ttl: number) =>
     new SignJWT({
       token_type: type,
@@ -76,6 +88,7 @@ export async function tokens(
       clinic_id: user.clinic_id,
       clinic_slug: clinic?.subdomain ?? null,
       role: user.role,
+      session_version: user.session_version ?? 0,
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
@@ -109,12 +122,32 @@ export async function tokenUser(
   );
   const user = (await get(db, "users_user", payload.user_id)) as User;
   check(
-    user.is_active && user.clinic_id === payload.clinic_id,
+    user.is_active &&
+      user.clinic_id === payload.clinic_id &&
+      (payload.session_version ?? 0) === user.session_version,
     "Account or clinic access has changed.",
     401,
   );
+  check(
+    user.email_verified_at || demoUser(user),
+    "Verify your email before signing in.",
+    401,
+  );
+  if (demoUser(user)) {
+    const clinic = await get(db, "clinics_clinic", user.clinic_id);
+    check(flag(clinic, "is_demo"), "Invalid demo account.", 401);
+  }
   return user;
 }
+const demoUser = (user: User) =>
+  str(user, "username") === "demo" && str(user, "email") === "demo@ruthva.com";
+export const platformAdmin = (env: Env, user: User): boolean =>
+  !!user.is_active &&
+  !!user.email_verified_at &&
+  (flag(user, "is_superuser") ||
+    (!!env.RUTHVA_ADMIN_EMAIL &&
+      str(user, "email").toLowerCase() ===
+        env.RUTHVA_ADMIN_EMAIL.trim().toLowerCase()));
 export async function throttle(
   c: Ctx,
   key: string,
@@ -164,10 +197,12 @@ function code() {
   const bytes = crypto.getRandomValues(new Uint32Array(1));
   return String(bytes[0] % 1000000).padStart(6, "0");
 }
-const userOut = (user: Row, clinic: Row | null) => ({
+const userOut = (env: Env, user: User, clinic: Row | null) => ({
   ...output("users_user", user, "UserSerializer"),
   clinic: clinic ? output("clinics_clinic", clinic, "ClinicSerializer") : null,
-  onboarding_complete: flag(user, "is_superuser") || !!user.clinic_id,
+  email_verified_at: user.email_verified_at,
+  is_platform_admin: platformAdmin(env, user),
+  onboarding_complete: platformAdmin(env, user) || !!user.clinic_id,
 });
 const email = (body: Row) => {
   const value = str(body, "email").trim().toLowerCase();
@@ -272,7 +307,6 @@ auth.post("/token/", async (c) => {
   const clinic = user.clinic_id
     ? ((await get(dbOf(c), "clinics_clinic", user.clinic_id)) as Clinic)
     : null;
-  check(!clinic || clinic.is_active, "Clinic is inactive.", 403);
   return c.json(await tokens(c.env, user, clinic));
 });
 auth.post("/token/refresh/", async (c) => {
@@ -281,7 +315,6 @@ auth.post("/token/refresh/", async (c) => {
   const clinic = user.clinic_id
     ? ((await get(dbOf(c), "clinics_clinic", user.clinic_id)) as Clinic)
     : null;
-  check(!clinic || clinic.is_active, "Clinic is inactive.", 403);
   return c.json(await tokens(c.env, user, clinic));
 });
 auth.post("/sso/exchange/", async (c) => {
@@ -332,11 +365,7 @@ auth.post("/sso/exchange/", async (c) => {
     "clinics_clinic",
     user.clinic_id,
   )) as Clinic;
-  check(
-    clinic.is_active && !flag(clinic, "is_demo"),
-    "Clinic is inactive.",
-    403,
-  );
+  check(!flag(clinic, "is_demo"), "Demo accounts cannot use SSO.", 403);
   return c.json(await tokens(c.env, user, clinic));
 });
 auth.post("/request-otp/", async (c) => {
@@ -421,13 +450,21 @@ auth.post("/verify-otp/", async (c) => {
     [to],
   )) as User | null;
   check(user, "Account is inactive.", 401);
-  const clinic = user.clinic_id
-    ? ((await get(dbOf(c), "clinics_clinic", user.clinic_id)) as Clinic)
+  const verified = demoUser(user)
+    ? user
+    : await stmt(
+        dbOf(c),
+        "UPDATE users_user SET session_version=session_version+CASE WHEN email_verified_at IS NULL THEN 1 ELSE 0 END,email_verified_at=coalesce(email_verified_at,?) WHERE id=? AND lower(email)=? AND is_active=1 RETURNING *",
+        [now(), user.id, to],
+      ).first<User>();
+  check(verified, "Account has changed. Request a new code.", 401);
+  const clinic = verified.clinic_id
+    ? ((await get(dbOf(c), "clinics_clinic", verified.clinic_id)) as Clinic)
     : null;
-  check(!clinic || clinic.is_active, "Clinic is inactive.", 403);
   return c.json({
-    ...(await tokens(c.env, user, clinic)),
-    onboarding_complete: !!user.clinic_id,
+    ...(await tokens(c.env, verified, clinic)),
+    is_platform_admin: platformAdmin(c.env, verified),
+    onboarding_complete: platformAdmin(c.env, verified) || !!verified.clinic_id,
   });
 });
 auth.post("/initiate-signup/", async (c) => {
@@ -473,9 +510,11 @@ auth.post("/initiate-signup/", async (c) => {
   }
   return c.json({ detail: "Verification code sent.", email: to }, 201);
 });
-auth.post("/verify-signup-otp/", async (c) => {
-  const body = record(await c.req.json()),
-    to = email(body);
+async function verifiedSignup(
+  c: Ctx,
+  to: string,
+  supplied: string,
+): Promise<Row> {
   await throttle(c, `signup-verify:${ip(c)}`, 30);
   const pending = await stmt(
     dbOf(c),
@@ -496,10 +535,16 @@ auth.post("/verify-signup-otp/", async (c) => {
     pending &&
       constantEqual(
         str(pending, "otp_code_hash"),
-        await otpHash(c.env, str(body, "code")),
+        await otpHash(c.env, supplied),
       ),
     "Invalid or expired code.",
   );
+  return pending;
+}
+auth.post("/verify-signup-otp/", async (c) => {
+  const body = record(await c.req.json()),
+    to = email(body),
+    pending = await verifiedSignup(c, to, str(body, "code"));
   const uid = id();
   const created = insert(dbOf(c), "users_user", {
     id: uid,
@@ -521,13 +566,16 @@ auth.post("/verify-signup-otp/", async (c) => {
     ),
     stmt(dbOf(c), "DELETE FROM users_pendingsignup WHERE id=?", [pending.id]),
     created.statement,
+    update(dbOf(c), "users_user", uid, { email_verified_at: now() }),
   ]);
+  const verified = (await get(dbOf(c), "users_user", uid)) as User;
   return c.json(
     {
-      ...(await tokens(c.env, created.row as User, null)),
-      user: output("users_user", created.row, "UserSerializer"),
+      ...(await tokens(c.env, verified, null)),
+      user: userOut(c.env, verified, null),
       discipline: pending.discipline,
-      onboarding_complete: false,
+      is_platform_admin: platformAdmin(c.env, verified),
+      onboarding_complete: platformAdmin(c.env, verified),
     },
     201,
   );
@@ -536,6 +584,12 @@ auth.post("/signup/", async (c) => {
   await throttle(c, `signup:${ip(c)}`, 10);
   const body = record(await c.req.json()),
     slug = str(body, "subdomain");
+  check(
+    str(body, "code"),
+    "Email verification is required. Request a signup code first.",
+    403,
+  );
+  const pending = await verifiedSignup(c, email(body), str(body, "code"));
   check(
     str(body, "username") !== "demo" && email(body) !== "demo@ruthva.com",
     "This account is reserved for demo mode.",
@@ -570,12 +624,23 @@ auth.post("/signup/", async (c) => {
     user.row.username && user.row.first_name,
     "Username and first name are required.",
   );
-  await dbOf(c).batch([clinic.statement, user.statement]);
+  await dbOf(c).batch([
+    assertion(
+      dbOf(c),
+      "EXISTS(SELECT 1 FROM users_pendingsignup WHERE id=? AND otp_code_hash=?)",
+      [pending.id, pending.otp_code_hash],
+    ),
+    stmt(dbOf(c), "DELETE FROM users_pendingsignup WHERE id=?", [pending.id]),
+    clinic.statement,
+    user.statement,
+    update(dbOf(c), "users_user", user.row.id, { email_verified_at: now() }),
+  ]);
+  const verified = (await get(dbOf(c), "users_user", user.row.id)) as User;
   return c.json(
     {
-      ...(await tokens(c.env, user.row as User, clinic.row as Clinic)),
+      ...(await tokens(c.env, verified, clinic.row as Clinic)),
       clinic: output("clinics_clinic", clinic.row, "ClinicSerializer"),
-      user: output("users_user", user.row, "UserSerializer"),
+      user: userOut(c.env, verified, clinic.row),
     },
     201,
   );
@@ -659,7 +724,7 @@ auth.post("/complete-onboarding/", async (c) => {
   );
 });
 auth.get("/me/", (c) =>
-  c.json(userOut(c.get("user"), c.get("clinic") ?? null)),
+  c.json(userOut(c.env, c.get("user"), c.get("clinic") ?? null)),
 );
 auth.patch("/me/update/", async (c) => {
   const body = record(await c.req.json()),
@@ -682,9 +747,37 @@ auth.patch("/me/update/", async (c) => {
     );
     data.password = passwordHash(password(body.new_password));
   }
-  await update(dbOf(c), "users_user", user.id, data).run();
+  let emailChanged = false;
+  if (data.email !== undefined) {
+    data.email = email(data);
+    emailChanged = data.email !== str(user, "email").toLowerCase();
+    if (emailChanged) {
+      data.email_verified_at = null;
+    }
+  }
+  await dbOf(c).batch([
+    assertion(
+      dbOf(c),
+      "EXISTS(SELECT 1 FROM users_user WHERE id=? AND session_version=? AND email=? AND is_active=1)",
+      [user.id, user.session_version, user.email],
+    ),
+    update(dbOf(c), "users_user", user.id, data),
+    ...(emailChanged
+      ? [
+          stmt(
+            dbOf(c),
+            "UPDATE users_user SET session_version=session_version+1 WHERE id=?",
+            [user.id],
+          ),
+        ]
+      : []),
+  ]);
   return c.json(
-    userOut(await get(dbOf(c), "users_user", user.id), c.get("clinic") ?? null),
+    userOut(
+      c.env,
+      (await get(dbOf(c), "users_user", user.id)) as User,
+      c.get("clinic") ?? null,
+    ),
   );
 });
 auth.patch("/clinic/update/", async (c) => {

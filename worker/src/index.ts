@@ -3,7 +3,8 @@ import { cors } from "hono/cors";
 import { bodyLimit } from "hono/body-limit";
 import { ApiError, check, flag, get, str } from "./data";
 import type { App, Clinic } from "./data";
-import { auth, escape, tokenUser } from "./auth";
+import { auth, escape, platformAdmin, tokenUser } from "./auth";
+import { admin } from "./admin";
 import { clinical } from "./clinical";
 import { team, invite } from "./team";
 import { treatments } from "./treatments";
@@ -72,13 +73,22 @@ app.use("*", async (c, next) => {
   );
   const user = await tokenUser(c.env, c.get("db"), header.slice(7));
   c.set("user", user);
+  if (c.req.path.startsWith("/api/v1/admin/")) {
+    check(platformAdmin(c.env, user), "Ruthva admin access is required.", 403);
+    return next();
+  }
   if (user.clinic_id) {
     const clinic = (await get(
       c.get("db"),
       "clinics_clinic",
       user.clinic_id,
     )) as Clinic;
-    check(clinic.is_active, "Clinic is inactive.", 403);
+    check(
+      clinic.is_active ||
+        (c.req.path === "/api/v1/auth/me/" && platformAdmin(c.env, user)),
+      "Clinic account is inactive. Contact Ruthva support.",
+      403,
+    );
     const slug = c.req.header("X-Clinic-Slug");
     check(
       !slug || slug === clinic.subdomain,
@@ -117,6 +127,7 @@ app.get("/api/health/", (c) =>
 );
 app.post("/api/cron/", cron);
 app.route("/api/v1/auth", auth);
+app.route("/api/v1/admin", admin);
 app.route("/api/v1/team/", team);
 app.route("/api/v1/invite", invite);
 app.route("/api/v1/treatments", treatments);
