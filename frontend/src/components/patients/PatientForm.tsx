@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type FormEvent, useEffect, useRef, useState } from "react";
+import { startOfDay } from "date-fns";
 import { AlertTriangle, Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -247,6 +248,7 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
                   aria-invalid={props["aria-invalid"]}
                   value={form.date_of_birth}
                   onChange={(v) => handleDobChange(v)}
+                  maxDate={startOfDay(new Date())}
                 />
               )}
             </FormField>
