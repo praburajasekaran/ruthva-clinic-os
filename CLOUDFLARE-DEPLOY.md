@@ -32,7 +32,7 @@ Copy the returned D1 ID into `worker/wrangler.jsonc`. Keep the `DB` binding and 
 
 Set `FRONTEND_URL` and `CORS_ALLOWED_ORIGINS` in `worker/wrangler.jsonc` to the public HTTPS origin. Use a comma-separated list for additional allowed origins. Set `DEFAULT_FROM_EMAIL` to the verified address.
 
-Set `AWS_SES_REGION` to the SES region with your quota and verified identity. The existing default is `ap-south-1`. The stated daily quota is 50,000 messages. SES quotas apply per region and also include a sending rate per second. The application does not hardcode a daily limit or assume that the quota is unused.
+Set `AWS_SES_REGION` to the SES region with your quota and verified identity. The configured region is `us-east-1`, where `ruthva.com` is verified. The account dashboard showed a daily quota of 50,000 messages and a send rate of 14 messages per second on 4 October 2026. SES quotas apply per region. The application does not hardcode a daily limit or assume that the quota is unused.
 
 Set `triggers.crons` to `[]` during staging and data cutover. Restore `["*/15 * * * *"]` after the live switch. This prevents reminder emails before cutover.
 
