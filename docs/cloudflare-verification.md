@@ -134,6 +134,24 @@ Frontend type checking and lint passed with the existing custom-font warning. Th
 
 Browser verification confirmed the corrected visible text and live-region text on that deployment. Local evidence is saved in `.audit/otp-account-check.json`, `.audit/otp-login-before.png`, and `.audit/otp-login-after.png`. This check does not verify human inbox delivery. Staging registration requires the user's doctor name and discipline, or existing account access requires the later production data import.
 
+## Email verification and clinic activation
+
+The account feature is deployed to staging on 4 October 2026. API version `336b897f-f37a-487f-81ec-2144e88d8966` uses migration `0005_account_activation.sql`. Frontend version `6c06c096-2dbe-4ff5-951e-5a2954d90599` includes the Ruthva admin clinic page.
+
+Signup consumes email proof before creating a usable account. Password login, SSO, refresh, and authenticated requests enforce that proof. Email changes clear proof and revoke sessions. The legacy signup endpoint requires a pending signup code. Existing accounts and imported records have no assumed proof and must verify through OTP login. Demo access stays read-only.
+
+Ruthva admin can search clinic accounts, inspect owner verification, and activate or deactivate a clinic. Deactivation blocks the owner and staff and revokes their sessions. Reactivation requires a verified active owner and a new login. Status retries do not add duplicate audit entries. Platform admin access remains available to restore an inactive clinic, while clinical records stay blocked.
+
+Worker type checking, frontend type checking and lint, and the OpenNext build pass. Fourteen workerd API tests and five data migration tests pass. The existing custom-font warning remains. The worktree's own locked dependencies resolve the native Sharp bundle error caused by dependency symlinks.
+
+Twenty-four live staging checks pass for SES simulator requests, signup and invitation proof, admin permission, whole-clinic suspension, access and refresh revocation, audit idempotence, and a new staff login after reactivation. The deployed browser passes admin OTP login, routing, search, deactivation, and reactivation. Local browser checks also verify ordinary-owner denial and disabled activation without a verified owner.
+
+The private Worker secret `RUTHVA_ADMIN_EMAIL` contains the user's confirmed identity, `ekalaivan@gmail.com`. That address has no staging account yet. The user must register that exact address and verify the emailed code. The three test accounts are inactive, the temporary test superuser flag is removed, and their synthetic clinic is inactive. Other clinics were not changed. `TEST_EMAIL` and scheduled reminders remain disabled remotely.
+
+A private D1 backup was saved before migration. Local evidence is in `.audit/pre-account-activation.sql`, `.audit/account-activation-staging-results.json`, `.audit/clinic-admin-preview.jpg`, `.audit/clinic-admin-denied.jpg`, and `.audit/clinic-admin-staging-inactive.jpg` in the `account-activation` worktree. The temporary browser OTP file was removed after cleanup.
+
+The [feature plan](plans/2026-10-04-email-verification-and-clinic-activation.md) records the design and checks. [Pull request 108](https://github.com/praburajasekaran/ruthva-clinic-os/pull/108) contains the changes. The original checkout and its uncommitted changes are preserved.
+
 ## Verification still pending
 
 Delivery and inbox placement at a controlled human inbox have not been checked. Live SES acceptance, sender verification, quota, and Browser Rendering PDF responses have been verified. Local development still supports `TEST_EMAIL=capture`.

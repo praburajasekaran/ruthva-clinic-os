@@ -11,10 +11,10 @@ New accounts become usable only after email verification. Ruthva admin can activ
 4. [x] Delegate code-writing to a subagent using your configured feature model with a specific scope.
    - Delegation is replaced by direct ownership under the user's AGENTS instructions.
 5. [x] Verify on the matching surface.
-6. [ ] Rebase into small, ordered commits. Stack follow-ups.
+6. [x] Rebase into small, ordered commits. Stack follow-ups.
 7. [x] If the design is contested, `interrogate` before shipping.
    - n/a: The design uses existing account and clinic boundaries. Review still checks privilege escalation and verification bypasses.
-8. [ ] Run **Opening a PR**.
+8. [x] Run **Opening a PR**.
 
 ## Traced account flow
 
@@ -63,3 +63,7 @@ API version `336b897f-f37a-487f-81ec-2144e88d8966` and frontend version `6c06c09
 The deployed browser passes synthetic admin OTP login, admin routing, search, clinic deactivation, and clinic reactivation. `.audit/clinic-admin-staging-inactive.jpg` shows the verified inactive clinic and its Activate control. The three synthetic accounts are now inactive, the temporary superuser flag is removed, and the synthetic clinic is inactive. The temporary OTP file was removed. The live test did not change other clinics.
 
 The confirmed admin email has no staging account yet. The user must register that exact address and verify the emailed code. No name, discipline, password, or account was created for the user. SES simulator acceptance does not verify human inbox placement.
+
+The feature was rebased onto the latest `origin/main`. Its only new upstream file was the patient app handoff document. Worker, frontend, and migration script contents match the verified commit. The commits separate the previous staging configuration from the account feature and its final verification record.
+
+[Pull request 108](https://github.com/praburajasekaran/ruthva-clinic-os/pull/108) targets `main`. GitHub CLI was used because Origin CLI is unavailable. Review ran sequentially in the main thread under the user's AGENTS instructions. No new explanatory comments or suppressions were added. The `deslop` and `control-ui` skill dependencies were unavailable, so direct diff review and CUA browser checks performed those checks.
