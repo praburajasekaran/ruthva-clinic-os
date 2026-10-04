@@ -26,7 +26,7 @@
     "FRONTEND_URL": "https://ruthva-clinic.prabu-b92.workers.dev",
     "CORS_ALLOWED_ORIGINS": "https://ruthva-clinic.prabu-b92.workers.dev",
     "DEFAULT_FROM_EMAIL": "noreply@ruthva.com",
-    "AWS_SES_REGION": "ap-south-1",
+    "AWS_SES_REGION": "us-east-1",
     "RUTHVA_API_URL": "",
   },
   "observability": { "enabled": true },

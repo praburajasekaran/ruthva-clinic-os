@@ -10,6 +10,7 @@ let mf, db;
 const remoteCalls = [];
 let remoteMode = "valid";
 const consumedSso = new Set();
+let ssoEmail = "clinic-a@clinic.test";
 const sesCalls = [];
 let sesMode = "success";
 const sesAccessKey = "AKIDEXAMPLE";
@@ -128,7 +129,7 @@ before(async () => {
                 if (consumedSso.has(body.token))
                   return Response.json({ error: "expired" }, { status: 401 });
                 consumedSso.add(body.token);
-                return Response.json({ email: "clinic-a@clinic.test" });
+                return Response.json({ email: ssoEmail });
               }
               return Response.json(
                 remoteMode === "invalid"
@@ -159,6 +160,7 @@ before(async () => {
             AWS_SESSION_TOKEN: "test-session-token",
             RUTHVA_API_URL: "https://ruthva.test",
             RUTHVA_INTEGRATION_SECRET: "test-ruthva-secret",
+            RUTHVA_ADMIN_EMAIL: "platform-admin@clinic.test",
           },
         },
       ],
@@ -168,8 +170,9 @@ before(async () => {
   for (const name of (await readdir("migrations")).sort()) {
     const sql = await readFile(`migrations/${name}`, "utf8");
     const statements =
-      sql.match(/CREATE TRIGGER[\s\S]*?END;|CREATE (?!TRIGGER)[\s\S]*?;/g) ||
-      [];
+      sql.match(
+        /CREATE TRIGGER[\s\S]*?END;|(?:CREATE (?!TRIGGER)|ALTER TABLE )[\s\S]*?;/g,
+      ) || [];
     for (const statement of statements) await db.prepare(statement).run();
   }
 });
@@ -323,10 +326,34 @@ async function request(
           : await response.text();
   return { status: response.status, data, headers: response.headers };
 }
+let fixtureIp = 1;
+function sentCode(email) {
+  const message = sesCalls.findLast((call) =>
+    call.body.Destination.ToAddresses.includes(email),
+  );
+  const match = /<strong>(\d{6})<\/strong>/.exec(
+    message?.body.Content.Simple.Body.Html.Data ?? "",
+  );
+  assert.ok(match, `A verification code was sent to ${email}`);
+  return match[1];
+}
 async function signup(slug) {
+  const headers = { "CF-Connecting-IP": `192.0.2.${fixtureIp++}` };
+  const pending = await request("/v1/auth/initiate-signup/", {
+    method: "POST",
+    headers,
+    body: {
+      first_name: "Doctor",
+      email: `${slug}@clinic.test`,
+      discipline: "siddha",
+    },
+  });
+  assert.equal(pending.status, 201, JSON.stringify(pending.data));
   const result = await request("/v1/auth/signup/", {
     method: "POST",
+    headers,
     body: {
+      code: sentCode(`${slug}@clinic.test`),
       clinic_name: `Clinic ${slug}`,
       subdomain: slug,
       discipline: "siddha",
@@ -339,6 +366,434 @@ async function signup(slug) {
   assert.equal(result.status, 201, JSON.stringify(result.data));
   return result.data;
 }
+test("account activation requires consumed email verification across signup and token routes", async () => {
+  const email = "verification-required@clinic.test";
+  const body = {
+    clinic_name: "Verification clinic",
+    subdomain: "verification-required",
+    discipline: "siddha",
+    username: "verification-required",
+    email,
+    first_name: "Doctor",
+    password: "ClinicTestPass123",
+    is_superuser: true,
+  };
+  assert.equal(
+    (await request("/v1/auth/signup/", { method: "POST", body })).status,
+    403,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT count(*) AS n FROM users_user WHERE email=?")
+      .bind(email)
+      .first("n"),
+    0,
+  );
+  assert.equal(
+    (await request("/v1/auth/initiate-signup/", { method: "POST", body }))
+      .status,
+    201,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT count(*) AS n FROM users_user WHERE email=?")
+      .bind(email)
+      .first("n"),
+    0,
+  );
+  const code = sentCode(email);
+  const wrong = code === "000000" ? "000001" : "000000";
+  assert.equal(
+    (
+      await request("/v1/auth/signup/", {
+        method: "POST",
+        body: { ...body, code: wrong },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT count(*) AS n FROM users_user WHERE email=?")
+      .bind(email)
+      .first("n"),
+    0,
+  );
+  const verified = await request("/v1/auth/signup/", {
+    method: "POST",
+    body: { ...body, code },
+  });
+  assert.equal(verified.status, 201, JSON.stringify(verified.data));
+  assert.equal(verified.data.user.is_platform_admin, false);
+  const row = await db
+    .prepare(
+      "SELECT is_active,is_superuser,email_verified_at FROM users_user WHERE email=?",
+    )
+    .bind(email)
+    .first();
+  assert.equal(row.is_active, 1);
+  assert.equal(row.is_superuser, 0);
+  assert.ok(row.email_verified_at);
+  assert.equal(
+    (
+      await request("/v1/auth/signup/", {
+        method: "POST",
+        body: { ...body, code },
+      })
+    ).status,
+    400,
+  );
+  await db
+    .prepare("UPDATE users_user SET email_verified_at=NULL WHERE email=?")
+    .bind(email)
+    .run();
+  assert.equal(
+    (await request("/v1/auth/me/", { token: verified.data.access })).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/refresh/", {
+        method: "POST",
+        body: { refresh: verified.data.refresh },
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/", {
+        method: "POST",
+        body: { username: body.username, password: body.password },
+      })
+    ).status,
+    403,
+  );
+  try {
+    ssoEmail = email;
+    assert.equal(
+      (
+        await request("/v1/auth/sso/exchange/", {
+          method: "POST",
+          body: { token: "c".repeat(64) },
+        })
+      ).status,
+      403,
+      "Upstream SSO cannot bypass local email verification",
+    );
+  } finally {
+    ssoEmail = "clinic-a@clinic.test";
+  }
+  assert.equal(
+    (
+      await request("/v1/auth/request-otp/", {
+        method: "POST",
+        body: { email },
+      })
+    ).status,
+    200,
+  );
+  const reverified = await request("/v1/auth/verify-otp/", {
+    method: "POST",
+    body: { email, code: sentCode(email) },
+  });
+  assert.equal(reverified.status, 200);
+  assert.equal(
+    (await request("/v1/auth/me/", { token: reverified.data.access })).status,
+    200,
+  );
+  assert.equal(
+    (await request("/v1/auth/me/", { token: verified.data.access })).status,
+    401,
+  );
+});
+test("Ruthva admin suspends whole clinics, revokes sessions, and cannot bypass owner verification", async () => {
+  const platform = await signup("platform-admin"),
+    clinic = await signup("managed-clinic");
+  const platformMe = await request("/v1/auth/me/", { token: platform.access });
+  assert.equal(platformMe.data.is_platform_admin, true);
+  assert.equal(
+    (await request("/v1/admin/clinics/", { token: clinic.access })).status,
+    403,
+  );
+  await db
+    .prepare("UPDATE users_user SET role='admin' WHERE id=?")
+    .bind(clinic.user.id)
+    .run();
+  assert.equal(
+    (await request("/v1/admin/clinics/", { token: clinic.access })).status,
+    403,
+  );
+  const denied = await request("/v1/auth/me/update/", {
+    token: clinic.access,
+    method: "PATCH",
+    body: {
+      is_platform_admin: true,
+      is_superuser: true,
+      email_verified_at: "2099-01-01",
+    },
+  });
+  assert.equal(denied.status, 400);
+  const list = await request("/v1/admin/clinics/?search=managed-clinic", {
+    token: platform.access,
+  });
+  assert.equal(list.status, 200);
+  assert.equal(list.data.count, 1);
+  assert.equal(list.data.results[0].owner.email, "managed-clinic@clinic.test");
+  const change = (active, pk = clinic.clinic.id) =>
+    request(`/v1/admin/clinics/${pk}/status/`, {
+      token: platform.access,
+      method: "PATCH",
+      body: { is_active: active },
+    });
+  assert.equal((await change("false")).status, 400);
+  assert.equal(
+    (
+      await request("/v1/auth/clinic/update/", {
+        token: clinic.access,
+        method: "PATCH",
+        body: { is_active: false },
+      })
+    ).status,
+    400,
+    "Clinic owners cannot change administrative activation",
+  );
+  await db
+    .prepare(
+      "INSERT INTO users_user(id,username,email,password,first_name,last_name,is_superuser,is_staff,is_active,date_joined,role,is_clinic_owner,clinic_id,email_verified_at) SELECT 999999991,'managed-staff','managed-staff@clinic.test',password,'Staff','',0,0,1,date_joined,'therapist',0,clinic_id,email_verified_at FROM users_user WHERE id=?",
+    )
+    .bind(clinic.user.id)
+    .run();
+  const staff = await request("/v1/auth/token/", {
+    method: "POST",
+    body: { username: "managed-staff", password: "ClinicTestPass123" },
+  });
+  assert.equal(staff.status, 200);
+  const suspended = await Promise.all([
+    change(false),
+    change(false),
+    change(false),
+  ]);
+  assert.deepEqual(
+    suspended.map((result) => result.status),
+    [200, 200, 200],
+  );
+  assert.equal(
+    (await request("/v1/patients/", { token: clinic.access })).status,
+    401,
+  );
+  assert.equal(
+    (await request("/v1/patients/", { token: staff.data.access })).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/refresh/", {
+        method: "POST",
+        body: { refresh: staff.data.refresh },
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/", {
+        method: "POST",
+        body: { username: "managed-staff", password: "ClinicTestPass123" },
+      })
+    ).status,
+    403,
+  );
+  try {
+    ssoEmail = "managed-staff@clinic.test";
+    assert.equal(
+      (
+        await request("/v1/auth/sso/exchange/", {
+          method: "POST",
+          body: { token: "d".repeat(64) },
+        })
+      ).status,
+      403,
+      "Upstream SSO cannot bypass clinic suspension",
+    );
+  } finally {
+    ssoEmail = "clinic-a@clinic.test";
+  }
+  const version = await db
+    .prepare("SELECT session_version FROM users_user WHERE id=?")
+    .bind(clinic.user.id)
+    .first("session_version");
+  assert.equal((await change(false)).status, 200);
+  assert.equal(
+    await db
+      .prepare("SELECT session_version FROM users_user WHERE id=?")
+      .bind(clinic.user.id)
+      .first("session_version"),
+    version,
+  );
+  assert.equal(
+    await db
+      .prepare(
+        "SELECT count(*) AS n FROM clinic_account_audit WHERE clinic_id=?",
+      )
+      .bind(clinic.clinic.id)
+      .first("n"),
+    1,
+  );
+  await db
+    .prepare("UPDATE users_user SET email_verified_at=NULL WHERE id=?")
+    .bind(clinic.user.id)
+    .run();
+  assert.equal((await change(true)).status, 409);
+  await db
+    .prepare("UPDATE users_user SET email_verified_at=? WHERE id=?")
+    .bind(new Date().toISOString(), clinic.user.id)
+    .run();
+  assert.equal((await change(true)).status, 200);
+  assert.equal(
+    (await request("/v1/patients/", { token: staff.data.access })).status,
+    401,
+  );
+  const newStaff = await request("/v1/auth/token/", {
+    method: "POST",
+    body: { username: "managed-staff", password: "ClinicTestPass123" },
+  });
+  assert.equal(newStaff.status, 200);
+  assert.equal(
+    (await request("/v1/patients/", { token: newStaff.data.access })).status,
+    200,
+  );
+  assert.equal(
+    await db
+      .prepare(
+        "SELECT count(*) AS n FROM clinic_account_audit WHERE clinic_id=?",
+      )
+      .bind(clinic.clinic.id)
+      .first("n"),
+    2,
+  );
+  assert.equal((await change(false, platform.clinic.id)).status, 200);
+  assert.equal(
+    (await request("/v1/admin/clinics/", { token: platform.access })).status,
+    200,
+  );
+  assert.equal(
+    (await request("/v1/auth/me/", { token: platform.access })).status,
+    200,
+  );
+  assert.equal(
+    (await request("/v1/patients/", { token: platform.access })).status,
+    403,
+    "Platform access does not reopen an inactive clinic's clinical records",
+  );
+  assert.equal((await change(true, platform.clinic.id)).status, 200);
+});
+test("email changes revoke verification and cannot promote an account to Ruthva admin", async () => {
+  const account = await signup("email-change");
+  const changed = await request("/v1/auth/me/update/", {
+    token: account.access,
+    method: "PATCH",
+    body: { email: "changed-email@clinic.test" },
+  });
+  assert.equal(changed.status, 200);
+  assert.equal(changed.data.email_verified_at, null);
+  assert.equal(changed.data.is_platform_admin, false);
+  assert.equal(
+    (await request("/v1/auth/me/", { token: account.access })).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/refresh/", {
+        method: "POST",
+        body: { refresh: account.refresh },
+      })
+    ).status,
+    401,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/request-otp/", {
+        method: "POST",
+        body: { email: changed.data.email },
+      })
+    ).status,
+    200,
+  );
+  const verified = await request("/v1/auth/verify-otp/", {
+    method: "POST",
+    body: { email: changed.data.email, code: sentCode(changed.data.email) },
+  });
+  assert.equal(verified.status, 200);
+  assert.equal(
+    (await request("/v1/auth/me/", { token: verified.data.access })).data.email,
+    changed.data.email,
+  );
+  assert.equal(
+    (await request("/v1/admin/clinics/", { token: verified.data.access }))
+      .status,
+    403,
+  );
+});
+test("concurrent email changes cannot reuse proof or revive a previous session", async () => {
+  const account = await signup("concurrent-email");
+  const email = "concurrent-email@clinic.test";
+  const changedEmail = "concurrent-changed@clinic.test";
+  const headers = { "CF-Connecting-IP": "192.0.2.210" };
+  assert.equal(
+    (
+      await request("/v1/auth/request-otp/", {
+        method: "POST",
+        headers,
+        body: { email },
+      })
+    ).status,
+    200,
+  );
+  const [verified, changed] = await Promise.all([
+    request("/v1/auth/verify-otp/", {
+      method: "POST",
+      headers,
+      body: { email, code: sentCode(email) },
+    }),
+    request("/v1/auth/me/update/", {
+      token: account.access,
+      method: "PATCH",
+      body: { email: changedEmail },
+    }),
+  ]);
+  assert.equal(changed.status, 200, JSON.stringify(changed.data));
+  assert.ok(
+    [200, 401].includes(verified.status),
+    JSON.stringify(verified.data),
+  );
+  const row = await db
+    .prepare(
+      "SELECT email,email_verified_at,session_version FROM users_user WHERE id=?",
+    )
+    .bind(account.user.id)
+    .first();
+  assert.equal(row.email, changedEmail);
+  assert.equal(
+    row.email_verified_at,
+    null,
+    "The new address has no email proof",
+  );
+  assert.equal(
+    row.session_version,
+    1,
+    "Verification cannot reset a revoked session version",
+  );
+  assert.equal(
+    (await request("/v1/auth/me/", { token: account.access })).status,
+    401,
+  );
+  if (verified.status === 200)
+    assert.equal(
+      (await request("/v1/auth/me/", { token: verified.data.access })).status,
+      401,
+    );
+});
 test("health, authentication, tenant isolation, nested clinical records, and stock rollback", async () => {
   assert.equal((await request("/health/")).data.status, "ok");
   assert.equal((await request("/v1/patients/")).status, 401);

@@ -264,11 +264,13 @@ invite.post("/accept/", async (c) => {
       accepted_at: now(),
     }),
     user.statement,
+    update(dbOf(c), "users_user", user.row.id, { email_verified_at: now() }),
   ]);
+  const verified = (await get(dbOf(c), "users_user", user.row.id)) as User;
   return c.json(
     {
-      user: output("users_user", user.row, "UserSerializer"),
-      ...(await tokens(c.env, user.row as User, clinic)),
+      user: output("users_user", verified, "UserSerializer"),
+      ...(await tokens(c.env, verified, clinic)),
     },
     201,
   );
