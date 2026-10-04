@@ -86,7 +86,7 @@ app.use("*", async (c, next) => {
     check(
       clinic.is_active ||
         (c.req.path === "/api/v1/auth/me/" && platformAdmin(c.env, user)),
-      "Clinic account is inactive. Contact Ruthva support.",
+      "Clinic account is inactive. Contact Ruthva support at ekalaivan@gmail.com or call +91 97910 90710.",
       403,
     );
     const slug = c.req.header("X-Clinic-Slug");

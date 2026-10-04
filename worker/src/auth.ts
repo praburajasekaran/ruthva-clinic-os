@@ -78,7 +78,7 @@ export async function tokens(
   );
   check(
     !clinic || clinic.is_active || platformAdmin(env, user),
-    "Clinic account is inactive. Contact Ruthva support.",
+    "Clinic account is inactive. Contact Ruthva support at ekalaivan@gmail.com or call +91 97910 90710.",
     403,
   );
   const create = (type: string, ttl: number) =>
