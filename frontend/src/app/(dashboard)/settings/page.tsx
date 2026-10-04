@@ -681,7 +681,7 @@ export default function SettingsPage() {
       </div>
 
       {/* Tab nav */}
-      <div role="tablist" aria-label="Settings sections" className="mb-6 flex gap-1 border-b border-gray-200">
+      <div role="tablist" aria-label="Settings sections" className="mb-6 flex gap-1 overflow-x-auto border-b border-gray-200">
         {tabs.filter((t) => t.show).map((tab) => (
           <button
             key={tab.id}
@@ -694,7 +694,7 @@ export default function SettingsPage() {
             tabIndex={activeTab === tab.id ? 0 : -1}
             onClick={() => setActiveTab(tab.id)}
             onKeyDown={(e) => handleTabKeyDown(e, tab.id)}
-            className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+            className={`-mb-px flex min-h-12 shrink-0 items-center gap-2 whitespace-nowrap border-b-2 px-4 py-2.5 text-sm font-medium transition-colors md:min-h-0 ${
               activeTab === tab.id
                 ? "border-emerald-600 text-emerald-700"
                 : "border-transparent text-gray-600 hover:text-gray-900"

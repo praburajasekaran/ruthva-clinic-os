@@ -49,7 +49,8 @@ export function DemoClinicSwitcher() {
         value={currentSlug || ""}
         onChange={(e) => handleSwitch(e.target.value)}
         disabled={switching}
-        className="w-full rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:opacity-50"
+        aria-label="Demo discipline"
+        className="min-h-12 w-full rounded-md border border-emerald-200 bg-white px-2.5 py-1.5 text-sm text-gray-700 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 disabled:opacity-50 md:min-h-0"
       >
         {DEMO_CLINICS.map((c) => (
           <option key={c.slug} value={c.slug}>

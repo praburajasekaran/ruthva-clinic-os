@@ -149,13 +149,13 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           <label className="mb-1.5 block text-sm font-medium text-gray-700">
             Category
           </label>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.value}
                 type="button"
                 onClick={() => setCategory(cat.value)}
-                className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
+                className={`flex min-h-12 items-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors md:min-h-0 ${
                   category === cat.value
                     ? "border-emerald-500 bg-emerald-50 text-emerald-700"
                     : "border-gray-200 bg-white text-gray-600 hover:border-gray-300"
@@ -187,7 +187,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 ? "What went wrong?"
                 : "What would you like to see?"
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            className="min-h-12 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm placeholder:text-gray-400 focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 md:min-h-0"
           />
         </div>
 
@@ -238,12 +238,12 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               </button>
             </div>
           ) : (
-            <div className="flex gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row">
               <button
                 type="button"
                 onClick={captureScreenshot}
                 disabled={isCapturing}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700 disabled:opacity-50"
               >
                 {isCapturing ? (
                   <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
@@ -255,7 +255,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-600"
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg border border-dashed border-gray-300 px-3 py-3 text-sm text-gray-500 transition-colors hover:border-emerald-400 hover:bg-emerald-50 hover:text-emerald-700"
               >
                 <ImagePlus className="h-4 w-4" aria-hidden="true" />
                 Upload image
@@ -272,7 +272,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           {fileError && (
             <p className="mt-1 text-xs text-red-600">{fileError}</p>
           )}
-          <p className="mt-1 text-xs text-amber-600">
+          <p className="mt-1 text-xs text-amber-700">
             Please avoid including patient information in screenshots.
           </p>
         </div>

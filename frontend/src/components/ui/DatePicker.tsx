@@ -96,7 +96,7 @@ export function DatePicker({ value, onChange, id, ...ariaProps }: DatePickerProp
           type="button"
           id={id}
           className={cn(
-            "inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 h-11 text-base",
+            "inline-flex h-12 items-center gap-2 rounded-lg border border-border bg-background px-3 text-base md:h-11",
             "hover:bg-accent/50 transition-colors",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
           )}
@@ -109,13 +109,14 @@ export function DatePicker({ value, onChange, id, ...ariaProps }: DatePickerProp
         </button>
       </PopoverTrigger>
 
-      <PopoverContent className="w-[320px] font-sans" align="start">
+      <PopoverContent className="max-h-[var(--radix-popover-content-available-height)] w-[320px] max-w-[calc(100vw-1rem)] overflow-y-auto font-sans" align="start" collisionPadding={8}>
         {/* Month navigation */}
         <div className="flex items-center justify-between px-4 pt-4 pb-2">
           <button
             type="button"
             onClick={() => setViewMonth(subMonths(viewMonth, 1))}
-            className="p-2.5 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Previous month"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <ChevronLeft className="h-4 w-4" />
           </button>
@@ -125,7 +126,8 @@ export function DatePicker({ value, onChange, id, ...ariaProps }: DatePickerProp
           <button
             type="button"
             onClick={() => setViewMonth(addMonths(viewMonth, 1))}
-            className="p-2.5 rounded-md hover:bg-accent transition-colors text-muted-foreground hover:text-foreground"
+            aria-label="Next month"
+            className="flex h-11 w-11 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           >
             <ChevronRight className="h-4 w-4" />
           </button>
@@ -139,15 +141,16 @@ export function DatePicker({ value, onChange, id, ...ariaProps }: DatePickerProp
             value={inputValue}
             onChange={handleInputChange}
             placeholder="M/D/YYYY"
+            aria-label="Date"
             className={cn(
-              "flex-1 h-9 rounded-md border border-border bg-background px-3 text-sm",
+              "h-11 min-w-0 flex-1 rounded-md border border-border bg-background px-3 text-sm md:h-9",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
             )}
           />
           <button
             type="button"
             onClick={handleToday}
-            className="h-9 px-3 rounded-md border border-border bg-background text-sm font-medium hover:bg-accent transition-colors"
+            className="h-11 rounded-md border border-border bg-background px-3 text-sm font-medium transition-colors hover:bg-accent md:h-9"
           >
             Today
           </button>
@@ -200,14 +203,14 @@ export function DatePicker({ value, onChange, id, ...ariaProps }: DatePickerProp
           <button
             type="button"
             onClick={handleCancel}
-            className="h-11 px-4 rounded-lg border border-border bg-background text-sm font-medium hover:bg-accent transition-colors"
+            className="h-12 rounded-lg border border-border bg-background px-4 text-sm font-medium transition-colors hover:bg-accent md:h-11"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleApply}
-            className="h-11 px-4 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-brand-800 transition-colors"
+            className="h-12 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-brand-800 md:h-11"
           >
             Apply
           </button>

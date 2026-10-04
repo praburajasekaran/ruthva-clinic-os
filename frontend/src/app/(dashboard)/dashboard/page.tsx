@@ -206,7 +206,7 @@ export default function DashboardPage() {
   return (
     <div className="space-y-8">
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_minmax(320px,0.9fr)]">
-        <div className="overflow-hidden rounded-[28px] border border-brand-200 bg-gradient-to-br from-brand-900 via-brand-700 to-brand-600 p-7 text-white shadow-sm">
+        <div className="overflow-hidden rounded-[28px] border border-brand-200 bg-gradient-to-br from-brand-900 via-brand-700 to-brand-600 p-5 text-white sm:p-7 shadow-sm">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-2xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-brand-50">
@@ -217,7 +217,7 @@ export default function DashboardPage() {
                 <h1 className="max-w-2xl text-3xl font-semibold tracking-tight text-white sm:text-4xl">
                   Who needs attention right now?
                 </h1>
-                <p className="max-w-2xl text-sm leading-6 text-brand-50/90 sm:text-base">
+                <p className="max-w-2xl text-base leading-7 text-brand-50/90 sm:leading-6">
                   Start from continuity work first. {clinicName} has {followUpsData?.meta?.counts?.total ?? 0} active
                   journey item{followUpsData?.meta?.counts?.total === 1 ? "" : "s"} waiting across doctor review,
                   therapist execution, and follow-through.
@@ -225,17 +225,17 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:flex-wrap">
               <Link
                 href="/follow-ups"
-                className="inline-flex items-center gap-2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-900 transition-transform hover:-translate-y-0.5"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full md:min-h-0 bg-white px-4 py-2 text-sm font-semibold text-brand-900 transition-transform hover:-translate-y-0.5"
               >
                 Review Needs Attention
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 href="/patients/new"
-                className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15"
+                className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full md:min-h-0 border border-white/25 bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15"
               >
                 <Plus className="h-4 w-4" />
                 New Patient
@@ -245,24 +245,24 @@ export default function DashboardPage() {
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.16em] text-brand-50/70">Journeys due</p>
+              <p className="text-xs font-medium uppercase tracking-[0.1em] text-brand-50/90">Journeys due</p>
               <p className="mt-2 text-3xl font-semibold">{stats?.follow_ups_due ?? 0}</p>
               <p className="mt-1 text-sm text-brand-50/80">Continuity milestones due or pending.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.16em] text-brand-50/70">Due today</p>
+              <p className="text-xs font-medium uppercase tracking-[0.1em] text-brand-50/90">Due today</p>
               <p className="mt-2 text-3xl font-semibold">{dueTodayCount}</p>
               <p className="mt-1 text-sm text-brand-50/80">Patients expected back in today&apos;s care window.</p>
             </div>
             <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-              <p className="text-xs uppercase tracking-[0.16em] text-brand-50/70">At risk now</p>
+              <p className="text-xs font-medium uppercase tracking-[0.1em] text-brand-50/90">At risk now</p>
               <p className="mt-2 text-3xl font-semibold">{overdueCount}</p>
               <p className="mt-1 text-sm text-brand-50/80">Journeys that have slipped past the expected date.</p>
             </div>
           </div>
         </div>
 
-        <div className="space-y-4 rounded-[28px] border border-border bg-surface p-6 shadow-sm">
+        <div className="space-y-4 rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-6">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
@@ -294,7 +294,7 @@ export default function DashboardPage() {
       </section>
 
       <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(340px,0.85fr)]">
-        <div className="rounded-[28px] border border-border bg-surface p-6 shadow-sm">
+        <div className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
@@ -308,7 +308,7 @@ export default function DashboardPage() {
             </div>
             <Link
               href="/follow-ups"
-              className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-raised px-4 py-2 text-sm font-medium text-text-primary hover:border-brand-200 hover:bg-brand-50"
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full md:min-h-0 border border-border bg-surface-raised px-4 py-2 text-sm font-medium text-text-primary hover:border-brand-200 hover:bg-brand-50"
             >
               Open Journeys
               <ArrowRight className="h-4 w-4" />
@@ -349,13 +349,13 @@ export default function DashboardPage() {
                     <div className="flex flex-wrap gap-2">
                       <Link
                         href={`/patients/${item.patientId}`}
-                        className="inline-flex items-center gap-2 rounded-full bg-white/90 px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-white"
+                        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full md:min-h-0 bg-white/90 px-3 py-1.5 text-sm font-medium text-gray-900 hover:bg-white"
                       >
                         Open Patient
                       </Link>
                       <Link
                         href="/follow-ups"
-                        className="inline-flex items-center gap-2 rounded-full border border-current/20 px-3 py-1.5 text-sm font-medium hover:bg-white/40"
+                        className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full md:min-h-0 border border-current/20 px-3 py-1.5 text-sm font-medium hover:bg-white/40"
                       >
                         Continue in Journeys
                       </Link>
@@ -364,7 +364,7 @@ export default function DashboardPage() {
                 </div>
               ))
             ) : (
-              <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-8 text-center">
+              <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-5 sm:p-8 text-center">
                 <CheckCircle2 className="mx-auto h-10 w-10 text-brand-700" />
                 <h3 className="mt-4 text-lg font-semibold text-text-primary">No journeys need action right now</h3>
                 <p className="mt-2 text-sm text-text-secondary">
@@ -376,7 +376,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="space-y-6">
-          <div className="rounded-[28px] border border-border bg-surface p-6 shadow-sm">
+          <div className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
@@ -419,7 +419,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          <div className="rounded-[28px] border border-border bg-surface p-6 shadow-sm">
+          <div className="rounded-[28px] border border-border bg-surface p-5 shadow-sm sm:p-6">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">

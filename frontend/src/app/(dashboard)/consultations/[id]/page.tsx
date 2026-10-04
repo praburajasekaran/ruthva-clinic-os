@@ -66,10 +66,10 @@ export default function ConsultationDetailPage() {
             )}
           </div>
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <Link
             href={`/consultations/${params.id}/edit`}
-            className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <Pencil className="h-4 w-4" />
             Edit
@@ -77,7 +77,7 @@ export default function ConsultationDetailPage() {
           {patient && (
             <Link
               href={`/patients/${patient.id}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               Patient
               <KbdBadge
@@ -89,7 +89,7 @@ export default function ConsultationDetailPage() {
           {consultation.prescription ? (
             <Link
               href={`/prescriptions/${consultation.prescription.id}`}
-              className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <FileText className="h-4 w-4" />
               View Prescription
@@ -101,7 +101,7 @@ export default function ConsultationDetailPage() {
           ) : (
             <Link
               href={`/consultations/${params.id}/prescriptions/new`}
-              className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
+              className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-800"
             >
               <Plus className="h-4 w-4" />
               Write Prescription

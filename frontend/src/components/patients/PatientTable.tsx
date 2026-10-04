@@ -110,7 +110,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
   }, [selectedIds, refetch]);
 
   return (
-    <div className="space-y-4">
+    <div className={`space-y-4 ${selectedIds.size > 0 ? "pb-20 sm:pb-0" : ""}`}>
       {/* Header */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex-1 sm:max-w-sm">
@@ -120,19 +120,20 @@ export function PatientTable({ initialData }: PatientTableProps) {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, phone, or ID..."
+              aria-label="Search patients"
               className="pl-10"
             />
           </div>
-          <p className="mt-1 flex items-center gap-1 text-xs text-gray-400">
-            <Phone className="h-3 w-3" />
+          <p className="mt-2 flex items-start gap-1.5 text-xs text-gray-500">
+            <Phone className="mt-0.5 h-3.5 w-3.5 shrink-0" />
             <span>Tip: Enter phone number for fastest lookup</span>
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:items-center">
           <button
             type="button"
             onClick={() => setShowArchived(!showArchived)}
-            className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors ${
+            className={`inline-flex min-h-12 items-center justify-center gap-1.5 rounded-lg border px-3 py-2.5 text-sm font-medium transition-colors md:min-h-0 ${
               showArchived
                 ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                 : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -142,13 +143,13 @@ export function PatientTable({ initialData }: PatientTableProps) {
             {showArchived ? "Showing All" : "Active Only"}
           </button>
           <Link href="/patients/import">
-            <Button variant="secondary">
+            <Button variant="secondary" className="w-full sm:w-auto">
               <FileSpreadsheet className="h-4 w-4" />
               Import
             </Button>
           </Link>
-          <Link href="/patients/new">
-            <Button>
+          <Link href="/patients/new" className="col-span-2 sm:col-span-1">
+            <Button className="w-full sm:w-auto">
               <Plus className="h-4 w-4" />
               New Patient
             </Button>
@@ -170,7 +171,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
                 : "No patients yet. Register your first patient."}
             </p>
             {!query && (
-              <div className="mt-3 flex items-center justify-center gap-3">
+              <div className="mt-4 flex flex-col items-center justify-center gap-3 sm:flex-row">
                 <Link href="/patients/new">
                   <Button variant="secondary" size="sm">
                     <Plus className="h-4 w-4" />
@@ -190,16 +191,18 @@ export function PatientTable({ initialData }: PatientTableProps) {
           <table aria-label="Patients" className="w-full text-left text-sm">
             <thead className="border-b border-gray-200 bg-gray-50">
               <tr>
-                <th scope="col" className="w-10 px-3 py-3">
-                  <input
-                    type="checkbox"
-                    checked={patients.length > 0 && selectedIds.size === patients.length}
-                    onChange={toggleSelectAll}
-                    className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                    aria-label="Select all patients"
-                  />
+                <th scope="col" className="w-12 px-1 py-2 sm:w-10 sm:px-3 sm:py-3">
+                  <label className="flex min-h-11 min-w-11 items-center justify-center sm:min-h-0 sm:min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={patients.length > 0 && selectedIds.size === patients.length}
+                      onChange={toggleSelectAll}
+                      className="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 sm:h-4 sm:w-4"
+                      aria-label="Select all patients"
+                    />
+                  </label>
                 </th>
-                <th scope="col" className="px-4 py-3 font-medium text-gray-700">
+                <th scope="col" className="hidden px-4 py-3 font-medium text-gray-700 sm:table-cell">
                   Record ID
                 </th>
                 <th scope="col" className="px-4 py-3 font-medium text-gray-700">Name</th>
@@ -233,20 +236,22 @@ export function PatientTable({ initialData }: PatientTableProps) {
                     selectedIds.has(patient.id) ? "bg-emerald-50" : ""
                   }`}
                 >
-                  <td className="w-10 px-3 py-3" onClick={(e) => e.stopPropagation()}>
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(patient.id)}
-                      onChange={(e) => toggleSelect(patient.id, e)}
-                      className="h-4 w-4 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500"
-                      aria-label={`Select ${patient.name}`}
-                    />
+                  <td className="w-12 px-1 py-3 sm:w-10 sm:px-3" onClick={(e) => e.stopPropagation()}>
+                    <label className="flex min-h-11 min-w-11 items-center justify-center sm:min-h-0 sm:min-w-0">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(patient.id)}
+                        onChange={(e) => toggleSelect(patient.id, e)}
+                        className="h-5 w-5 rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 sm:h-4 sm:w-4"
+                        aria-label={`Select ${patient.name}`}
+                      />
+                    </label>
                   </td>
-                  <td className="px-4 py-3 font-mono text-xs text-gray-500">
+                  <td className="hidden px-4 py-3 font-mono text-xs text-gray-500 sm:table-cell">
                     {patient.record_id}
                   </td>
-                  <td className="px-4 py-3 font-medium text-gray-900">
-                    <Link href={`/patients/${patient.id}`}>
+                  <td className="break-words px-4 py-4 font-medium text-gray-900 sm:py-3">
+                    <Link href={`/patients/${patient.id}`} className="text-base sm:text-sm">
                       {patient.name}
                     </Link>
                     {patient.is_active === false && (
@@ -254,6 +259,10 @@ export function PatientTable({ initialData }: PatientTableProps) {
                         Archived
                       </span>
                     )}
+                    <div className="mt-1 space-y-1 font-normal text-gray-500 sm:hidden">
+                      <p className="font-mono text-xs">{patient.record_id}</p>
+                      <p className="text-sm">{patient.age}y · {patient.gender.charAt(0).toUpperCase()} · {patient.phone}</p>
+                    </div>
                   </td>
                   <td className="hidden px-4 py-3 text-gray-600 sm:table-cell">
                     {patient.age}y / {patient.gender.charAt(0).toUpperCase()}
@@ -278,7 +287,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
 
       {/* Pagination */}
       {totalCount > 0 && (
-        <div className="flex items-center justify-between text-sm text-gray-600">
+        <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-gray-600">
           <span>{totalCount} patient{totalCount !== 1 ? "s" : ""}</span>
           <div className="flex gap-2">
             <Button
@@ -305,7 +314,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
 
       {/* Bulk Action Bar */}
       {selectedIds.size > 0 && (
-        <div className="fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-xl">
+        <div className="fixed bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-40 flex w-[calc(100%-2rem)] -translate-x-1/2 flex-wrap items-center justify-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-xl sm:w-auto sm:flex-nowrap">
           <span className="text-sm font-medium text-gray-700">
             {selectedIds.size} selected
           </span>
@@ -339,7 +348,7 @@ export function PatientTable({ initialData }: PatientTableProps) {
           <button
             type="button"
             onClick={() => setSelectedIds(new Set())}
-            className="rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100 hover:text-gray-600 md:h-7 md:w-7"
             aria-label="Clear selection"
           >
             <X className="h-4 w-4" />
