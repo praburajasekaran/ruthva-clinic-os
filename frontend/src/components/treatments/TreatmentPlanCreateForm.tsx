@@ -102,8 +102,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
       {/* Plan-level fields */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700">Total Days</label>
+          <label htmlFor="treatment-total-days" className="block text-sm font-medium text-gray-700">Total Days</label>
           <input
+            id="treatment-total-days"
             type="number"
             min={1}
             value={totalDays}
@@ -112,8 +113,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Block Start Day</label>
+          <label htmlFor="treatment-block-start" className="block text-sm font-medium text-gray-700">Block Start Day</label>
           <input
+            id="treatment-block-start"
             type="number"
             min={1}
             value={blockStartDay}
@@ -122,8 +124,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Block End Day</label>
+          <label htmlFor="treatment-block-end" className="block text-sm font-medium text-gray-700">Block End Day</label>
           <input
+            id="treatment-block-end"
             type="number"
             min={blockStartDay}
             max={totalDays}
@@ -133,8 +136,9 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700">Start Date</label>
+          <label htmlFor="treatment-start-date" className="block text-sm font-medium text-gray-700">Start Date</label>
           <DatePicker
+            id="treatment-start-date"
             value={startDate}
             onChange={(v) => setStartDate(v)}
           />
@@ -150,7 +154,7 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
       />
 
       {error && (
-        <p className="text-sm text-red-600">{error}</p>
+        <p role="alert" className="text-sm text-red-600">{error}</p>
       )}
 
       <div className="flex items-center gap-3">
