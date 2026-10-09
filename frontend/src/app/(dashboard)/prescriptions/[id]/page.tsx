@@ -9,7 +9,7 @@ import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit
 import { DispenseModal } from "@/components/pharmacy/DispenseModal";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Package, Pencil, Printer } from "lucide-react";
-import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-options";
 import { useApi } from "@/hooks/useApi";
 import type { Prescription, Consultation, Patient, DispensingRecord } from "@/lib/types";
 
@@ -122,6 +122,8 @@ export default function PrescriptionDetailPage() {
               const freqOpt = FREQUENCY_OPTIONS.find(
                 (f) => f.value === med.frequency,
               );
+              const timingOpt = TIMING_OPTIONS.find((t) => t.value === med.timing);
+              const timingTamil = med.timing_tamil || timingOpt?.tamil;
               return (
                 <div
                   key={med.id}
@@ -142,6 +144,16 @@ export default function PrescriptionDetailPage() {
                   {med.frequency_tamil && (
                     <p lang="ta" className="text-xs text-gray-500">
                       {med.frequency_tamil}
+                    </p>
+                  )}
+                  {med.timing && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      {timingOpt?.label || med.timing}
+                    </p>
+                  )}
+                  {timingTamil && (
+                    <p lang="ta" className="text-xs text-gray-500">
+                      {timingTamil}
                     </p>
                   )}
                   {med.instructions && (
