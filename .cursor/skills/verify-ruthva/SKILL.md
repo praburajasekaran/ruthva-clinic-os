@@ -39,6 +39,14 @@ rtk node "$RUTHVA_CONTROL" launch "$RUTHVA_RUN"
 rtk node "$RUTHVA_CONTROL" doctor "$RUTHVA_RUN"
 ```
 
+For clinic activation checks, replace the launch command above with:
+
+```sh
+rtk node "$RUTHVA_CONTROL" launch "$RUTHVA_RUN" --admin-email verification-admin@clinic.test
+```
+
+The optional address must be a lowercase synthetic `clinic.test` email. The helper sets `RUTHVA_ADMIN_EMAIL` only in this run's API. The account must still register and verify its OTP through the UI. Default launches have no admin entitlement. Use a separate normal clinic owner for activation checks, as described in [account access](features/account-access.md).
+
 `launch` reports two automatically allocated localhost ports, the browser session, process ID, source hash, revision, and scratch directory. A successful launch writes `doctor.json` and requires the real API health response, login HTML, and an unauthenticated patient response of HTTP 401. `server.log` contains `Verification D1 migrations applied.` and Next.js `Ready`.
 
 The feature map uses these shell functions as exact commands. In a fresh shell, set `RUTHVA_RUN` to the existing run ID and define the same functions; do not launch again just to restore shell variables.
@@ -81,7 +89,7 @@ rtk node "$RUTHVA_CONTROL" browser "$RUTHVA_RUN" wait --url '**/dashboard'
 rtk node "$RUTHVA_CONTROL" capture "$RUTHVA_RUN" account-demo-login
 ```
 
-Prefer accessible names, the real input IDs, and placeholders listed in the map. Re-snapshot after DOM changes. If a legacy form has an unattached label, use a fresh snapshot ref for that field; refs are local to the current snapshot. Do not reuse example refs, coordinates, or tab positions. Name matching is partial in agent-browser 0.9.1: `--name Save` also matches `Save & Print`. Use the current Save button ref. Use a full `snapshot` for clickable catalog and prescription table cells that `snapshot -i` omits. Wait for actual routes, selectors, or text; never treat a successful click as proof of a saved record. Wait for the save transition before reloading, or reopen the record through its list. Each browser action has a 30-second limit. Hidden mobile/sidebar copies can make a text wait ambiguous; inspect a snapshot and target the visible page control instead.
+Prefer accessible names, the real input IDs, and placeholders listed in the map. Re-snapshot after DOM changes and after `capture`, which replaces refs with a full snapshot. If a legacy form has an unattached label, use a fresh snapshot ref for that field; refs are local to the current snapshot. Do not reuse example refs, coordinates, or tab positions. Name matching is partial in agent-browser 0.9.1: `--name Save` also matches `Save & Print`. Use the current Save button ref. Use a full `snapshot` for clickable catalog and prescription table cells that `snapshot -i` omits. Wait for actual routes, selectors, or text; never treat a successful click as proof of a saved record. Wait for the save transition before reloading, or reopen the record through its list. Each browser action has a 30-second limit. Hidden mobile/sidebar copies can make a text wait ambiguous; inspect a snapshot and target the visible page control instead.
 
 After a failed action, run doctor again. Inspect the visible state and remove any failed draft through the UI, or reset to a known route. Keep a healthy shared instance for dependent recipes. If the browser remains wedged or the instance is no longer useful, clean up before relaunching.
 
@@ -129,6 +137,7 @@ The executable [scripts/control.mjs](scripts/control.mjs) supports these exact i
 | Command | Purpose |
 | --- | --- |
 | `rtk node "$RUTHVA_CONTROL" launch "$RUTHVA_RUN"` | Build an isolated API bundle and start the app. |
+| `rtk node "$RUTHVA_CONTROL" launch "$RUTHVA_RUN" --admin-email verification-admin@clinic.test` | Start with a synthetic platform-admin email configuration. |
 | `rtk node "$RUTHVA_CONTROL" doctor "$RUTHVA_RUN"` | Read-only ownership, source, readiness, and auth check. |
 | `rtk node "$RUTHVA_CONTROL" browser "$RUTHVA_RUN" snapshot -i` | Run agent-browser and record the action. |
 | `rtk node "$RUTHVA_CONTROL" capture "$RUTHVA_RUN" patients-search-list` | Save ARIA, PNG, and URL proof. |
