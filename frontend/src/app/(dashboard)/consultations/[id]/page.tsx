@@ -17,9 +17,7 @@ export default function ConsultationDetailPage() {
   const params = useParams<{ id: string }>();
   const { user } = useAuth();
   const discipline = user?.clinic?.discipline ?? "siddha";
-  const { data: consultation, isLoading } = useApi<
-    Consultation & { prescription?: { id: number } }
-  >(`/consultations/${params.id}/`);
+  const { data: consultation, isLoading } = useApi<Consultation>(`/consultations/${params.id}/`);
   const { data: patient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
@@ -67,13 +65,13 @@ export default function ConsultationDetailPage() {
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
-          <Link
+          {user?.role === "doctor" && <Link
             href={`/consultations/${params.id}/edit`}
             className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <Pencil className="h-4 w-4" />
             Edit
-          </Link>
+          </Link>}
           {patient && (
             <Link
               href={`/patients/${patient.id}`}
@@ -92,13 +90,13 @@ export default function ConsultationDetailPage() {
               className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
             >
               <FileText className="h-4 w-4" />
-              View Prescription
+              Review visit completion
               <KbdBadge
                 keys={["P"]}
                 aria-label="Press P to view prescription"
               />
             </Link>
-          ) : (
+          ) : user?.role === "doctor" ? (
             <Link
               href={`/consultations/${params.id}/prescriptions/new`}
               className="inline-flex min-h-12 items-center gap-2 rounded-lg md:min-h-0 bg-emerald-700 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-800"
@@ -106,7 +104,7 @@ export default function ConsultationDetailPage() {
               <Plus className="h-4 w-4" />
               Write Prescription
             </Link>
-          )}
+          ) : null}
         </div>
       </div>
 

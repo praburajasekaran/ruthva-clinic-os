@@ -472,6 +472,7 @@ export default function PrintPrescriptionPage() {
       </div>
 
       <PrintTrigger
+        prescriptionId={prescription.id}
         patientName={patient?.name}
         consultationDate={consultation?.consultation_date}
       />

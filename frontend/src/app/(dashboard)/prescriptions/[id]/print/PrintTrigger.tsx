@@ -1,14 +1,16 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import Link from "next/link";
 import { Printer, ArrowLeft } from "lucide-react";
 
 type PrintTriggerProps = {
+  prescriptionId: number;
   patientName?: string;
   consultationDate?: string;
 };
 
-export function PrintTrigger({ patientName, consultationDate }: PrintTriggerProps) {
+export function PrintTrigger({ prescriptionId, patientName, consultationDate }: PrintTriggerProps) {
   const hasPrinted = useRef(false);
 
   // Set document title for filename when data is available
@@ -48,13 +50,13 @@ export function PrintTrigger({ patientName, consultationDate }: PrintTriggerProp
         <Printer className="h-4 w-4" />
         Print
       </button>
-      <button
-        onClick={() => window.history.back()}
+      <Link
+        href={`/prescriptions/${prescriptionId}`}
         className="inline-flex items-center gap-2 rounded-lg border border-gray-300 px-6 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
       >
         <ArrowLeft className="h-4 w-4" />
-        Back
-      </button>
+        Return to visit completion
+      </Link>
     </div>
   );
 }
