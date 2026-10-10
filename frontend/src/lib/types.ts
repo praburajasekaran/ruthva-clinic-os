@@ -244,6 +244,7 @@ export type DiagnosticData = Record<string, unknown>;
 
 export type Consultation = {
   readonly id: number;
+  readonly prescription?: { readonly id: number } | null;
   patient: number;
   patient_name?: string;
   // Vitals

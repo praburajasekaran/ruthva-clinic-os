@@ -966,6 +966,39 @@ async function clinicalRecords(token, name = "Patient") {
     rx: rx.data,
   };
 }
+test("saved visits expose their prescription for repeatable completion review", async () => {
+  const account = await signup("visit-completion");
+  const patient = await request("/v1/patients/", {
+    token: account.access,
+    method: "POST",
+    body: { name: "Completion Patient", age: 30, gender: "female", phone: "9876543210" },
+  });
+  assert.equal(patient.status, 201);
+  const visit = await request("/v1/consultations/", {
+    token: account.access,
+    method: "POST",
+    body: { patient: patient.data.id, consultation_date: "2026-10-10" },
+  });
+  assert.equal(visit.status, 201);
+  assert.equal(visit.data.prescription, null);
+  const rx = await request("/v1/prescriptions/", {
+    token: account.access,
+    method: "POST",
+    body: { consultation: visit.data.id, follow_up_date: "2026-10-17" },
+  });
+  assert.equal(rx.status, 201);
+  for (let i = 0; i < 2; i++) {
+    const reopened = await request(`/v1/consultations/${visit.data.id}/`, { token: account.access });
+    assert.equal(reopened.status, 200);
+    assert.deepEqual(reopened.data.prescription, { id: rx.data.id });
+    assert.equal(reopened.data.patient, patient.data.id);
+  }
+  const prescriptions = await request(`/v1/prescriptions/?consultation__patient=${patient.data.id}`, { token: account.access });
+  assert.equal(prescriptions.data.count, 1);
+  const other = await signup("other-completion");
+  assert.equal((await request(`/v1/consultations/${visit.data.id}/`, { token: other.access })).status, 404);
+});
+
 test("visit conflicts explain the patient-day rule and preserve saved visits", async () => {
   const account = await signup("visit-conflict"),
     records = await clinicalRecords(account.access, "Visit Conflict Patient");
