@@ -61,6 +61,7 @@ export default function NewPrescriptionPage() {
       </div>
       <PrescriptionBuilder
         consultationId={consultation.id}
+        consultationDate={consultation.consultation_date}
         patientId={patient?.id ?? 0}
       />
     </div>

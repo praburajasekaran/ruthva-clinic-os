@@ -41,6 +41,16 @@ The four synthetic users and two synthetic clinics were deactivated after verifi
 
 Ignored local artifacts are under `.audit/simple-clinic/`: `deployed-smoke-report.json`, `deployed-browser-report.json`, `deployed-home.png`, `deployed-patient-history.png`, and `deployed-contact-mobile.png`. Private fixture credentials remain excluded from Git.
 
+## Follow-up date shortcuts
+
+Frontend version `1f14dadd-733b-4f8b-8cdc-fa8c06459f7a` was deployed on 10 October 2026. The previous frontend version is `d877db38-a183-4012-9f7e-059f06b7755b`. The API version, database, secrets, custom domain, and private API service binding are unchanged.
+
+The prescription create and edit forms offer **7 days**, **14 days**, **30 days**, and **45 days**, plus **Pick a date**. Shortcuts use the recorded visit date. The form shows the calculated return date and the visit date used for the shortcut. No return date is selected by default. Saved custom dates remain unchanged when editing. **Clear date** removes the date without removing follow-up notes. Use **Save**, **Save & Print**, or **Update Prescription** to persist the choice.
+
+Frontend type and lint checks passed. Three synthetic browser tests passed: home navigation, complete new-patient visit, and follow-up dates. The date test covers all four intervals, month changes, leap year, daylight-saving time, save/readback, edit preservation, manual selection, and clearing. Desktop and 390-pixel mobile checks confirmed the selected date, calendar, and wrapping. Mobile shortcut buttons are 48 pixels tall; no horizontal overflow was observed. No real patient prescription was changed during verification.
+
+The live prescription form showed all four shortcuts and the manual picker. Health and login endpoints returned HTTP 200 on both public origins. The production build contained no local test API URLs. Screenshots and smoke results are saved under the ignored `.audit/follow-up-date/` directory.
+
 ## Recovery
 
 The previous Worker version IDs are recorded above and in the ignored pre-release audit file. Restore those Worker versions if application rollback becomes necessary. Do not reverse D1 migrations as part of a Worker rollback. Keep the `ruthva.com` domain and private API service binding in place.

@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { type FormEvent, useReducer } from "react";
 import { Plus } from "lucide-react";
+import { addDays, format, isValid, parseISO } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DatePicker } from "@/components/ui/DatePicker";
@@ -17,6 +18,8 @@ import {
   ADVICE_LABELS,
 } from "@/lib/constants/bilingual-labels";
 import type { Prescription } from "@/lib/types";
+
+const FOLLOW_UP_INTERVALS = [7, 14, 30, 45] as const;
 
 type MedicationData = {
   medicine: number | null;
@@ -161,6 +164,7 @@ function reducer(
 
 type PrescriptionBuilderProps = {
   consultationId: number;
+  consultationDate?: string;
   patientId: number;
   mode?: "create" | "edit";
   prescriptionId?: number;
@@ -181,6 +185,7 @@ type PrescriptionBuilderProps = {
 
 export function PrescriptionBuilder({
   consultationId,
+  consultationDate,
   mode = "create",
   prescriptionId,
   initialData,
@@ -189,6 +194,8 @@ export function PrescriptionBuilder({
   const { user } = useAuth();
   const discipline = user?.clinic?.discipline ?? "siddha";
   const isEdit = mode === "edit";
+  const parsedVisitDate = consultationDate ? parseISO(consultationDate) : null;
+  const visitDate = parsedVisitDate && isValid(parsedVisitDate) ? parsedVisitDate : null;
 
   const [state, dispatch] = useReducer(
     reducer,
@@ -442,22 +449,55 @@ export function PrescriptionBuilder({
 
       {/* Follow-up */}
       <FormSection title={<BilingualLabel english={SECTION_LABELS.followUp.en} tamil={SECTION_LABELS.followUp.ta} as="span" variant="heading" />} id="follow-up">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField label="Follow-up Date">
+        <div className="space-y-4">
+          <FormField
+            label="Follow-up Date"
+            hint={visitDate
+              ? `Shortcuts count from the visit on ${format(visitDate, "d MMM yyyy")}.`
+              : "Visit date unavailable. Pick a date manually."}
+          >
             {(props) => (
-              <DatePicker
-                id={props.id}
-                aria-describedby={props["aria-describedby"]}
-                aria-invalid={props["aria-invalid"]}
-                value={state.follow_up_date}
-                onChange={(v) =>
-                  dispatch({
-                    type: "SET_FIELD",
-                    field: "follow_up_date",
-                    value: v,
-                  })
-                }
-              />
+              <div className="space-y-3">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Follow-up date options">
+                  {FOLLOW_UP_INTERVALS.map((days) => {
+                    const date = visitDate ? format(addDays(visitDate, days), "yyyy-MM-dd") : "";
+                    const selected = !!date && state.follow_up_date === date;
+                    return (
+                      <Button
+                        key={days}
+                        type="button"
+                        variant={selected ? "primary" : "outline"}
+                        aria-pressed={selected}
+                        aria-describedby={props["aria-describedby"]}
+                        disabled={!visitDate}
+                        onClick={() => dispatch({ type: "SET_FIELD", field: "follow_up_date", value: date })}
+                      >
+                        {days} days
+                      </Button>
+                    );
+                  })}
+                  <DatePicker
+                    id={props.id}
+                    triggerLabel="Pick a date"
+                    aria-describedby={props["aria-describedby"]}
+                    aria-invalid={props["aria-invalid"]}
+                    value={state.follow_up_date}
+                    onChange={(value) => dispatch({ type: "SET_FIELD", field: "follow_up_date", value })}
+                  />
+                </div>
+                <div className="flex flex-wrap items-center gap-x-3" aria-live="polite">
+                  {state.follow_up_date && (
+                    <>
+                      <p className="text-base font-medium text-foreground">
+                        Return on <time dateTime={state.follow_up_date}>{format(parseISO(state.follow_up_date), "d MMM yyyy")}</time>
+                      </p>
+                      <Button type="button" variant="link" size="sm" onClick={() => dispatch({ type: "SET_FIELD", field: "follow_up_date", value: "" })}>
+                        Clear date
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </FormField>
           <FormField label="Follow-up Notes">

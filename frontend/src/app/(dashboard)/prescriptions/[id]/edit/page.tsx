@@ -120,6 +120,7 @@ export default function EditPrescriptionPage() {
       </div>
       <PrescriptionBuilder
         consultationId={prescription.consultation}
+        consultationDate={consultation?.consultation_date}
         patientId={consultation?.patient ?? 0}
         mode="edit"
         prescriptionId={prescription.id}

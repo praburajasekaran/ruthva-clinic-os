@@ -140,6 +140,61 @@ for (const returning of [false, true]) {
   });
 }
 
+test.describe("follow-up date shortcuts", () => {
+  test.use({ timezoneId: "America/New_York" });
+
+  test("visit-relative dates survive saving, manual changes, and clearing", async ({ page, request }) => {
+    const person = await patient(request, "Follow-up Date Patient");
+    const visit = await api(request, "/consultations/", { method: "POST", data: {
+      patient: person.id, consultation_date: "2028-01-31", diagnosis: "Joint pain",
+    } });
+    await signIn(page);
+    await page.goto(`/consultations/${visit.id}/prescriptions/new`);
+    const followUp = page.locator("#follow-up");
+    await expect(followUp.getByText("Return on", { exact: false })).toHaveCount(0);
+    for (const [days, date, display] of [
+      [7, "2028-02-07", "7 Feb 2028"],
+      [14, "2028-02-14", "14 Feb 2028"],
+      [30, "2028-03-01", "1 Mar 2028"],
+      [45, "2028-03-16", "16 Mar 2028"],
+    ]) {
+      await followUp.getByRole("button", { name: `${days} days`, exact: true }).click();
+      await expect(followUp.getByRole("button", { name: `${days} days`, exact: true })).toHaveAttribute("aria-pressed", "true");
+      await expect(followUp.locator("time")).toHaveAttribute("datetime", date);
+      await expect(followUp.locator("time")).toHaveText(display);
+      await expect(followUp.locator('[aria-pressed="true"]')).toHaveCount(1);
+    }
+    await page.getByPlaceholder("Follow-up notes...").fill("Review progress");
+    await page.getByRole("button", { name: "Save", exact: true }).click();
+    await expect(page.getByRole("heading", { name: "Visit completion", exact: true })).toBeVisible();
+    const prescriptionId = Number(/prescriptions\/(\d+)/.exec(page.url())[1]);
+    expect((await api(request, `/prescriptions/${prescriptionId}/`)).follow_up_date).toBe("2028-03-16");
+    await page.goto(`/prescriptions/${prescriptionId}/edit`);
+    await expect(followUp.getByRole("button", { name: "45 days", exact: true })).toHaveAttribute("aria-pressed", "true");
+    await expect(page.getByPlaceholder("Follow-up notes...")).toHaveValue("Review progress");
+    await page.getByLabel(/^Follow-up Date/).click();
+    const calendar = page.getByRole("dialog", { name: "Choose a date", exact: true });
+    await expect(calendar.getByRole("combobox").nth(0)).toHaveValue("2");
+    await expect(calendar.getByRole("combobox").nth(1)).toHaveValue("2028");
+    await calendar.getByRole("button", { name: /March 20/ }).click();
+    await expect(followUp.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await expect(followUp.locator("time")).toHaveText("20 Mar 2028");
+    await page.getByRole("button", { name: "Update Prescription", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/prescriptions/${prescriptionId}$`));
+    expect((await api(request, `/prescriptions/${prescriptionId}/`)).follow_up_date).toBe("2028-03-20");
+    await page.goto(`/prescriptions/${prescriptionId}/edit`);
+    await expect(followUp.locator("time")).toHaveText("20 Mar 2028");
+    await expect(followUp.locator('[aria-pressed="true"]')).toHaveCount(0);
+    await followUp.getByRole("button", { name: "Clear date", exact: true }).click();
+    await expect(followUp.locator("time")).toHaveCount(0);
+    await page.getByRole("button", { name: "Update Prescription", exact: true }).click();
+    await expect(page).toHaveURL(new RegExp(`/prescriptions/${prescriptionId}$`));
+    const stored = await api(request, `/prescriptions/${prescriptionId}/`);
+    expect(stored.follow_up_date).toBe(null);
+    expect(stored.follow_up_notes).toBe("Review progress");
+  });
+});
+
 test("admin and therapist see saved clinical status with their existing permissions", async ({ browser, request }) => {
   const med = await medicine(request, "Role Tablet");
   const records = await savedVisit(request, "Role Patient", [{ medicine: med.id, drug_name: med.name, frequency: "BD" }]);
