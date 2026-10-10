@@ -5,9 +5,9 @@ import "./globals.css";
 export const metadata: Metadata = {
   title: {
     template: "%s | Ruthva",
-    default: "Ruthva — Clinic Management",
+    default: "Ruthva | Siddha Clinic Management",
   },
-  description: "Clinic management OS powered by Ruthva",
+  description: "Manage your Siddha clinic with Envagai Thervu assessments, Tamil and English prescriptions, patient records, and pharmacy stock.",
 };
 
 export default function RootLayout({

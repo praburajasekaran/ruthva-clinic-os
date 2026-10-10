@@ -14,6 +14,7 @@ import { portability } from "./portability";
 import { reports } from "./reports";
 import { resources, reminders, cron } from "./resources";
 import type { Env } from "./data";
+import { requireEnabledDiscipline } from "./practices";
 
 const app = new Hono<App>({
   getPath: (request) =>
@@ -84,6 +85,8 @@ app.use("*", async (c, next) => {
       "clinics_clinic",
       user.clinic_id,
     )) as Clinic;
+    if (!(c.req.path === "/api/v1/auth/me/" && platformAdmin(c.env, user)))
+      requireEnabledDiscipline(clinic.discipline, 403);
     check(
       clinic.is_active ||
         (c.req.path === "/api/v1/auth/me/" && platformAdmin(c.env, user)),

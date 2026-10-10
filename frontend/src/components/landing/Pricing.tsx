@@ -17,7 +17,7 @@ export function Pricing() {
                         Simple pricing. Everything included.
                     </h2>
                     <p className="mt-6 text-lg text-text-secondary leading-relaxed">
-                        One plan with everything your AYUSH clinic needs. No hidden fees, no per-feature charges.
+                        One plan with everything your Siddha clinic needs. No hidden fees, no per-feature charges.
                     </p>
                 </div>
 
@@ -32,7 +32,7 @@ export function Pricing() {
 
                         <div className="mt-10 mb-10">
                             <h3 className="text-3xl font-bold text-brand-950">Clinic Plan</h3>
-                            <p className="text-text-secondary text-base mt-3 leading-relaxed">Complete clinic management for independent AYUSH practitioners and small clinics.</p>
+                            <p className="text-text-secondary text-base mt-3 leading-relaxed">Complete clinic management for independent Siddha practitioners and small clinics.</p>
 
                             <div className="mt-8 flex flex-col gap-1">
                                 <div className="flex items-center gap-2 text-text-secondary">
@@ -79,7 +79,7 @@ export function Pricing() {
                             </li>
                             <li className="flex gap-x-4 text-brand-900 font-medium">
                                 <Languages className="h-6 w-6 flex-none text-brand-500/80" aria-hidden="true" />
-                                Multi-discipline &amp; bilingual support
+                                Siddha assessments &amp; Tamil prescriptions
                             </li>
                         </ul>
 
