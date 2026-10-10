@@ -9,6 +9,7 @@ import { useApi } from "@/hooks/useApi";
 import { Button } from "@/components/ui/Button";
 import { DatePicker } from "@/components/ui/DatePicker";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
+import { WhatsAppReminderQueue } from "@/components/prescriptions/WhatsAppMessage";
 import { JourneysOverview } from "./components/JourneysOverview";
 import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
 import type {
@@ -461,6 +462,8 @@ export default function FollowUpsPage() {
         onTabChange={setTab}
         onDoctorStatusChange={setDoctorStatus}
       />
+
+      {(user?.role === "doctor" || user?.role === "admin") && <WhatsAppReminderQueue />}
 
       {errorMessage && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{errorMessage}</div>}
       {error?.detail && <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error.detail}</div>}

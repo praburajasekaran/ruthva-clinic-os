@@ -9,6 +9,7 @@ import { clinical } from "./clinical";
 import { team, invite } from "./team";
 import { treatments } from "./treatments";
 import { integrations } from "./integrations";
+import { whatsapp } from "./whatsapp";
 import { portability } from "./portability";
 import { reports } from "./reports";
 import { resources, reminders, cron } from "./resources";
@@ -135,6 +136,7 @@ app.route("/api/v1", portability);
 app.route("/api/v1", integrations);
 app.route("/api/v1", reports);
 app.route("/api/v1", resources);
+app.route("/api/v1", whatsapp);
 app.route("/api/v1", clinical);
 app.get("/api/schema/", (c) => {
   const paths: Record<string, Record<string, unknown>> = {};
@@ -153,7 +155,7 @@ app.get("/api/schema/", (c) => {
         name: match[1],
         in: "path",
         required: true,
-        schema: { type: "integer" },
+        schema: { type: match[1] === "message_id" ? "string" : "integer" },
       })),
       ...(publicPaths.has(route.path)
         ? {}

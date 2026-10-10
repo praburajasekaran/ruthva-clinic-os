@@ -58,3 +58,5 @@ The [verification report](docs/cloudflare-verification.md) records coverage and 
 | `backend/` | Original Django source for contract generation, data export, and rollback reference. |
 
 Django, PostgreSQL, and Railway are absent from the deployed runtime. SES uses your existing AWS account and sending quota. Optional Ruthva journeys and GitHub feedback remain external application integrations.
+
+The [WhatsApp handoff reference](docs/whatsapp-handoff.md) describes reviewed prescription text and reminders that staff send from their signed-in WhatsApp account. The user presses Send in WhatsApp. Delivery remains unconfirmed in Ruthva.

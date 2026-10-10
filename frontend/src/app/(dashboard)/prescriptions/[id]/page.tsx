@@ -10,6 +10,7 @@ import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { DispenseModal } from "@/components/pharmacy/DispenseModal";
 import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
+import { WhatsAppMessage } from "@/components/prescriptions/WhatsAppMessage";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Package, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-options";
@@ -82,7 +83,8 @@ export default function PrescriptionDetailPage() {
             </div>
           )}
         </div>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
+          {canManageTreatments && <WhatsAppMessage prescriptionId={prescription.id} />}
           {patient && (
             <Link
               href={`/patients/${patient.id}`}
