@@ -501,7 +501,7 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
             columns={[
               { key: "disease", label: "Disease/Condition", placeholder: "e.g., Diabetes" },
               { key: "duration", label: "Duration", placeholder: "e.g., 5 years" },
-              { key: "medication", label: "Current Medication", placeholder: "e.g., Metformin" },
+              { key: "medication", label: "Current Medication", placeholder: "e.g., Nilavembu Kudineer" },
             ]}
             rows={form.medical_history}
             onAdd={() =>
