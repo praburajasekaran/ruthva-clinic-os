@@ -2059,3 +2059,19 @@ test("patient summary uses saved clinic-scoped facts, caches, refreshes and fall
   assert.equal((await request(path, { token: other.access })).status, 404);
   assert.equal((await request(path, { token: other.access, method: "POST", body: {} })).status, 404);
 });
+
+test("therapy records group case variants and link only patients in the current clinic", async () => {
+  const a = await signup("therapy-a"), b = await signup("therapy-b");
+  const x = await clinicalRecords(a.access, "Therapy patient A"), y = await clinicalRecords(b.access, "Therapy patient B");
+  for (const [token, record, name] of [[a.access,x,"Varma"],[b.access,y,"Varma"]]) {
+    const changed = await request(`/v1/prescriptions/${record.rx.id}/`, { token, method: "PATCH", body: { procedures: [{ name }] } });
+    assert.equal(changed.status, 200, JSON.stringify(changed.data));
+  }
+  const list = await request("/v1/therapies/", { token: a.access });
+  assert.equal(list.status, 200, JSON.stringify(list.data));
+  assert.deepEqual(list.data.results.map(t => [t.name,t.patient_count]), [["Varma",1]]);
+  const detail = await request("/v1/therapies/?name=varma", { token: a.access });
+  assert.equal(detail.data.count, 1);
+  assert.equal(detail.data.results[0].patient_id, x.patient.id);
+  assert.ok(!JSON.stringify(detail.data).includes("Therapy patient B"));
+});

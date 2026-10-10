@@ -246,6 +246,17 @@ export type Discipline =
 // ── Consultation ──
 export type DiagnosticData = Record<string, unknown>;
 
+export type ConsultationListItem = {
+  readonly id: number;
+  patient: number;
+  patient_name: string;
+  patient_record_id: string;
+  consultation_date: string;
+  chief_complaints: string;
+  diagnosis: string;
+  has_prescription: boolean;
+};
+
 export type Consultation = {
   readonly id: number;
   readonly prescription?: { readonly id: number } | null;

@@ -5,7 +5,7 @@ const cwd = fileURLToPath(new URL("../", import.meta.url));
 
 export default defineConfig({
   testDir: "./tests",
-  testMatch: ["visit-completion.spec.mjs", "patient-record.spec.mjs"],
+  testMatch: ["visit-completion.spec.mjs", "patient-record.spec.mjs", "clinic-home.spec.mjs"],
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },

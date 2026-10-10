@@ -4,3 +4,5 @@ Separate current medicines from prescriptions	An issued prescription does not pr
 Separate contact date from clinical return date	Assistant retries must not change clinical advice	Accepted visit-first workflow
 Use existing admin staff for assistant assignment	Avoid new role permissions and team limits	team.ts supports doctor, therapist, admin
 One implementation owner	Project instructions require sequential main-thread work	AGENTS.md tool mapping
+Server patient search	The previous visit picker searched only the first 20 records	clinic-home browser test finds an older record after creating 22
+Keep conditional sidebar colors	Gray applies on white; hover colors change text and background together	Reviewed three gray-on-color hook findings as false positives; no suppressions added

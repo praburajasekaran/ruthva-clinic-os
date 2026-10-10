@@ -5,7 +5,7 @@ import {
   Users,
   Users2,
   Stethoscope,
-  FileText,
+  Hand,
   CalendarClock,
   Pill,
   Menu,
@@ -27,12 +27,12 @@ import { useApi } from "@/hooks/useApi";
 import type { FollowUpsResponse, Medicine } from "@/lib/types";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/patients", label: "Patients", icon: Users },
-  { href: "/consultations", label: "Consultations", icon: Stethoscope },
-  { href: "/prescriptions", label: "Prescriptions", icon: FileText },
+  { href: "/consultations", label: "Visits", icon: Stethoscope },
+  { href: "/therapies", label: "Therapies", icon: Hand },
   { href: "/follow-ups", label: "Follow-ups", icon: CalendarClock },
-  { href: "/pharmacy", label: "Pharmacy", icon: Pill },
+  { href: "/pharmacy", label: "Medicines", icon: Pill },
   { href: "/team", label: "Team", icon: Users2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -106,7 +106,8 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
               alt="Ruthva"
               width={140}
               height={35}
-              className="h-10 w-auto"
+              className="h-10 w-auto brightness-0"
+              style={{ filter: "brightness(0)" }}
             />
           </a>
         </div>
@@ -236,7 +237,8 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           alt="Ruthva"
           width={100}
           height={25}
-          className="h-7 w-auto"
+          className="h-7 w-auto brightness-0"
+          style={{ filter: "brightness(0)" }}
         />
       </header>
 

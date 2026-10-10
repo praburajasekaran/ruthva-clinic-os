@@ -14,6 +14,21 @@ import type { App, Row } from "./data";
 import { addDays } from "./treatments";
 
 export const reports = new Hono<App>();
+const therapyRecords = `SELECT c.patient_id,s.procedure_name name,s.session_date activity_date FROM treatments_treatmentsession s JOIN treatments_treatmentblock b ON b.id=s.treatment_block_id JOIN treatments_treatmentplan t ON t.id=b.treatment_plan_id JOIN prescriptions_prescription r ON r.id=t.prescription_id JOIN consultations_consultation c ON c.id=r.consultation_id WHERE t.clinic_id=? UNION ALL SELECT c.patient_id,e.name,c.consultation_date activity_date FROM prescriptions_procedureentry e JOIN prescriptions_prescription r ON r.id=e.prescription_id JOIN consultations_consultation c ON c.id=r.consultation_id WHERE r.clinic_id=?`;
+reports.get("/therapies/", async (c) => {
+  const name = c.req.query("name");
+  const clinic = clinicOf(c), db = dbOf(c);
+  if (name !== undefined) {
+    check(name.trim().length > 0 && name.length <= 255, "Invalid therapy name.");
+    const page = Math.max(1, Number.parseInt(c.req.query("page") || "1", 10) || 1);
+    const condition = "lower(trim(a.name))=lower(trim(?))";
+    const count = await one(db, `WITH activity AS (${therapyRecords}) SELECT count(DISTINCT patient_id) count FROM activity a WHERE ${condition}`, [clinic, clinic, name]);
+    const results = await all(db, `WITH activity AS (${therapyRecords}) SELECT p.id patient_id,p.name patient_name,p.record_id,max(a.activity_date) last_activity,count(*) activity_count FROM activity a JOIN patients_patient p ON p.id=a.patient_id WHERE p.clinic_id=? AND ${condition} GROUP BY p.id ORDER BY last_activity DESC,p.id LIMIT 20 OFFSET ?`, [clinic, clinic, clinic, name, (page - 1) * 20]);
+    return c.json({ name, count: count?.count ?? 0, results });
+  }
+  const results = await all(db, `WITH activity AS (${therapyRecords}) SELECT min(trim(name)) name,count(DISTINCT patient_id) patient_count,max(activity_date) last_activity FROM activity WHERE trim(name)<>'' GROUP BY lower(trim(name)) ORDER BY name`, [clinic, clinic]);
+  return c.json({ results });
+});
 reports.get("/dashboard/stats/", async (c) => {
   const date = today(),
     day = new Date(`${date}T00:00:00Z`).getUTCDay(),
