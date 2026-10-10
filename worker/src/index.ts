@@ -193,6 +193,18 @@ app.onError((error, c) => {
     );
   if (error instanceof SyntaxError)
     return c.json({ detail: "Invalid JSON request." }, 400);
+  if (
+    error.message.includes(
+      "UNIQUE constraint failed: consultations_consultation.clinic_id, consultations_consultation.patient_id, consultations_consultation.consultation_date",
+    )
+  )
+    return c.json(
+      {
+        detail:
+          "A visit already exists for this patient on this date. Open the existing visit from the patient's history to make changes.",
+      },
+      409,
+    );
   if (/constraint|Active patient limit|another clinic/i.test(error.message))
     return c.json(
       {

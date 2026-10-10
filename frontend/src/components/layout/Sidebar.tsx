@@ -64,7 +64,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   }, [clinicLogoUrl]);
 
   const isActive = (href: string) => {
-    if (href === "/") return pathname === "/";
+    if (href === "/") return pathname === "/" || pathname === "/dashboard";
     return pathname.startsWith(href);
   };
 
@@ -84,13 +84,13 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   const lowStockCount = lowStockData?.length ?? 0;
 
   const nav = (
-    <div className="flex flex-1 flex-col">
+    <div className="flex min-h-full flex-1 flex-col gap-6">
       <div>
         <div className="mb-6 flex flex-col items-center border-b border-gray-200 pb-6">
           <button
             type="button"
             onClick={closeMobileMenu}
-            className="absolute right-3 top-3 rounded-lg p-1 text-gray-400 hover:text-gray-600 md:hidden"
+            className="absolute right-3 top-3 flex h-11 w-11 items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 hover:text-gray-700 md:hidden"
             aria-label="Close menu"
           >
             <X className="h-5 w-5" aria-hidden="true" />
@@ -120,12 +120,12 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
             closeMobileMenu();
             openSearch();
           }}
-          className="no-print mb-4 flex w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+          className="no-print mb-4 flex min-h-12 w-full items-center gap-3 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm text-gray-500 transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 md:min-h-0"
           aria-label="Search patients (Ctrl+K)"
         >
           <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="flex-1 text-left">Search patients…</span>
-          <KbdBadge keys={["Ctrl", "K"]} aria-hidden="true" />
+          <span className="hidden md:inline-flex"><KbdBadge keys={["Ctrl", "K"]} aria-hidden="true" /></span>
         </button>
 
         <nav className="space-y-1">
@@ -147,7 +147,8 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
                 key={item.href}
                 href={item.href}
                 onClick={closeMobileMenu}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors ${
+                aria-current={active ? "page" : undefined}
+                className={`flex min-h-12 items-center gap-3 rounded-lg px-3 py-2 text-base transition-colors md:min-h-0 md:text-sm ${
                   active
                     ? "bg-emerald-50 font-medium text-emerald-700"
                     : "text-gray-700 hover:bg-emerald-50 hover:text-emerald-700"
@@ -156,10 +157,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
                 <item.icon className="h-5 w-5" aria-hidden="true" />
                 <span className="flex-1">{item.label}</span>
                 {item.href === "/patients" && (
-                  <KbdBadge
-                    keys={["N"]}
-                    aria-hidden="true"
-                  />
+                  <span className="hidden md:inline-flex"><KbdBadge keys={["N"]} aria-hidden="true" /></span>
                 )}
                 {item.href === "/follow-ups" && followUpCount > 0 && (
                   <span
@@ -212,7 +210,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         <button
           type="button"
           onClick={logout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-red-50 hover:text-red-700"
+          className="flex min-h-12 w-full items-center gap-3 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:bg-red-50 hover:text-red-700 md:min-h-0"
         >
           <LogOut className="h-4 w-4" aria-hidden="true" />
           <span>Sign out</span>
@@ -224,11 +222,11 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   return (
     <>
       {/* Mobile header */}
-      <div className="fixed left-0 right-0 top-0 z-40 flex items-center gap-3 border-b border-gray-200 bg-white px-4 py-3 md:hidden">
+      <header className="fixed inset-x-0 top-0 z-40 flex h-[calc(4rem+env(safe-area-inset-top))] items-center gap-3 border-b border-gray-200 bg-white px-4 pt-[env(safe-area-inset-top)] md:hidden">
         <button
           type="button"
           onClick={openMobileMenu}
-          className="rounded-lg border border-gray-200 p-2 shadow-sm"
+          className="flex h-12 w-12 items-center justify-center rounded-xl border border-gray-200 shadow-sm"
           aria-label="Open menu"
         >
           <Menu className="h-5 w-5 text-gray-700" aria-hidden="true" />
@@ -238,9 +236,9 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           alt="Ruthva"
           width={100}
           height={25}
-          className="h-6 w-auto"
+          className="h-7 w-auto"
         />
-      </div>
+      </header>
 
       {/* Mobile overlay */}
       {mobileOpen && (
@@ -255,7 +253,9 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed inset-y-0 left-0 z-50 w-64 transform border-r bg-white p-4 transition-transform md:hidden ${
+        aria-hidden={!mobileOpen}
+        inert={!mobileOpen || undefined}
+        className={`fixed inset-y-0 left-0 z-50 w-[min(20rem,calc(100vw-3rem))] transform overflow-y-auto overscroll-contain border-r bg-white px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))] transition-transform md:hidden ${
           mobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -263,7 +263,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
       </aside>
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 border-r bg-white p-4 md:flex md:flex-col">
+      <aside className="hidden w-64 shrink-0 overflow-y-auto border-r bg-white p-4 md:flex md:flex-col">
         {nav}
       </aside>
 

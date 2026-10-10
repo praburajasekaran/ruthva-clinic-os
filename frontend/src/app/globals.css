@@ -80,7 +80,7 @@
   body {
     background-color: var(--color-canvas);
     color: var(--color-text-primary);
-    @apply antialiased;
+    @apply text-base antialiased;
   }
 
   ::selection {
@@ -92,6 +92,25 @@
   h3,
   h4 {
     letter-spacing: -0.02em;
+  }
+
+  @media screen and (max-width: 767px) {
+    :root {
+      --font-size-xs: 0.875rem;
+      --line-height-xs: 1.25rem;
+      --font-size-sm: 1rem;
+      --line-height-sm: 1.5rem;
+      --font-size-base: 1.125rem;
+      --line-height-base: 1.75rem;
+      --font-size-lg: 1.25rem;
+      --line-height-lg: 1.75rem;
+      --font-size-xl: 1.375rem;
+      --line-height-xl: 1.875rem;
+      --font-size-2xl: 1.75rem;
+      --line-height-2xl: 2.125rem;
+      --font-size-3xl: 2rem;
+      --line-height-3xl: 2.375rem;
+    }
   }
 }
 

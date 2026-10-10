@@ -966,6 +966,55 @@ async function clinicalRecords(token, name = "Patient") {
     rx: rx.data,
   };
 }
+test("visit conflicts explain the patient-day rule and preserve saved visits", async () => {
+  const account = await signup("visit-conflict"),
+    records = await clinicalRecords(account.access, "Visit Conflict Patient");
+  const save = (date) =>
+    request("/v1/consultations/", {
+      token: account.access,
+      method: "POST",
+      body: {
+        patient: records.patient.id,
+        consultation_date: date,
+        weight: null,
+        height: null,
+        pulse_rate: null,
+        temperature: null,
+        bp_systolic: null,
+        bp_diastolic: null,
+      },
+    });
+  const duplicate = await save("2026-10-03");
+  assert.equal(duplicate.status, 409);
+  assert.equal(
+    duplicate.data.detail,
+    "A visit already exists for this patient on this date. Open the existing visit from the patient's history to make changes.",
+  );
+  const nextDay = await save("2026-10-04");
+  assert.equal(nextDay.status, 201, JSON.stringify(nextDay.data));
+  assert.equal(nextDay.data.weight, null);
+  const editConflict = await request(`/v1/consultations/${nextDay.data.id}/`, {
+    token: account.access,
+    method: "PATCH",
+    body: { consultation_date: "2026-10-03" },
+  });
+  assert.equal(editConflict.status, 409);
+  assert.equal(editConflict.data.detail, duplicate.data.detail);
+  const history = await request(
+    `/v1/patients/${records.patient.id}/consultations/`,
+    {
+      token: account.access,
+    },
+  );
+  assert.deepEqual(
+    history.data.map((visit) => [visit.id, visit.consultation_date]),
+    [
+      [nextDay.data.id, "2026-10-04"],
+      [records.consultation.id, "2026-10-03"],
+    ],
+  );
+});
+
 test("OTP expiry, attempt limit, single consumption, and onboarding", async () => {
   const account = await signup("otp-clinic"),
     email = "otp-clinic@clinic.test";

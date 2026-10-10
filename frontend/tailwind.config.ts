@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import animate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
@@ -9,6 +10,15 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontSize: {
+        xs: ["var(--font-size-xs, 0.75rem)", { lineHeight: "var(--line-height-xs, 1rem)" }],
+        sm: ["var(--font-size-sm, 0.875rem)", { lineHeight: "var(--line-height-sm, 1.25rem)" }],
+        base: ["var(--font-size-base, 1rem)", { lineHeight: "var(--line-height-base, 1.5rem)" }],
+        lg: ["var(--font-size-lg, 1.125rem)", { lineHeight: "var(--line-height-lg, 1.75rem)" }],
+        xl: ["var(--font-size-xl, 1.25rem)", { lineHeight: "var(--line-height-xl, 1.75rem)" }],
+        "2xl": ["var(--font-size-2xl, 1.5rem)", { lineHeight: "var(--line-height-2xl, 2rem)" }],
+        "3xl": ["var(--font-size-3xl, 1.875rem)", { lineHeight: "var(--line-height-3xl, 2.25rem)" }],
+      },
       fontFamily: {
         sans: ["'Google Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
         serif: ["var(--font-serif)"],
@@ -111,6 +121,6 @@ const config: Config = {
       },
     },
   },
-  plugins: [require("tailwindcss-animate")],
+  plugins: [animate],
 };
 export default config;

@@ -12,10 +12,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <AuthGuard>
       <KeyboardProvider>
-        <div className="flex h-screen">
+        <div className="flex h-dvh">
           <Sidebar onMobileOpenChange={setMobileOpen} />
-          {/* Single inert container covers skip link + main so neither is reachable during mobile overlay */}
-          <div inert={mobileOpen || undefined} className="flex flex-1 flex-col">
+          <div inert={mobileOpen || undefined} className="flex min-w-0 flex-1 flex-col">
             <a
               href="#main-content"
               className="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-4 focus-visible:z-[100] focus-visible:rounded-md focus-visible:bg-emerald-800 focus-visible:px-4 focus-visible:py-2 focus-visible:text-white focus-visible:ring-2 focus-visible:ring-white focus-visible:outline-none"
@@ -24,13 +23,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </a>
             <main
               id="main-content"
-              className="flex min-h-screen flex-1 flex-col overflow-auto bg-[color:var(--color-canvas)] p-6 pt-16 md:p-8 md:pt-8"
+              className="flex min-h-0 flex-1 flex-col overflow-auto bg-[color:var(--color-canvas)] px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-[calc(5.5rem+env(safe-area-inset-top))] md:p-8"
             >
               <div className="flex-1">{children}</div>
             </main>
+            <FloatingFeedbackButton />
           </div>
         </div>
-        <FloatingFeedbackButton />
       </KeyboardProvider>
     </AuthGuard>
   );

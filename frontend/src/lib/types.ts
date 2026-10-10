@@ -302,6 +302,8 @@ export type Medication = {
   dosage: string;
   frequency: MedicationFrequency;
   frequency_tamil: string;
+  timing: "before_food" | "after_food" | "with_food" | "empty_stomach" | "";
+  timing_tamil: string;
   duration: string;
   instructions: string;
   instructions_ta: string;

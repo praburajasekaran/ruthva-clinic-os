@@ -3,19 +3,25 @@ import { Spinner } from "@/components/ui/Spinner";
 
 import { useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { Button } from "@/components/ui/Button";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { DispenseModal } from "@/components/pharmacy/DispenseModal";
+import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Package, Pencil, Printer } from "lucide-react";
-import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-options";
 import { useApi } from "@/hooks/useApi";
-import type { Prescription, Consultation, Patient, DispensingRecord } from "@/lib/types";
+import type { Prescription, Consultation, Patient, DispensingRecord, TreatmentPlanListItem } from "@/lib/types";
 
 export default function PrescriptionDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
   const [showDispense, setShowDispense] = useState(false);
+  const [showTreatmentForm, setShowTreatmentForm] = useState(false);
   const { data: prescription, isLoading } = useApi<Prescription>(
     `/prescriptions/${params.id}/`,
   );
@@ -27,6 +33,9 @@ export default function PrescriptionDetailPage() {
   );
   const { data: dispensingRecords, refetch: refreshDispensing } = useApi<DispensingRecord[]>(
     prescription ? `/pharmacy/dispensing/?prescription=${prescription.id}` : null,
+  );
+  const { data: plans, isLoading: plansLoading, error: plansError } = useApi<TreatmentPlanListItem[]>(
+    consultation ? `/treatments/plans/?patient_id=${consultation.patient}` : null,
   );
 
   const hasLinkedMeds = prescription?.medications?.some((m) => m.medicine_id || m.medicine) ?? false;
@@ -49,6 +58,8 @@ export default function PrescriptionDetailPage() {
 
   const medications = prescription.medications ?? [];
   const procedures = prescription.procedures ?? [];
+  const treatmentPlans = plans?.filter((plan) => plan.prescription === prescription.id) ?? [];
+  const canManageTreatments = user?.role === "doctor" || user?.role === "admin";
 
   return (
     <div className="space-y-6">
@@ -122,6 +133,8 @@ export default function PrescriptionDetailPage() {
               const freqOpt = FREQUENCY_OPTIONS.find(
                 (f) => f.value === med.frequency,
               );
+              const timingOpt = TIMING_OPTIONS.find((t) => t.value === med.timing);
+              const timingTamil = med.timing_tamil || timingOpt?.tamil;
               return (
                 <div
                   key={med.id}
@@ -142,6 +155,16 @@ export default function PrescriptionDetailPage() {
                   {med.frequency_tamil && (
                     <p lang="ta" className="text-xs text-gray-500">
                       {med.frequency_tamil}
+                    </p>
+                  )}
+                  {med.timing && (
+                    <p className="mt-1 text-sm text-gray-600">
+                      {timingOpt?.label || med.timing}
+                    </p>
+                  )}
+                  {timingTamil && (
+                    <p lang="ta" className="text-xs text-gray-500">
+                      {timingTamil}
                     </p>
                   )}
                   {med.instructions && (
@@ -241,6 +264,45 @@ export default function PrescriptionDetailPage() {
         </div>
       )}
 
+
+      <section aria-labelledby="treatment-plans-heading" className="rounded-lg border border-gray-200 bg-white p-6">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 id="treatment-plans-heading" className="text-base font-semibold text-gray-900">
+            Treatment plans
+          </h2>
+          {canManageTreatments && !showTreatmentForm && (
+            <Button size="sm" onClick={() => setShowTreatmentForm(true)}>
+              New Treatment Plan
+            </Button>
+          )}
+        </div>
+        {showTreatmentForm && (
+          <TreatmentPlanCreateForm
+            prescriptionId={prescription.id}
+            onCancel={() => setShowTreatmentForm(false)}
+            onCreated={(plan) => router.push(`/treatments/plans/${plan.id}`)}
+          />
+        )}
+        {plansLoading ? (
+          <p className="text-sm text-gray-500">Loading treatment plans...</p>
+        ) : plansError ? (
+          <p role="alert" className="text-sm text-red-600">
+            {plansError.detail || "Could not load treatment plans."}
+          </p>
+        ) : treatmentPlans.length > 0 ? (
+          <ul className="mt-3 space-y-2">
+            {treatmentPlans.map((plan) => (
+              <li key={plan.id}>
+                <Link href={`/treatments/plans/${plan.id}`} className="text-sm text-emerald-700 hover:underline">
+                  {plan.total_days}-day treatment plan ({plan.status}), {plan.block_count} blocks
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="mt-3 text-sm text-gray-500">No treatment plans for this prescription.</p>
+        )}
+      </section>
 
       {/* Follow-up */}
       {prescription.follow_up_date && (
