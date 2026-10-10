@@ -11,6 +11,7 @@ import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit
 import { DispenseModal } from "@/components/pharmacy/DispenseModal";
 import { VisitCompletion } from "@/components/prescriptions/VisitCompletion";
 import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
+import { WhatsAppMessage } from "@/components/prescriptions/WhatsAppMessage";
 import { KbdBadge } from "@/components/ui/KbdBadge";
 import { Calendar, Package, Pencil, Printer } from "lucide-react";
 import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-options";
@@ -105,6 +106,7 @@ export default function PrescriptionDetailPage() {
           )}
         </div>
         <div className="flex flex-wrap gap-3">
+          {(user?.role === "doctor" || user?.role === "admin") && <WhatsAppMessage prescriptionId={prescription.id} />}
           {patient && (
             <Link
               href={`/patients/${patient.id}`}

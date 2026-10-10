@@ -74,7 +74,7 @@ export function StartJourneyModal({
         <div className="flex flex-col items-center gap-3 py-4">
           <CheckCircle aria-hidden="true" className="h-12 w-12 text-emerald-500" />
           <p className="text-sm text-gray-600">
-            Ruthva will now track treatment continuity over WhatsApp.
+            Treatment journey started. Its status is available in the patient record.
           </p>
         </div>
       </Modal>

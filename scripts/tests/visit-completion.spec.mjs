@@ -153,6 +153,7 @@ test("admin and therapist see saved clinical status with their existing permissi
     await expect(page.getByRole("region", { name: "Treatment status" })).toContainText("Ask the doctor");
     await expect(page.getByRole("link", { name: "Edit prescription", exact: true })).toHaveCount(0);
     await expect(page.getByRole("button", { name: "Create treatment plan", exact: true })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "WhatsApp prescription", exact: true })).toHaveCount(role === "admin" ? 1 : 0);
     await expect(page.getByRole("button", { name: "Record dispensing", exact: true })).toBeVisible();
     const denied = await request.patch(`${apiOrigin}/api/v1/prescriptions/${records.rx.id}/`, {
       data: { follow_up_date: "2026-10-17" }, headers: { Authorization: `Bearer ${roles[role].access}` },

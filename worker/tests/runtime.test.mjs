@@ -928,6 +928,316 @@ const otpDigest = (value) =>
   createHmac("sha256", "local-test-secret-with-at-least-32-characters")
     .update(value)
     .digest("hex");
+
+test("WhatsApp handoffs require consent and review, reuse messages, and never claim delivery", async () => {
+  const account = await signup("whatsapp-clinic");
+  const token = account.access;
+  const records = await clinicalRecords(token, "WhatsApp Patient");
+  await request(`/v1/patients/${records.patient.id}/`, {
+    token,
+    method: "PATCH",
+    body: { whatsapp_number: "+44 7700 900123" },
+  });
+  await request(`/v1/prescriptions/${records.rx.id}/`, {
+    token,
+    method: "PATCH",
+    body: { follow_up_date: "2026-10-10", follow_up_notes_ta: "மறுபரிசோதனை" },
+  });
+  const previewPath = `/v1/prescriptions/${records.rx.id}/whatsapp/`;
+  const preview = await request(previewPath, { token });
+  assert.equal(preview.status, 200, JSON.stringify(preview.data));
+  assert.equal(preview.data.recipient, "447700900123");
+  assert.equal(preview.data.consent.status, "not_recorded");
+  assert.match(preview.data.message, /Twice daily\nஉணவுக்குப் பின்/);
+  assert.match(preview.data.message, /Follow-up: 2026-10-10\nமறுபரிசோதனை/);
+  const prepare = (body = {}) =>
+    request(previewPath, {
+      token,
+      method: "POST",
+      body: {
+        reviewed: true,
+        version: preview.data.version,
+        kind: "prescription",
+        ...body,
+      },
+    });
+  assert.equal((await prepare()).status, 409);
+  const consentPath = `/v1/patients/${records.patient.id}/whatsapp-consent/`;
+  assert.equal(
+    (
+      await request(consentPath, {
+        token,
+        method: "POST",
+        body: { status: "granted" },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await request(consentPath, {
+        token,
+        method: "POST",
+        body: { status: "granted", confirmed: true },
+      })
+    ).status,
+    200,
+  );
+  assert.equal((await prepare({ reviewed: false })).status, 400);
+  assert.equal((await prepare({ version: "stale" })).status, 409);
+  const callCount = remoteCalls.length;
+  const prepared = await Promise.all([prepare(), prepare()]);
+  assert.deepEqual(
+    prepared.map((r) => r.status),
+    [200, 200],
+  );
+  assert.equal(prepared[0].data.id, prepared[1].data.id);
+  assert.equal(prepared[0].data.status, "prepared");
+  const schema = await request("/schema/");
+  assert.deepEqual(
+    schema.data.paths["/api/v1/whatsapp/messages/{message_id}/open/"].post
+      .parameters,
+    [
+      {
+        name: "message_id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+      },
+    ],
+  );
+  const messagePath = `/v1/whatsapp/messages/${prepared[0].data.id}`;
+  const report = () =>
+    request(`${messagePath}/report-sent/`, {
+      token,
+      method: "POST",
+      body: { confirmed: true },
+    });
+  assert.equal((await report()).status, 409);
+  const opened = await request(`${messagePath}/open/`, {
+    token,
+    method: "POST",
+    body: {},
+  });
+  assert.equal(opened.status, 200, JSON.stringify(opened.data));
+  assert.equal(opened.data.status, "handoff_requested");
+  const url = new URL(opened.data.url);
+  assert.equal(url.origin, "https://wa.me");
+  assert.equal(url.pathname, "/447700900123");
+  assert.equal(url.searchParams.get("text"), preview.data.message);
+  assert.equal((await report()).data.status, "staff_reported_sent");
+  assert.equal((await report()).data.status, "staff_reported_sent");
+  assert.equal(
+    (await request(`${messagePath}/open/`, { token, method: "POST", body: {} }))
+      .status,
+    409,
+  );
+  assert.equal((await prepare()).data.status, "staff_reported_sent");
+  assert.equal(
+    remoteCalls.length,
+    callCount,
+    "Handoffs do not call a messaging provider",
+  );
+  const reminder = await request(`${previewPath}?kind=reminder`, { token });
+  assert.equal(
+    reminder.data.message,
+    "Hello WhatsApp Patient,\n\nClinic whatsapp-clinic\nYour follow-up is due on 2026-10-10.\nContact the clinic to confirm your visit.\n\nTo stop WhatsApp messages, tell the clinic.",
+  );
+  const preparedReminder = await request(previewPath, {
+    token,
+    method: "POST",
+    body: { kind: "reminder", reviewed: true, version: reminder.data.version },
+  });
+  assert.equal(preparedReminder.status, 200);
+  await request(consentPath, {
+    token,
+    method: "POST",
+    body: { status: "opted_out", confirmed: true },
+  });
+  assert.equal(
+    (
+      await request(`/v1/whatsapp/messages/${preparedReminder.data.id}/open/`, {
+        token,
+        method: "POST",
+        body: {},
+      })
+    ).status,
+    409,
+  );
+  assert.equal((await prepare()).status, 409);
+  assert.equal(
+    (await request(previewPath, { token })).data.consent.status,
+    "opted_out",
+  );
+  const queue = await request("/v1/whatsapp/reminders/", { token });
+  assert.equal(queue.status, 200);
+  assert.deepEqual(
+    queue.data.find((item) => item.prescription_id === records.rx.id),
+    {
+      prescription_id: records.rx.id,
+      follow_up_date: "2026-10-10",
+      patient_name: "WhatsApp Patient",
+      patient_id: records.patient.id,
+      consent_status: "opted_out",
+    },
+  );
+});
+
+test("WhatsApp rejects stale recipients, prescription edits, invalid contacts, and cross-clinic access", async () => {
+  const a = await signup("whatsapp-boundary-a");
+  const b = await signup("whatsapp-boundary-b");
+  const records = await clinicalRecords(a.access);
+  const path = `/v1/prescriptions/${records.rx.id}/whatsapp/`;
+  const consentPath = `/v1/patients/${records.patient.id}/whatsapp-consent/`;
+  const preview = await request(path, { token: a.access });
+  assert.equal(preview.data.recipient, "919876543211");
+  await request(consentPath, {
+    token: a.access,
+    method: "POST",
+    body: { status: "granted", confirmed: true },
+  });
+  const prepared = await request(path, {
+    token: a.access,
+    method: "POST",
+    body: {
+      reviewed: true,
+      kind: "prescription",
+      version: preview.data.version,
+    },
+  });
+  const openPath = `/v1/whatsapp/messages/${prepared.data.id}/open/`;
+  assert.equal((await request(path, { token: b.access })).status, 404);
+  assert.equal(
+    (
+      await request(consentPath, {
+        token: b.access,
+        method: "POST",
+        body: { status: "granted", confirmed: true },
+      })
+    ).status,
+    404,
+  );
+  assert.equal(
+    (await request(openPath, { token: b.access, method: "POST", body: {} }))
+      .status,
+    404,
+  );
+  await request(`/v1/prescriptions/${records.rx.id}/`, {
+    token: a.access,
+    method: "PATCH",
+    body: { diet_advice: "New diet instructions" },
+  });
+  assert.equal(
+    (await request(openPath, { token: a.access, method: "POST", body: {} }))
+      .status,
+    409,
+  );
+  const edited = await request(path, { token: a.access });
+  assert.match(edited.data.message, /Diet\nNew diet instructions/);
+  assert.notEqual(edited.data.version, preview.data.version);
+  await request(`/v1/patients/${records.patient.id}/`, {
+    token: a.access,
+    method: "PATCH",
+    body: { whatsapp_number: "not-a-phone" },
+  });
+  const invalid = await request(path, { token: a.access });
+  assert.equal(invalid.data.recipient, null);
+  assert.equal(
+    invalid.data.error,
+    "Enter a valid WhatsApp number with its country code in the patient record.",
+  );
+  assert.equal(
+    (
+      await request(path, {
+        token: a.access,
+        method: "POST",
+        body: {
+          reviewed: true,
+          kind: "prescription",
+          version: invalid.data.version,
+        },
+      })
+    ).status,
+    400,
+  );
+  assert.equal((await request(path)).status, 401);
+  await db
+    .prepare("UPDATE users_user SET role='receptionist' WHERE id=?")
+    .bind(a.user.id)
+    .run();
+  assert.equal((await request(path, { token: a.access })).status, 403);
+  assert.equal(
+    (await request("/v1/patients/", { token: a.access })).status,
+    200,
+    "Message permissions do not block normal patient routes",
+  );
+});
+
+test("WhatsApp prescription text preserves homeopathic doses and refuses to truncate long prescriptions", async () => {
+  const account = await signup("whatsapp-doses");
+  const records = await clinicalRecords(account.access);
+  const token = account.access;
+  await request(`/v1/prescriptions/${records.rx.id}/`, {
+    token,
+    method: "PATCH",
+    body: {
+      medications: [
+        {
+          drug_name: "Arnica",
+          potency: "30",
+          dilution_scale: "C",
+          pellet_count: 3,
+          dosage: "3 pellets",
+          frequency: "OD",
+          timing: "before_food",
+          duration: "5 days",
+          instructions: "Dissolve under the tongue",
+          instructions_ta: "உணவுக்கு முன்",
+        },
+      ],
+      procedures: [
+        {
+          name: "Massage",
+          duration: "20 minutes",
+          details: "Gentle pressure",
+          follow_up_date: "2026-10-12",
+        },
+      ],
+    },
+  });
+  const preview = await request(
+    `/v1/prescriptions/${records.rx.id}/whatsapp/`,
+    { token },
+  );
+  assert.match(
+    preview.data.message,
+    /1\. Arnica 30 C\nDosage: 3 pellets\nPellets per dose: 3\nOnce daily\nBefore food\nDuration: 5 days\nDissolve under the tongue\nஉணவுக்கு முன்/,
+  );
+  assert.match(
+    preview.data.message,
+    /Procedures\nMassage\n20 minutes\nGentle pressure\nProcedure follow-up: 2026-10-12/,
+  );
+  await db
+    .prepare("UPDATE prescriptions_prescription SET diet_advice=? WHERE id=?")
+    .bind("Complete instructions ".repeat(400), records.rx.id)
+    .run();
+  const long = await request(`/v1/prescriptions/${records.rx.id}/whatsapp/`, {
+    token,
+  });
+  assert.match(long.data.error, /too long/);
+  assert.ok(
+    long.data.message.includes("Complete instructions ".repeat(400).trim()),
+  );
+  assert.equal(
+    (
+      await request(
+        `/v1/prescriptions/${records.rx.id}/whatsapp/?kind=reminder`,
+        { token },
+      )
+    ).status,
+    400,
+  );
+});
 async function clinicalRecords(token, name = "Patient") {
   const patient = await request("/v1/patients/", {
     token,
