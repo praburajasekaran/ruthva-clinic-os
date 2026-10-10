@@ -170,6 +170,10 @@ export type Patient = {
   marital_status: MaritalStatus | "";
   referred_by: string;
   allergies: string;
+  allergies_review: "unknown" | "recorded" | "none";
+  medical_history_review: "unknown" | "reviewed" | "none";
+  current_medicines_status: "unknown" | "taking" | "none";
+  current_medicines: string;
   food_habits: FoodHabit | "";
   activity_level: ActivityLevel | "";
   menstrual_history: string;

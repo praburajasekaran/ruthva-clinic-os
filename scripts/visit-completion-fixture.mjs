@@ -80,7 +80,7 @@ const server = createServer(async (request, response) => {
   try {
     if (request.url === "/__fixture") {
       response.writeHead(200, { "Content-Type": "application/json" });
-      response.end(JSON.stringify({ roles }));
+      response.end(JSON.stringify({ roles, loginCode: signupCode }));
       return;
     }
     const chunks = [];

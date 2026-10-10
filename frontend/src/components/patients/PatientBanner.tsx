@@ -1,15 +1,17 @@
 import { AlertTriangle, Phone } from "lucide-react";
 import type { Patient } from "@/lib/types";
+import type { ReactNode } from "react";
 
 type PatientBannerProps = {
   patient: Patient;
+  children?: ReactNode;
 };
 
-export function PatientBanner({ patient }: PatientBannerProps) {
+export function PatientBanner({ patient, children }: PatientBannerProps) {
   const age = patient.calculated_age ?? patient.age;
 
   return (
-    <div className="rounded-[28px] border border-border bg-gradient-to-r from-white to-surface-raised px-5 py-5 shadow-sm">
+    <div className="rounded-2xl border border-border bg-white px-5 py-5">
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
@@ -23,6 +25,8 @@ export function PatientBanner({ patient }: PatientBannerProps) {
           {patient.record_id}
         </span>
       </div>
+
+      {children}
 
       <div className="mt-5 flex flex-wrap gap-2">
         <span className="rounded-full border border-border bg-white px-3 py-1.5 text-sm text-text-secondary">

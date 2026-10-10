@@ -12,6 +12,8 @@ let remoteMode = "valid";
 const consumedSso = new Set();
 let ssoEmail = "clinic-a@clinic.test";
 const sesCalls = [];
+const summaryCalls = [];
+let summaryMode = "valid";
 let sesMode = "success";
 const sesAccessKey = "AKIDEXAMPLE";
 const sesSecret = "test-ses-secret-for-signature-verification";
@@ -82,6 +84,13 @@ before(async () => {
           outboundService: async (request) => {
             try {
               const url = new URL(request.url);
+              if (url.hostname === "openrouter.ai") {
+                assert.equal(url.pathname, "/api/v1/chat/completions");
+                const body = await request.json();
+                summaryCalls.push(body);
+                if (summaryMode === "failure") return Response.json({}, { status: 503 });
+                return Response.json({ choices: [{ message: { content: summaryMode === "invalid" ? "# Summary\nInvented details" : "The recorded patient is 30 years old. Medical history includes asthma. Current medicine use has not been confirmed." } }] });
+              }
               if (url.hostname === "email.ap-south-1.amazonaws.com") {
                 assert.equal(request.method, "POST");
                 assert.equal(url.pathname, "/v2/email/outbound-emails");
@@ -150,6 +159,7 @@ before(async () => {
           },
           bindings: {
             JWT_SECRET: "local-test-secret-with-at-least-32-characters",
+            OPENROUTER_API_KEY: "test-provider-key",
             CRON_SECRET: "test-cron",
             FRONTEND_URL: "https://clinic.test",
             CORS_ALLOWED_ORIGINS: "https://clinic.test",
@@ -2006,4 +2016,46 @@ test("public schema, JSON format, and foreign keys preserve the API boundary", a
     ).status,
     401,
   );
+});
+
+test("patient summary uses saved clinic-scoped facts, caches, refreshes and falls back on provider failures", async () => {
+  const account = await signup("summary-clinic"), token = account.access;
+  const records = await clinicalRecords(token, "Private patient name");
+  const path = `/v1/patients/${records.patient.id}/summary/`;
+  const patch = body => request(`/v1/patients/${records.patient.id}/`, { token, method: "PATCH", body });
+  assert.equal((await patch({ medical_history: [{ disease: "Asthma", duration: "2 years", medication: "Previous inhaler" }] })).status, 200);
+  const saved = await request(path, { token });
+  assert.equal(saved.status, 200, JSON.stringify(saved.data));
+  assert.equal(saved.data.source, "saved_facts");
+  assert.match(saved.data.summary, /Asthma/);
+  const count = summaryCalls.length;
+  const generated = await request(path, { token, method: "POST", body: {} });
+  assert.equal(generated.data.status, "ready", JSON.stringify(generated.data));
+  assert.equal(summaryCalls.length, count + 1);
+  const body = summaryCalls.at(-1), facts = JSON.parse(body.messages[1].content);
+  assert.equal(body.provider.data_collection, "deny");
+  assert.equal(body.provider.allow_fallbacks, false);
+  assert.equal(facts.patient.current_medicines_status, "unknown");
+  assert.ok(!body.messages[1].content.includes("Private patient name"));
+  assert.ok(!body.messages[1].content.includes("9876543210"));
+  await request(path, { token, method: "POST", body: {} });
+  assert.equal(summaryCalls.length, count + 1, "unchanged saved facts reuse the cached summary");
+  assert.equal((await patch({ current_medicines_status: "taking", current_medicines: "Reported inhaler once daily" })).status, 200);
+  await request(path, { token, method: "POST", body: {} });
+  assert.equal(summaryCalls.length, count + 2);
+  assert.equal(JSON.parse(summaryCalls.at(-1).messages[1].content).patient.current_medicines, "Reported inhaler once daily");
+  assert.equal((await patch({ current_medicines_status: "none" })).status, 400);
+  assert.equal((await patch({ current_medicines_status: "none", current_medicines: "" })).status, 200);
+  summaryMode = "failure";
+  try {
+    const failed = await request(path, { token, method: "POST", body: {} });
+    assert.equal(failed.data.status, "failed");
+    assert.equal(failed.data.source, "saved_facts");
+    assert.match(failed.data.summary, /No current medicines recorded/);
+    summaryMode = "invalid";
+    assert.equal((await request(path, { token, method: "POST", body: {} })).data.status, "failed");
+  } finally { summaryMode = "valid"; }
+  const other = await signup("summary-other");
+  assert.equal((await request(path, { token: other.access })).status, 404);
+  assert.equal((await request(path, { token: other.access, method: "POST", body: {} })).status, 404);
 });

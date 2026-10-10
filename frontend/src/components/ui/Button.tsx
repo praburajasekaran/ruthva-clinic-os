@@ -66,13 +66,19 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         className={cn(buttonVariants({ variant, size, className }))}
         {...props}
       >
-        {isLoading && (
-          <Loader2
-            aria-hidden="true"
-            className="h-4 w-4 motion-safe:animate-spin"
-          />
+        {asChild ? (
+          children
+        ) : (
+          <>
+            {isLoading && (
+              <Loader2
+                aria-hidden="true"
+                className="h-4 w-4 motion-safe:animate-spin"
+              />
+            )}
+            {children}
+          </>
         )}
-        {children}
       </Comp>
     );
   },

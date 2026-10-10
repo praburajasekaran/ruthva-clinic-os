@@ -41,6 +41,7 @@ export interface Env {
   RUTHVA_CLINIC_SUBDOMAIN?: string;
   RUTHVA_ADMIN_EMAIL?: string;
   TEST_EMAIL?: string;
+  OPENROUTER_API_KEY?: string;
 }
 export type App = {
   Bindings: Env;

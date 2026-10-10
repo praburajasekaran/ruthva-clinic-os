@@ -55,6 +55,10 @@ class Patient(models.Model):
     )
     referred_by = models.CharField(max_length=255, blank=True, default="")
     allergies = models.TextField(blank=True, default="")
+    allergies_review = models.CharField(max_length=20, default="unknown", choices=[("unknown", "Not confirmed"), ("recorded", "Recorded"), ("none", "None known")])
+    medical_history_review = models.CharField(max_length=20, default="unknown", choices=[("unknown", "Not reviewed"), ("reviewed", "Reviewed"), ("none", "No known history")])
+    current_medicines_status = models.CharField(max_length=20, default="unknown", choices=[("unknown", "Not confirmed"), ("taking", "Taking medicines"), ("none", "None")])
+    current_medicines = models.TextField(blank=True, default="")
     food_habits = models.CharField(
         max_length=20, blank=True, default="", choices=FOOD_HABITS_CHOICES
     )

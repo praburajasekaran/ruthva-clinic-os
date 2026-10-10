@@ -20,7 +20,7 @@ const config: Config = {
         "3xl": ["var(--font-size-3xl, 1.875rem)", { lineHeight: "var(--line-height-3xl, 2.25rem)" }],
       },
       fontFamily: {
-        sans: ["'Google Sans'", "system-ui", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "sans-serif"],
+        sans: ["'Trebuchet MS'", "Arial", "sans-serif"],
         serif: ["var(--font-serif)"],
         mono: ["var(--font-mono)"],
       },

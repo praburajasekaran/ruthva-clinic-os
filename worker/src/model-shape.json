@@ -1552,6 +1552,82 @@
         "target": null,
         "min": null,
         "max": null
+      },
+      "allergies_review": {
+        "column": "allergies_review",
+        "type": "CharField",
+        "nullable": false,
+        "blank": false,
+        "maxLength": 20,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [
+          "unknown",
+          "recorded",
+          "none"
+        ],
+        "default": "unknown",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
+      },
+      "medical_history_review": {
+        "column": "medical_history_review",
+        "type": "CharField",
+        "nullable": false,
+        "blank": false,
+        "maxLength": 20,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [
+          "unknown",
+          "reviewed",
+          "none"
+        ],
+        "default": "unknown",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
+      },
+      "current_medicines_status": {
+        "column": "current_medicines_status",
+        "type": "CharField",
+        "nullable": false,
+        "blank": false,
+        "maxLength": 20,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [
+          "unknown",
+          "taking",
+          "none"
+        ],
+        "default": "unknown",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
+      },
+      "current_medicines": {
+        "column": "current_medicines",
+        "type": "TextField",
+        "nullable": false,
+        "blank": true,
+        "maxLength": null,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [],
+        "default": "",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
       }
     },
     "ordering": [

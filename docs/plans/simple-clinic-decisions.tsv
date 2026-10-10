@@ -1,0 +1,6 @@
+decision	reason	evidence
+Extend the production app	Preserve D1, clinic authentication, examinations and dispensing	main ff34141; clinical.ts and VisitCompletion
+Separate current medicines from prescriptions	An issued prescription does not prove current use	Prototype live summary failure
+Separate contact date from clinical return date	Assistant retries must not change clinical advice	Accepted visit-first workflow
+Use existing admin staff for assistant assignment	Avoid new role permissions and team limits	team.ts supports doctor, therapist, admin
+One implementation owner	Project instructions require sequential main-thread work	AGENTS.md tool mapping
