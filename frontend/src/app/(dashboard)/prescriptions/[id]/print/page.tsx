@@ -2,7 +2,7 @@
 import { Spinner } from "@/components/ui/Spinner";
 
 import { useParams } from "next/navigation";
-import { FREQUENCY_OPTIONS } from "@/lib/constants/envagai-options";
+import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-options";
 import {
   PRINT_LABELS,
   ADVICE_LABELS,
@@ -280,6 +280,8 @@ export default function PrintPrescriptionPage() {
                 const freqOpt = FREQUENCY_OPTIONS.find(
                   (f) => f.value === med.frequency,
                 );
+                const timingOpt = TIMING_OPTIONS.find((t) => t.value === med.timing);
+                const timingTamil = med.timing_tamil || timingOpt?.tamil;
                 const instrText = med.instructions_ta || med.instructions;
                 const freqEnglish = freqOpt
                   ? freqOpt.label.split(" \u2014 ")[1] || freqOpt.label
@@ -310,6 +312,16 @@ export default function PrintPrescriptionPage() {
                       {freqTamil && (
                         <div className="text-[8pt] text-gray-400" lang="ta">
                           {freqTamil}
+                        </div>
+                      )}
+                      {med.timing && (
+                        <div className="mt-1 text-[10pt]">
+                          {timingOpt?.label || med.timing}
+                        </div>
+                      )}
+                      {timingTamil && (
+                        <div className="text-[8pt] text-gray-400" lang="ta">
+                          {timingTamil}
                         </div>
                       )}
                     </td>

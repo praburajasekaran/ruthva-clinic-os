@@ -23,10 +23,10 @@ Read this index before a drive. These five feature groups cover the initial core
 
 | Recipe | User behavior |
 | --- | --- |
-| [Account access](account-access.md) | Signup, OTP verification, onboarding, normal login, demo disciplines, logout. |
+| [Account access](account-access.md) | Signup, OTP verification, onboarding, normal login, demo disciplines, logout, admin access, and clinic activation. |
 | [Patients](patients.md) | Register, cancel, search, keyboard search, open, edit, archive. |
 | [Consultations and prescriptions](consultations-prescriptions.md) | Save a visit, create a prescription, reopen it, and display the print view. |
-| [Treatment and follow-ups](treatment-followups.md) | Inspect queues, extend existing plans, edit sessions, and report the missing plan-creation entry. |
+| [Treatment and follow-ups](treatment-followups.md) | Create plans from prescriptions, extend blocks, edit planned sessions, and inspect queues. |
 | [Pharmacy](pharmacy.md) | Create a medicine, add stock, check its ledger, and dispense a prescription. |
 
 For one shared mutation pass, create the normal account and patient first. Then create and stock the pharmacy medicine before selecting it from the prescription autocomplete. Dispensing requires the saved catalog ID; matching a typed drug name is insufficient.
@@ -35,4 +35,4 @@ For one shared mutation pass, create the normal account and patient first. Then 
 
 The initial creation coverage is in [PROOF.md](../PROOF.md). Keep later maintenance results in ignored run notes. Recipe existence is not proof. Real SES delivery, Cloudflare service binding, Browser Rendering PDF, Ruthva integrations, and GitHub delivery are separate remote boundaries. The local harness blocks external API calls and captures SES calls.
 
-The account recipe includes the admin access boundary and the prerequisites for clinic activation. This helper does not supply platform-admin entitlement, so positive activation remains skipped. Other user surfaces exist: Team/invitation acceptance, Settings, and patient CSV import and exports. They are outside this initial map; add recipes before claiming coverage for changes to them. Worker runtime tests supplement browser proof for tenant constraints, roles, quotas, stock rollback, and external contracts. Run `rtk npm --prefix worker test` when the changed behavior needs those guarantees.
+The account recipe includes admin access and clinic activation. Launch with `--admin-email verification-admin@clinic.test` for positive activation checks. Other user surfaces exist: Team/invitation acceptance, Settings, and patient CSV import and exports. They are outside this initial map; add recipes before claiming coverage for changes to them. Worker runtime tests supplement browser proof for tenant constraints, roles, quotas, stock rollback, and external contracts. Run `rtk npm --prefix worker test` when the changed behavior needs those guarantees.

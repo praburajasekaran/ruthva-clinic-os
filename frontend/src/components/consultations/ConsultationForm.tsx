@@ -132,7 +132,7 @@ export function ConsultationForm({
 
   const diagLabel = DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha;
 
-  const { mutate, isLoading } = useMutation<unknown, Consultation>(
+  const { mutate, isLoading, error } = useMutation<unknown, Consultation>(
     isEdit ? "patch" : "post",
     isEdit ? `/consultations/${consultationId}/` : "/consultations/",
   );
@@ -501,6 +501,11 @@ export function ConsultationForm({
 
       {/* Sticky bottom action bar */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
+        {error && (
+          <p role="alert" className="mx-auto max-w-6xl px-6 pt-3 text-sm text-destructive">
+            {Object.values(error).flat().filter(Boolean).join(" ") || "Could not save the visit. Try again."}
+          </p>
+        )}
         <div className="mx-auto flex max-w-6xl items-center justify-end gap-3 px-6 py-3">
           <Button
             type="button"

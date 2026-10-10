@@ -167,6 +167,7 @@ async function serve() {
       compatibilityDate: "2026-10-03", compatibilityFlags: ["nodejs_compat"],
       d1Databases: { DB: "verify-ruthva" }, r2Buckets: ["UPLOADS"],
       bindings: { JWT_SECRET: randomBytes(32).toString("hex"), CRON_SECRET: randomBytes(32).toString("hex"),
+        ...(manifest.adminEmail ? { RUTHVA_ADMIN_EMAIL: manifest.adminEmail } : {}),
         FRONTEND_URL: manifest.web, CORS_ALLOWED_ORIGINS: manifest.web,
         DEFAULT_FROM_EMAIL: "noreply@clinic.test", AWS_SES_REGION: "us-east-1",
         AWS_ACCESS_KEY_ID: "verification-placeholder", AWS_SECRET_ACCESS_KEY: "verification-placeholder" },
@@ -215,6 +216,10 @@ async function serve() {
 }
 
 async function launch() {
+  if (args.length && (args.length !== 2 || args[0] !== "--admin-email" ||
+    !/^[a-z0-9][a-z0-9._+-]*@clinic\.test$/.test(args[1]))) {
+    throw new Error("Optional launch configuration: --admin-email verification-admin@clinic.test. Use a synthetic clinic.test address.");
+  }
   if (existsSync(manifestPath)) throw new Error("Run ID already exists. Keep its evidence and use a new ID.");
   for (const area of ["worker", "frontend"]) {
     if (!existsSync(join(root, area, "node_modules"))) throw new Error(`Run rtk npm --prefix ${area} ci first.`);
@@ -228,7 +233,7 @@ async function launch() {
   const manifest = { root, scratch, api: `http://localhost:${apiPort}`, web: `http://localhost:${webPort}`,
     session: `ruthva-${createHash("sha256").update(root).digest("hex").slice(0, 8)}-${run}`,
     sourceHash: fingerprint(), revision: exec("rtk", ["proxy", "git", "rev-parse", "HEAD"]).trim(),
-    startedAt: new Date().toISOString(), pid: null };
+    startedAt: new Date().toISOString(), adminEmail: args[1] || null, pid: null };
   saveManifest(manifest);
   try {
     const build = exec("rtk", ["proxy", "node", join(root, "worker/node_modules/wrangler/bin/wrangler.js"), "deploy",
