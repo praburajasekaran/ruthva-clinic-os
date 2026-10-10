@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { requireEnabledDiscipline } from "./practices";
 import {
   all,
   ApiError,
@@ -317,6 +318,8 @@ integrations.post("/integrations/webhooks/ruthva/", async (c) => {
     [body.journey_id],
   );
   if (!ref) return c.json({ status: "ignored" });
+  const clinic = await get(dbOf(c), "clinics_clinic", ref.clinic_id);
+  requireEnabledDiscipline(clinic.discipline, 403);
   const fields = syncFields(data, 400);
   if (body.event_type === "journey_completed") fields.status = "completed";
   if (body.event_type === "journey_dropped") fields.status = "dropped";

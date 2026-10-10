@@ -24,6 +24,8 @@ import {
 } from "./data";
 import type { App, Clinic, Ctx, DB, Env, Row, User } from "./data";
 import { sendEmail } from "./email";
+import { DEFAULT_DISCIPLINE } from "../../shared/practices";
+import { requireEnabledDiscipline } from "./practices";
 
 export const auth = new Hono<App>();
 const enc = new TextEncoder();
@@ -70,6 +72,8 @@ export async function tokens(
   clinic: Clinic | null,
 ): Promise<Row> {
   check(user.is_active, "Account is inactive.", 401);
+  if (clinic && !platformAdmin(env, user))
+    requireEnabledDiscipline(clinic.discipline, 403);
   check(
     user.email_verified_at ||
       (demoUser(user) && clinic && flag(clinic, "is_demo")),
@@ -216,19 +220,9 @@ const ip = (c: Ctx) => c.req.header("CF-Connecting-IP") || "local";
 async function demoSetup(db: DB) {
   const clinics = [
     {
-      subdomain: "demo-ayurveda",
-      name: "Dhanvantari Demo Clinic",
-      discipline: "ayurveda",
-    },
-    {
       subdomain: "demo-siddha",
       name: "Sivanethram Demo Clinic",
-      discipline: "siddha",
-    },
-    {
-      subdomain: "demo-homeopathy",
-      name: "Hahnemann Demo Clinic",
-      discipline: "homeopathy",
+      discipline: DEFAULT_DISCIPLINE,
     },
   ];
   for (const data of clinics) {
@@ -256,7 +250,7 @@ async function demoSetup(db: DB) {
   }
   const clinic = await one(
     db,
-    "SELECT * FROM clinics_clinic WHERE subdomain='demo-ayurveda'",
+    "SELECT * FROM clinics_clinic WHERE subdomain='demo-siddha'",
   );
   const item = insert(db, "users_user", {
     username: "demo",
@@ -280,6 +274,8 @@ async function demoSetup(db: DB) {
     "SELECT u.* FROM users_user u JOIN clinics_clinic c ON c.id=u.clinic_id WHERE lower(u.email)='demo@ruthva.com' AND u.username='demo' AND c.is_demo=1",
   );
   check(user, "Demo account configuration is invalid.", 503);
+  if (user.clinic_id !== clinic!.id)
+    await update(db, "users_user", user.id, { clinic_id: clinic!.id }).run();
 }
 
 auth.post("/token/", async (c) => {
@@ -470,6 +466,7 @@ auth.post("/verify-otp/", async (c) => {
 auth.post("/initiate-signup/", async (c) => {
   const body = record(await c.req.json()),
     to = email(body);
+  requireEnabledDiscipline(body.discipline);
   await throttle(c, `signup:${ip(c)}`, 10);
   await throttle(c, `signup-email:${to}`, 5);
   check(to !== "demo@ruthva.com", "This email is reserved for demo mode.");
@@ -539,6 +536,7 @@ async function verifiedSignup(
       ),
     "Invalid or expired code.",
   );
+  requireEnabledDiscipline(pending.discipline);
   return pending;
 }
 auth.post("/verify-signup-otp/", async (c) => {
@@ -584,6 +582,7 @@ auth.post("/signup/", async (c) => {
   await throttle(c, `signup:${ip(c)}`, 10);
   const body = record(await c.req.json()),
     slug = str(body, "subdomain");
+  requireEnabledDiscipline(body.discipline);
   check(
     str(body, "code"),
     "Email verification is required. Request a signup code first.",
@@ -672,6 +671,7 @@ auth.post("/check-availability/", async (c) => {
 auth.post("/complete-onboarding/", async (c) => {
   const user = c.get("user"),
     body = record(await c.req.json());
+  requireEnabledDiscipline(body.discipline);
   check(!user.clinic_id, "Onboarding already completed.");
   check(
     str(body, "address") && str(body, "registration_number"),
@@ -817,6 +817,7 @@ auth.post("/demo/switch-clinic/", async (c) => {
       [body.clinic_slug],
     )) as Clinic | null;
   check(clinic, "Demo clinic not found.", 404);
+  requireEnabledDiscipline(clinic.discipline, 403);
   await update(dbOf(c), "users_user", user.id, { clinic_id: clinic.id }).run();
   return c.json(await tokens(c.env, { ...user, clinic_id: clinic.id }, clinic));
 });

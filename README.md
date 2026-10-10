@@ -1,6 +1,8 @@
 # Ruthva Clinic OS
 
-Ruthva manages AYUSH clinic patients, consultations, prescriptions, treatment plans, and pharmacy stock.
+Ruthva manages Siddha clinic patients, Envagai Thervu assessments, Tamil and English prescriptions, treatment plans, and pharmacy stock.
+
+Siddha is the only enabled practice. `shared/practices.ts` defines the enabled disciplines for registration, onboarding, and API access. Other practice workflows and demo choices are paused. Existing records and diagnostic implementations remain available for future development.
 
 The application is configured for Cloudflare hosting. Next.js uses OpenNext on Workers. A TypeScript API uses Hono, D1, R2, Browser Rendering, and Cron Triggers. Amazon SES sends transactional email.
 

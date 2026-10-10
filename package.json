@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "test:visit-completion": "npm --prefix worker run build && playwright test --config scripts/visit-completion.config.mjs",
+    "test:siddha-practice": "npm --prefix worker run build && playwright test --config scripts/visit-completion.config.mjs scripts/tests/siddha-practice.spec.mjs",
     "prepare": "husky",
     "dev": "node scripts/dev.mjs",
     "check": "npm --prefix worker run typecheck && npm --prefix frontend run ci:check",

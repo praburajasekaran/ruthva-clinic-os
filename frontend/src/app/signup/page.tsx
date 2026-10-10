@@ -7,13 +7,7 @@ import axios from "axios";
 import Image from "next/image";
 import { ArrowLeft, Loader2, CircleX } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import type { Discipline } from "@/lib/types";
-
-const DISCIPLINES = [
-  { value: "siddha", label: "Siddha" },
-  { value: "ayurveda", label: "Ayurveda" },
-  { value: "homeopathy", label: "Homeopathy" },
-];
+import { DEFAULT_DISCIPLINE } from "../../../../shared/practices";
 
 type Step = "form" | "otp";
 
@@ -25,7 +19,6 @@ export default function SignupPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
-  const [discipline, setDiscipline] = useState<Discipline | "">("");
   const [code, setCode] = useState("");
 
   const [error, setError] = useState<string | null>(null);
@@ -123,9 +116,9 @@ export default function SignupPage() {
     try {
       await initiateSignup({
         first_name: firstName.trim(),
-        last_name: lastName.trim(),
+        ...(lastName.trim() ? { last_name: lastName.trim() } : {}),
         email: email.trim().toLowerCase(),
-        discipline: discipline as Discipline,
+        discipline: DEFAULT_DISCIPLINE,
       });
       setStep("otp");
       setResendCooldown(60);
@@ -150,8 +143,6 @@ export default function SignupPage() {
         email: email.trim().toLowerCase(),
         code: code.trim(),
       });
-      // Store discipline for onboarding
-      sessionStorage.setItem("signup_discipline", result.discipline);
       router.push(result.is_platform_admin ? "/admin/clinics" : "/onboarding");
     } catch (err: unknown) {
       const msg =
@@ -171,9 +162,9 @@ export default function SignupPage() {
     try {
       await initiateSignup({
         first_name: firstName.trim(),
-        last_name: lastName.trim(),
+        ...(lastName.trim() ? { last_name: lastName.trim() } : {}),
         email: email.trim().toLowerCase(),
-        discipline: discipline as Discipline,
+        discipline: DEFAULT_DISCIPLINE,
       });
       setResendCooldown(60);
     } catch (err: unknown) {
@@ -187,7 +178,7 @@ export default function SignupPage() {
   }
 
   const formValid =
-    firstName.trim() && email.trim() && discipline && !emailTaken;
+    firstName.trim() && email.trim() && !emailTaken;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -213,7 +204,7 @@ export default function SignupPage() {
                 Register your clinic
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Create your AYUSH clinic account
+                Create your Siddha clinic account
               </p>
             </>
           ) : (
@@ -329,34 +320,9 @@ export default function SignupPage() {
               )}
             </div>
 
-            {/* Discipline */}
-            <fieldset>
-              <legend className="mb-1 block text-sm font-medium text-gray-700">
-                Discipline
-              </legend>
-              <div className="flex">
-                {DISCIPLINES.map((d, i) => (
-                  <button
-                    key={d.value}
-                    type="button"
-                    onClick={() => setDiscipline(d.value as Discipline)}
-                    className={`flex-1 border px-3 py-2 text-sm font-medium transition-colors focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 ${
-                      i === 0
-                        ? "rounded-l-lg border-r-0"
-                        : i === DISCIPLINES.length - 1
-                          ? "rounded-r-lg border-l-0"
-                          : ""
-                    } ${
-                      discipline === d.value
-                        ? "border-emerald-600 bg-emerald-50 text-emerald-700"
-                        : "border-gray-300 bg-white text-gray-600 hover:bg-gray-50"
-                    }`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+              Siddha practice
+            </div>
 
             <button
               type="submit"

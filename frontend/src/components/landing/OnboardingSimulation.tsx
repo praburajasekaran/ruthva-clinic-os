@@ -54,7 +54,7 @@ export function OnboardingSimulation() {
                         3 steps. Zero extra work.
                     </h2>
                     <p className="mt-4 text-lg text-text-secondary max-w-2xl mx-auto">
-                        Register a patient, record a consultation, and generate a prescription — all in one flow.
+                        Register a patient, record a Siddha consultation, and generate a prescription in one flow.
                     </p>
                 </div>
 
@@ -67,7 +67,7 @@ export function OnboardingSimulation() {
                         <FeatureStep
                             number={1}
                             title="Register a patient"
-                            description="Add their name, phone, and discipline. The profile is ready in seconds."
+                            description="Add their name, phone, and patient details. Keep their visit history in one record."
                             Icon={UserPlus}
                             isActive={activeStep === 1}
                             elapsed={elapsed}
@@ -78,7 +78,7 @@ export function OnboardingSimulation() {
                         <FeatureStep
                             number={2}
                             title="Record a consultation"
-                            description="Capture complaints, diagnosis, and notes with discipline-specific fields built in."
+                            description="Capture complaints, diagnosis, and Envagai Thervu findings in your Siddha consultation."
                             Icon={Stethoscope}
                             isActive={activeStep === 2}
                             elapsed={elapsed}
@@ -89,7 +89,7 @@ export function OnboardingSimulation() {
                         <FeatureStep
                             number={3}
                             title="Generate a prescription"
-                            description="Create a printable prescription with medicines, dosage, and duration — ready to hand over."
+                            description="Create a printable prescription with medicines, dosage, and duration in Tamil and English."
                             Icon={FileText}
                             isActive={activeStep === 3}
                             elapsed={elapsed}

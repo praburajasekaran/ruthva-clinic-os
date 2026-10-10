@@ -88,7 +88,7 @@ function DashboardMockup() {
                                 AV
                             </div>
                             <div className="min-w-0">
-                                <div className="text-[9px] font-semibold text-emerald-700 truncate">Aruna Ayurveda</div>
+                                <div className="text-[9px] font-semibold text-emerald-700 truncate">Aruna Siddha Clinic</div>
                                 <div className="text-[8px] text-gray-400 truncate">Dr. Aruna V. · Doctor</div>
                             </div>
                         </div>
@@ -238,13 +238,13 @@ export function Hero() {
                     <motion.div {...fadeUp}>
                         <span className="mb-8 inline-flex items-center rounded-full border border-brand-700/50 bg-brand-900/80 backdrop-blur-md px-4 py-1.5 text-sm font-medium text-brand-100">
                             <span className="mr-3 flex h-2 w-2 rounded-full bg-brand-400 animate-pulse" aria-hidden="true"></span>
-                            Built exclusively for AYUSH Clinics
+                            Built for Siddha clinics
                         </span>
                         <h1 id="hero-heading" className="mb-6 text-4xl font-extrabold tracking-tight text-white sm:text-5xl md:text-6xl lg:text-7xl text-balance">
-                            Your entire AYUSH practice. One powerful platform.
+                            Your Siddha practice, in one place.
                         </h1>
                         <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-200 sm:text-xl font-normal">
-                            Manage patients, consultations, prescriptions, pharmacy, and your team — with built-in support for Siddha, Ayurveda, Homeopathy, Yoga &amp; Naturopathy, and Unani.
+                            Record Envagai Thervu assessments, write prescriptions in Tamil and English, and manage your patients, pharmacy, and team.
                         </p>
 
                         <div className="flex flex-col flex-wrap items-center justify-center gap-4 sm:flex-row">
@@ -264,7 +264,7 @@ export function Hero() {
 
                         <div className="mt-14 mb-20 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm text-brand-200 font-medium">
                             <span className="flex items-center gap-2">
-                                <Stethoscope className="h-5 w-5 text-brand-400" aria-hidden="true" /> Multi-Discipline Support
+                                <Stethoscope className="h-5 w-5 text-brand-400" aria-hidden="true" /> Envagai Thervu Assessments
                             </span>
                             <span className="flex items-center gap-2">
                                 <FileText className="h-5 w-5 text-brand-400" aria-hidden="true" /> Digital Prescriptions

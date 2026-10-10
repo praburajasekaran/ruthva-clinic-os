@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { requireEnabledDiscipline } from "./practices";
 import {
   all,
   check,
@@ -211,6 +212,7 @@ invite.get("/details/", async (c) => {
   const item = await getInvite(c, c.req.query("token") || ""),
     clinic = await get(dbOf(c), "clinics_clinic", item.clinic_id);
   check(flag(clinic, "is_active"), "Clinic is inactive.", 403);
+  requireEnabledDiscipline(clinic.discipline, 403);
   return c.json({
     email: item.email,
     first_name: item.first_name,
@@ -234,6 +236,7 @@ invite.post("/accept/", async (c) => {
     "Clinic is inactive.",
     403,
   );
+  requireEnabledDiscipline(clinic.discipline, 403);
   const username = str(body, "username"),
     pass = str(body, "password");
   check(/^[\w.@+-]{1,150}$/.test(username), "Invalid username.");

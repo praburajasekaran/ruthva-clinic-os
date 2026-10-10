@@ -24,6 +24,7 @@ import type { App, Ctx, Env, Row } from "./data";
 import { constantEqual, escape, throttle } from "./auth";
 import { sendEmail } from "./email";
 import { addDays } from "./treatments";
+import { ENABLED_DISCIPLINES } from "../../shared/practices";
 
 export const resources = new Hono<App>();
 async function image(file: unknown, max: number) {
@@ -297,20 +298,33 @@ export async function reminders(env: Env, enqueue = true) {
         FROM prescriptions_prescription r JOIN consultations_consultation v ON v.id=r.consultation_id
         JOIN patients_patient p ON p.id=v.patient_id JOIN clinics_clinic c ON c.id=r.clinic_id
         WHERE r.follow_up_date=? AND p.email<>'' AND c.is_active=1 AND c.is_demo=0
+          AND c.discipline IN (${ENABLED_DISCIPLINES.map(() => "?")})
         UNION ALL
         SELECT 'procedure',e.id,e.follow_up_date,p.email,p.name,c.name
         FROM prescriptions_procedureentry e JOIN prescriptions_prescription r ON r.id=e.prescription_id
         JOIN consultations_consultation v ON v.id=r.consultation_id JOIN patients_patient p ON p.id=v.patient_id
         JOIN clinics_clinic c ON c.id=r.clinic_id
         WHERE e.follow_up_date=? AND p.email<>'' AND c.is_active=1 AND c.is_demo=0
+          AND c.discipline IN (${ENABLED_DISCIPLINES.map(() => "?")})
       ) candidate
       WHERE NOT EXISTS(SELECT 1 FROM reminders_sentreminder sent WHERE sent.reminder_type=candidate.type AND sent.object_id=candidate.object_id AND sent.follow_up_date=candidate.follow_up_date)`,
-      [target, target],
+      [target, ...ENABLED_DISCIPLINES, target, ...ENABLED_DISCIPLINES],
     ).run();
   const pending = await all(
     db,
-    "SELECT key FROM email_outbox WHERE status<>'sent' AND attempts<5 AND (lease_until IS NULL OR lease_until<?) LIMIT 100",
-    [now()],
+    `SELECT o.key FROM email_outbox o JOIN (
+      SELECT 'prescription' type,r.id object_id,c.discipline,c.is_active,c.is_demo
+      FROM prescriptions_prescription r JOIN clinics_clinic c ON c.id=r.clinic_id
+      UNION ALL
+      SELECT 'procedure',e.id,c.discipline,c.is_active,c.is_demo
+      FROM prescriptions_procedureentry e JOIN prescriptions_prescription r ON r.id=e.prescription_id
+      JOIN clinics_clinic c ON c.id=r.clinic_id
+    ) eligible ON eligible.type=json_extract(o.payload,'$.type')
+      AND eligible.object_id=json_extract(o.payload,'$.object_id')
+    WHERE o.status<>'sent' AND o.attempts<5 AND (o.lease_until IS NULL OR o.lease_until<?)
+      AND eligible.is_active=1 AND eligible.is_demo=0
+      AND eligible.discipline IN (${ENABLED_DISCIPLINES.map(() => "?")}) LIMIT 100`,
+    [now(), ...ENABLED_DISCIPLINES],
   );
   let sent = 0,
     failed = 0;

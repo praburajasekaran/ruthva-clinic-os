@@ -1464,7 +1464,7 @@ test("demo login and clinic switching remain isolated and read-only", async () =
     body: { email: "demo@ruthva.com", code: "123456" },
   });
   assert.equal(login.status, 200);
-  assert.equal(login.data.clinic_slug, "demo-ayurveda");
+  assert.equal(login.data.clinic_slug, "demo-siddha");
   assert.equal(
     (
       await request("/v1/patients/", {
@@ -1491,6 +1491,243 @@ test("demo login and clinic switching remain isolated and read-only", async () =
       })
     ).status,
     404,
+  );
+});
+test("paused practices reject registration, existing sessions, login, refresh, and invitations", async () => {
+  for (const discipline of [
+    "ayurveda",
+    "homeopathy",
+    "unani",
+    "yoga_naturopathy",
+  ]) {
+    const email = `${discipline}-paused@clinic.test`;
+    const result = await request("/v1/auth/initiate-signup/", {
+      method: "POST",
+      body: { first_name: "Doctor", email, discipline },
+    });
+    assert.equal(result.status, 400);
+    assert.match(result.data.detail, /Siddha practices only/);
+    assert.equal(
+      await db
+        .prepare("SELECT count(*) n FROM users_pendingsignup WHERE email=?")
+        .bind(email)
+        .first("n"),
+      0,
+    );
+  }
+  const account = await signup("paused-clinic");
+  const invited = await request("/v1/team/invite/", {
+    method: "POST",
+    token: account.access,
+    body: {
+      email: "paused-invite@clinic.test",
+      first_name: "Staff",
+      role: "therapist",
+    },
+  });
+  assert.equal(invited.status, 201);
+  const invite = await db
+    .prepare("SELECT token FROM clinics_clinicinvitation WHERE id=?")
+    .bind(invited.data.id)
+    .first();
+  await db
+    .prepare("UPDATE clinics_clinic SET discipline='ayurveda' WHERE id=?")
+    .bind(account.clinic.id)
+    .run();
+  for (const path of ["/v1/patients/", "/v1/auth/me/", "/v1/consultations/"]) {
+    assert.equal(
+      (await request(path, { token: account.access })).status,
+      403,
+      path,
+    );
+  }
+  assert.equal(
+    (
+      await request("/v1/auth/token/refresh/", {
+        method: "POST",
+        body: { refresh: account.refresh },
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/v1/auth/token/", {
+        method: "POST",
+        body: { username: "paused-clinic", password: "ClinicTestPass123" },
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    (await request(`/v1/invite/details/?token=${invite.token}`)).status,
+    403,
+  );
+  assert.equal(
+    (
+      await request("/v1/invite/accept/", {
+        method: "POST",
+        body: {
+          token: invite.token,
+          username: "paused-staff",
+          password: "ClinicTestPass123",
+        },
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    await db
+      .prepare(
+        "SELECT count(*) n FROM users_user WHERE username='paused-staff'",
+      )
+      .first("n"),
+    0,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT discipline FROM clinics_clinic WHERE id=?")
+      .bind(account.clinic.id)
+      .first("discipline"),
+    "ayurveda",
+  );
+});
+test("onboarding and pending signup cannot activate a paused practice", async () => {
+  const email = "siddha-onboarding@clinic.test";
+  const headers = { "CF-Connecting-IP": "192.0.2.240" };
+  assert.equal(
+    (
+      await request("/v1/auth/initiate-signup/", {
+        method: "POST",
+        headers,
+        body: { first_name: "Doctor", email, discipline: "siddha" },
+      })
+    ).status,
+    201,
+  );
+  const code = sentCode(email);
+  await db
+    .prepare(
+      "UPDATE users_pendingsignup SET discipline='homeopathy' WHERE email=?",
+    )
+    .bind(email)
+    .run();
+  assert.equal(
+    (
+      await request("/v1/auth/verify-signup-otp/", {
+        method: "POST",
+        headers,
+        body: { email, code },
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT count(*) n FROM users_user WHERE email=?")
+      .bind(email)
+      .first("n"),
+    0,
+  );
+  await db
+    .prepare("UPDATE users_pendingsignup SET discipline='siddha' WHERE email=?")
+    .bind(email)
+    .run();
+  const verified = await request("/v1/auth/verify-signup-otp/", {
+    method: "POST",
+    headers,
+    body: { email, code },
+  });
+  assert.equal(verified.status, 201);
+  const body = {
+    clinic_name: "Siddha onboarding",
+    address: "Chennai",
+    registration_number: "SID-001",
+    discipline: "unani",
+  };
+  assert.equal(
+    (
+      await request("/v1/auth/complete-onboarding/", {
+        method: "POST",
+        token: verified.data.access,
+        body,
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT clinic_id FROM users_user WHERE email=?")
+      .bind(email)
+      .first("clinic_id"),
+    null,
+  );
+  const onboarded = await request("/v1/auth/complete-onboarding/", {
+    method: "POST",
+    token: verified.data.access,
+    body: { ...body, discipline: "siddha" },
+  });
+  assert.equal(onboarded.status, 201);
+  assert.equal(onboarded.data.clinic.discipline, "siddha");
+});
+test("demo login returns to Siddha and rejects paused demo clinics without moving the account", async () => {
+  const demo = await db
+    .prepare("SELECT * FROM users_user WHERE username='demo'")
+    .first();
+  const source = await db
+    .prepare("SELECT * FROM clinics_clinic WHERE subdomain='demo-siddha'")
+    .first();
+  const copy = {
+    ...source,
+    subdomain: "demo-ayurveda",
+    name: "Paused demo",
+    discipline: "ayurveda",
+  };
+  delete copy.id;
+  const keys = Object.keys(copy);
+  await db
+    .prepare(
+      `INSERT INTO clinics_clinic (${keys}) VALUES (${keys.map(() => "?")})`,
+    )
+    .bind(...Object.values(copy))
+    .run();
+  await db
+    .prepare(
+      "UPDATE users_user SET clinic_id=(SELECT id FROM clinics_clinic WHERE subdomain='demo-ayurveda') WHERE id=?",
+    )
+    .bind(demo.id)
+    .run();
+  assert.equal(
+    (
+      await request("/v1/auth/request-otp/", {
+        method: "POST",
+        body: { email: "demo@ruthva.com" },
+      })
+    ).status,
+    200,
+  );
+  const login = await request("/v1/auth/verify-otp/", {
+    method: "POST",
+    body: { email: "demo@ruthva.com", code: "123456" },
+  });
+  assert.equal(login.status, 200);
+  assert.equal(login.data.clinic_slug, "demo-siddha");
+  assert.equal(
+    (
+      await request("/v1/auth/demo/switch-clinic/", {
+        method: "POST",
+        token: login.data.access,
+        body: { clinic_slug: "demo-ayurveda" },
+      })
+    ).status,
+    403,
+  );
+  assert.equal(
+    await db
+      .prepare("SELECT clinic_id FROM users_user WHERE id=?")
+      .bind(demo.id)
+      .first("clinic_id"),
+    source.id,
   );
 });
 test("team capacity, invitation consumption, owner protection, and treatment transitions", async () => {
@@ -1903,6 +2140,59 @@ test("R2 logo validation, private uploads, reminder authentication and deduplica
     204,
   );
   assert.equal((await mf.dispatchFetch(upload.data.logo_url)).status, 404);
+});
+test("paused practice reminders stay queued while Siddha reminders continue", async () => {
+  const account = await signup("paused-reminder");
+  const records = await clinicalRecords(account.access);
+  const payload = JSON.stringify({
+    type: "prescription",
+    object_id: records.rx.id,
+    follow_up_date: "2026-10-11",
+    email: "paused-reminder@patient.test",
+    name: "Patient",
+    clinic_name: "Paused clinic",
+  });
+  const key = `prescription:${records.rx.id}:2026-10-11`;
+  await db
+    .prepare(
+      "INSERT INTO email_outbox(key,payload,status,attempts,lease_until) VALUES(?,?,'pending',0,NULL)",
+    )
+    .bind(key, payload)
+    .run();
+  await db
+    .prepare("UPDATE clinics_clinic SET discipline='homeopathy' WHERE id=?")
+    .bind(account.clinic.id)
+    .run();
+  const calls = sesCalls.length;
+  const send = () =>
+    request("/cron/", {
+      method: "POST",
+      body: {},
+      headers: { "X-Cron-Secret": "test-cron" },
+    });
+  const paused = await send();
+  assert.equal(paused.status, 200);
+  assert.equal(paused.data.sent, 0);
+  assert.equal(sesCalls.length, calls);
+  assert.deepEqual(
+    await db
+      .prepare("SELECT status,attempts FROM email_outbox WHERE key=?")
+      .bind(key)
+      .first(),
+    { status: "pending", attempts: 0 },
+  );
+  await db
+    .prepare("UPDATE clinics_clinic SET discipline='siddha' WHERE id=?")
+    .bind(account.clinic.id)
+    .run();
+  assert.equal((await send()).data.sent, 1);
+  assert.equal(
+    await db
+      .prepare("SELECT status FROM email_outbox WHERE key=?")
+      .bind(key)
+      .first("status"),
+    "sent",
+  );
 });
 test("public schema, JSON format, and foreign keys preserve the API boundary", async () => {
   const schema = await request("/schema/");

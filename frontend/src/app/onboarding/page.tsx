@@ -6,7 +6,7 @@ import axios from "axios";
 import Image from "next/image";
 import { Building2 } from "lucide-react";
 import { useAuth } from "@/components/auth/AuthProvider";
-import type { Discipline } from "@/lib/types";
+import { DEFAULT_DISCIPLINE } from "../../../../shared/practices";
 
 export default function OnboardingPage() {
   const router = useRouter();
@@ -51,10 +51,6 @@ export default function OnboardingPage() {
     setFieldErrors({});
     setLoading(true);
 
-    // Get discipline from session storage (set during signup OTP verification)
-    const discipline =
-      (sessionStorage.getItem("signup_discipline") as Discipline) || "siddha";
-
     try {
       await completeOnboarding({
         clinic_name: clinicName.trim(),
@@ -64,7 +60,7 @@ export default function OnboardingPage() {
           .filter(Boolean)
           .join(", "),
         registration_number: registrationNumber.trim(),
-        discipline,
+        discipline: DEFAULT_DISCIPLINE,
       });
       sessionStorage.removeItem("signup_discipline");
       // completeOnboarding redirects to /dashboard
