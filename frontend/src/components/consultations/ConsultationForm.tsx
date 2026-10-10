@@ -227,7 +227,7 @@ export function ConsultationForm({
 
       {/* Vitals — always visible */}
       <FormSection
-        title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" />}
+        title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" variant="heading" />}
         id="vitals"
       >
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -315,7 +315,7 @@ export function ConsultationForm({
       {/* General Assessment */}
       {(showAssessment || hasAssessmentData) && (
         <FormSection
-          title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" />}
+          title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" variant="heading" />}
           subtitle="Appetite, bowel, sleep, and mental state"
           id="general-assessment"
         >
@@ -392,7 +392,7 @@ export function ConsultationForm({
       {/* Discipline-specific Diagnostics */}
       {(showDiagnostics || hasDiagnosticData) && (
         <FormSection
-          title={<BilingualLabel english={diagLabel.en} tamil={diagLabel.ta} as="span" />}
+          title={<BilingualLabel english={diagLabel.en} tamil={diagLabel.ta} as="span" variant="heading" />}
           id="diagnostics"
         >
           <DiagnosticFormRouter
@@ -406,7 +406,7 @@ export function ConsultationForm({
       {/* Diagnosis */}
       {(showDiagnosis || hasDiagnosisData) && (
         <FormSection
-          title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" />}
+          title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" variant="heading" />}
           id="diagnosis-section"
         >
           <div className="space-y-5">

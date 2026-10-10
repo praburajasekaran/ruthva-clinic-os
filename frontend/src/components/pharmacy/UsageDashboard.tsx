@@ -26,7 +26,7 @@ export function UsageDashboard() {
 
   return (
     <div className="rounded-lg border bg-white p-6">
-      <h3 className="mb-4 text-base font-semibold text-gray-900">Clinic Usage</h3>
+      <h3 className="text-heading-subsection mb-4 text-gray-900">Clinic Usage</h3>
 
       <div className="space-y-4">
         {/* Active Patients */}

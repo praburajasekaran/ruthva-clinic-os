@@ -35,7 +35,7 @@ export default function ConsultationsPage() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl">Visits</h1>
+          <h1 className="text-heading-page">Visits</h1>
           <p className="mt-2 text-text-muted">
             {data
               ? `${data.count} recorded visits`

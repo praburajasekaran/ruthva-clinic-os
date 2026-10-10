@@ -34,6 +34,23 @@
   --color-text-secondary: #3d4d3f;
   --color-text-muted: #555f57;
 
+  /* Heading hierarchy shared by clinic pages and forms. */
+  --font-heading: Georgia, "Times New Roman", serif;
+  --heading-page-size: clamp(1.875rem, 2.7vw, 2.25rem);
+  --heading-page-line-height: 1.2;
+  --heading-page-weight: 400;
+  --heading-page-tracking: -0.025em;
+  --heading-section-size: clamp(1.375rem, 2vw, 1.5rem);
+  --heading-section-line-height: 1.35;
+  --heading-section-weight: 400;
+  --heading-section-tracking: -0.015em;
+  --heading-subsection-size: 1.125rem;
+  --heading-subsection-line-height: 1.4;
+  --heading-subsection-weight: 600;
+  --heading-subsection-tracking: -0.01em;
+  --heading-secondary-size: 0.75em;
+  --heading-secondary-line-height: 1.5;
+
   /* shadcn/ui semantic tokens — mapped from Ruthva design tokens */
   --radius: 0.625rem;
   --background: #ffffff;
@@ -91,7 +108,7 @@
   h2,
   h3,
   h4 {
-    font-family: Georgia, "Times New Roman", serif;
+    font-family: var(--font-heading);
     font-weight: 400;
     letter-spacing: -0.02em;
   }

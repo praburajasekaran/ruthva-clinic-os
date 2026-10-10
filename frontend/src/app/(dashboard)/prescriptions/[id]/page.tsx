@@ -91,7 +91,7 @@ export default function PrescriptionDetailPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Visit completion</h1>
+          <h1 className="text-heading-page text-gray-900">Visit completion</h1>
           {consultation && (
             <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
               <Calendar className="h-3.5 w-3.5" />
@@ -152,12 +152,12 @@ export default function PrescriptionDetailPage() {
         }}
       />
 
-      <h2 id="saved-prescription" className="text-lg font-semibold text-gray-900">Saved prescription</h2>
+      <h2 id="saved-prescription" className="text-heading-section text-gray-900">Saved prescription</h2>
 
       {/* Medications */}
       {medications.length > 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 text-gray-900">
             Medications
           </h2>
           <div className="space-y-3">
@@ -173,7 +173,7 @@ export default function PrescriptionDetailPage() {
                   className="rounded-lg border border-gray-100 p-4"
                 >
                   <div className="flex items-start justify-between">
-                    <h3 className="font-medium text-gray-900">
+                    <h3 className="text-heading-subsection text-gray-900">
                       {med.drug_name}
                     </h3>
                     <span className="text-sm text-gray-500">
@@ -219,7 +219,7 @@ export default function PrescriptionDetailPage() {
       {/* Procedures */}
       {procedures.length > 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 text-gray-900">
             Procedures
           </h2>
           <div className="space-y-2">
@@ -243,7 +243,7 @@ export default function PrescriptionDetailPage() {
         prescription.lifestyle_advice ||
         prescription.exercise_advice) && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 text-gray-900">
             Advice
           </h2>
           <dl className="space-y-3 text-sm">
@@ -299,7 +299,7 @@ export default function PrescriptionDetailPage() {
 
       <section aria-labelledby="treatment-plans-heading" className="rounded-lg border border-gray-200 bg-white p-6">
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-          <h2 id="treatment-plans-heading" className="text-base font-semibold text-gray-900">
+          <h2 id="treatment-plans-heading" className="text-heading-section text-gray-900">
             Treatment plans
           </h2>
           {canEdit && !hasActivePlan && plans !== null && !plansLoading && !plansError && !showTreatmentForm && (
@@ -363,7 +363,7 @@ export default function PrescriptionDetailPage() {
       {/* Dispensing History */}
       {dispensingRecords && dispensingRecords.length > 0 && (
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 flex items-center gap-2 text-gray-900">
             <Package className="h-4 w-4" />
             Dispensing History
           </h2>

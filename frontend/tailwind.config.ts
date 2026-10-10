@@ -11,6 +11,10 @@ const config: Config = {
   theme: {
     extend: {
       fontSize: {
+        "heading-page": ["var(--heading-page-size)", { lineHeight: "var(--heading-page-line-height)", fontWeight: "var(--heading-page-weight)", letterSpacing: "var(--heading-page-tracking)" }],
+        "heading-section": ["var(--heading-section-size)", { lineHeight: "var(--heading-section-line-height)", fontWeight: "var(--heading-section-weight)", letterSpacing: "var(--heading-section-tracking)" }],
+        "heading-subsection": ["var(--heading-subsection-size)", { lineHeight: "var(--heading-subsection-line-height)", fontWeight: "var(--heading-subsection-weight)", letterSpacing: "var(--heading-subsection-tracking)" }],
+        "heading-secondary": ["var(--heading-secondary-size)", { lineHeight: "var(--heading-secondary-line-height)", fontWeight: "400", letterSpacing: "0" }],
         xs: ["var(--font-size-xs, 0.75rem)", { lineHeight: "var(--line-height-xs, 1rem)" }],
         sm: ["var(--font-size-sm, 0.875rem)", { lineHeight: "var(--line-height-sm, 1.25rem)" }],
         base: ["var(--font-size-base, 1rem)", { lineHeight: "var(--line-height-base, 1.5rem)" }],

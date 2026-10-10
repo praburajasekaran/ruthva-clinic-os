@@ -276,7 +276,7 @@ export function PrescriptionBuilder({
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
       {/* Medications */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.medications.en} tamil={SECTION_LABELS.medications.ta} as="span" />} id="medications">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.medications.en} tamil={SECTION_LABELS.medications.ta} as="span" variant="heading" />} id="medications">
         <div className="space-y-4">
           {state.medications.map((med, idx) => (
             <MedicationRow
@@ -309,7 +309,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Procedures */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" />} id="procedures">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" variant="heading" />} id="procedures">
         <div className="space-y-3">
           {state.procedures.map((proc, idx) => (
             <div
@@ -393,7 +393,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Advice */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.advice.en} tamil={SECTION_LABELS.advice.ta} as="span" />} id="advice">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.advice.en} tamil={SECTION_LABELS.advice.ta} as="span" variant="heading" />} id="advice">
         <div className="space-y-4">
           <FormField label={`${ADVICE_LABELS.diet.ta} — ${ADVICE_LABELS.diet.en}`}>
             {(props) => (
@@ -441,7 +441,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Follow-up */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.followUp.en} tamil={SECTION_LABELS.followUp.ta} as="span" />} id="follow-up">
+      <FormSection title={<BilingualLabel english={SECTION_LABELS.followUp.en} tamil={SECTION_LABELS.followUp.ta} as="span" variant="heading" />} id="follow-up">
         <div className="grid gap-4 sm:grid-cols-2">
           <FormField label="Follow-up Date">
             {(props) => (

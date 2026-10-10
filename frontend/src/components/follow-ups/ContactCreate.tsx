@@ -102,7 +102,7 @@ export function ContactCreate({
       }}
       className="space-y-5 rounded-2xl border border-border bg-white p-5 sm:p-6"
     >
-      <h2 className="text-xl">Plan a patient follow-up</h2>
+      <h2 className="text-heading-section">Plan a patient follow-up</h2>
       <fieldset disabled={busy} className="space-y-5">
         {selected ? (
           <div>

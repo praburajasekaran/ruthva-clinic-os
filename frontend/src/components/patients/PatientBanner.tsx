@@ -17,7 +17,7 @@ export function PatientBanner({ patient, children }: PatientBannerProps) {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">
             Patient record
           </p>
-          <h2 className="mt-2 text-2xl font-semibold tracking-tight text-text-primary">
+          <h2 className="text-heading-page mt-2 text-text-primary">
             {patient.name}
           </h2>
         </div>

@@ -84,7 +84,7 @@ function ContactRecord({
         ← Patient follow-ups
       </Link>
       <header>
-        <h1 className="text-3xl">Follow up with {task.patient_name}</h1>
+        <h1 className="text-heading-page">Follow up with {task.patient_name}</h1>
         <Link
           href={`/patients/${task.patient_id}`}
           className="mt-2 inline-block text-brand-700"
@@ -124,7 +124,7 @@ function ContactRecord({
           }}
           className="space-y-5 rounded-2xl border border-border bg-white p-5"
         >
-          <h2 className="text-xl">
+          <h2 className="text-heading-section">
             {task.status === "awaiting_doctor"
               ? "Answer the question"
               : task.status === "completed"
@@ -202,7 +202,7 @@ function ContactRecord({
       )}
       {doctor && task.status !== "completed" && staff && (
         <section className="rounded-2xl border border-border bg-white p-5">
-          <h2 className="mb-3 text-xl">Assigned to</h2>
+          <h2 className="text-heading-section mb-3">Assigned to</h2>
           <PillGroup
             label="Change assignment"
             value={owner}
@@ -225,7 +225,7 @@ function ContactRecord({
         </section>
       )}
       <section className="rounded-2xl border border-border bg-white p-5">
-        <h2 className="mb-4 text-xl">Contact history</h2>
+        <h2 className="text-heading-section mb-4">Contact history</h2>
         {task.event_count > 100 && (
           <p className="mb-3 text-sm text-text-muted">
             Showing the latest 100 of {task.event_count} entries.

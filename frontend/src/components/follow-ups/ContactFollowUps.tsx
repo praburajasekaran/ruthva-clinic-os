@@ -30,7 +30,7 @@ export function ContactFollowUps() {
     <div className="space-y-6">
       <header className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl">Patient follow-ups</h1>
+          <h1 className="text-heading-page">Patient follow-ups</h1>
           <p className="mt-2 text-text-secondary">
             Keep track of calls and questions after a visit.
           </p>

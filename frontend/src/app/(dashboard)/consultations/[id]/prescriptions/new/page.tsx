@@ -50,7 +50,7 @@ export default function NewPrescriptionPage() {
     <div className="mx-auto w-full max-w-6xl space-y-6">
       {patient && <PatientBanner patient={patient} />}
       <div>
-        <h1 className="text-2xl font-bold text-foreground">New Prescription</h1>
+        <h1 className="text-heading-page text-foreground">New Prescription</h1>
         <p className="mt-1 text-sm text-muted-foreground">
           Visit on{" "}
           {new Date(consultation.consultation_date).toLocaleDateString("en-IN")}

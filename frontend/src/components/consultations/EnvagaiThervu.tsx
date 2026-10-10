@@ -23,7 +23,7 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
           className="rounded-lg border border-border p-4"
         >
           <div className="mb-3 flex items-baseline gap-2">
-            <h4 className="font-semibold text-foreground">{tool.label}</h4>
+            <h4 className="text-heading-subsection text-foreground">{tool.label}</h4>
             <span lang="ta" className="text-xs text-muted-foreground">
               ({tool.labelTamil})
             </span>

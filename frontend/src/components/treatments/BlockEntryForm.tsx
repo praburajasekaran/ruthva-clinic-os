@@ -64,7 +64,7 @@ export function BlockEntryForm({ blockStartDay, blockEndDay, entries, onChange }
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700">Procedures</h4>
+        <h4 className="text-heading-subsection text-gray-700">Procedures</h4>
         <button
           type="button"
           onClick={addEntry}

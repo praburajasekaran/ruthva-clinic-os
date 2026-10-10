@@ -479,7 +479,7 @@ function ClinicalFollowUpsPage() {
           {/* Therapist Worklist */}
           {(tab === "therapist" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Therapist execution</h2>}
+              {tab === "all" && <h2 className="text-heading-section text-gray-900">Therapist execution</h2>}
               {therapistItems.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
                   No treatment sessions need recording in this view.
@@ -600,7 +600,7 @@ function ClinicalFollowUpsPage() {
           {/* Doctor Actions */}
           {(tab === "doctor" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Doctor review</h2>}
+              {tab === "all" && <h2 className="text-heading-section text-gray-900">Doctor review</h2>}
               {doctorItems.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
                   No doctor review items match this view.
@@ -666,7 +666,7 @@ function ClinicalFollowUpsPage() {
                           ) : (
                             <div className="space-y-4 rounded-lg border border-blue-100 bg-blue-50/30 p-4">
                               <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-semibold text-gray-900">Next Block</h4>
+                                <h4 className="text-heading-subsection text-gray-900">Next Block</h4>
                                 <button
                                   type="button"
                                   onClick={() => toggleBlockExpanded(item)}
@@ -827,7 +827,7 @@ function ClinicalFollowUpsPage() {
           {/* Legacy journeys */}
           {(tab === "therapist" || tab === "all") && legacyItems.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-gray-900">Legacy Journey Items</h2>
+              <h2 className="text-heading-section text-gray-900">Legacy Journey Items</h2>
               {legacyItems.map((item, idx) => (
                 <div key={`${item.legacy_type}-${item.patient_id}-${idx}`} className="rounded-[28px] border border-border bg-surface p-5 shadow-sm">
                   <Link href={`/patients/${item.patient_id}`} className="text-lg font-semibold text-text-primary hover:text-brand-700 hover:underline">

@@ -117,14 +117,14 @@ export default function LoginPage() {
 
         {step === "email" ? (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
+              <h1 className="text-heading-page text-gray-900">Welcome back</h1>
               <p className="mt-1 text-sm text-gray-500">
                 Sign in with your registered email
               </p>
             </>
           ) : isDemo ? (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">Demo Mode</h1>
+              <h1 className="text-heading-page text-gray-900">Demo Mode</h1>
               <div className="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
                 <p className="text-sm text-emerald-700">Use this code to continue</p>
                 <p className="mt-1 font-mono text-2xl font-bold text-emerald-900">123456</p>
@@ -132,7 +132,7 @@ export default function LoginPage() {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">Check your email</h1>
+              <h1 className="text-heading-page text-gray-900">Check your email</h1>
               <p className="mt-1 text-sm text-gray-500">
                 If <strong>{email}</strong> is registered, we sent a login code.
               </p>

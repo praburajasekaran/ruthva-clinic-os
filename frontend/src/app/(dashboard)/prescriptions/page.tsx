@@ -101,7 +101,7 @@ export default function PrescriptionsPage() {
         <div>
             <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-gray-900">Prescriptions</h1>
+                    <h1 className="text-heading-page text-gray-900">Prescriptions</h1>
                     <p className="mt-1 text-sm text-gray-500">
                         {prescriptions.length} prescription{prescriptions.length !== 1 ? "s" : ""} recorded
                     </p>

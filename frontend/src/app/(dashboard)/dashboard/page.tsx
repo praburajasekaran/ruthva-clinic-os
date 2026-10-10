@@ -72,7 +72,7 @@ export default function DashboardPage() {
               month: "long",
             })}
           </p>
-          <h1 className="mt-1 text-3xl sm:text-4xl">
+          <h1 className="text-heading-page mt-1">
             {user?.clinic?.name || "Your clinic"}
           </h1>
         </div>
@@ -96,14 +96,14 @@ export default function DashboardPage() {
               className="mb-4 h-6 w-6 text-brand-700"
               aria-hidden="true"
             />
-            <h2 className="text-2xl">{area.title}</h2>
+            <h2 className="text-heading-section">{area.title}</h2>
             <p className="mt-2 text-text-secondary">{area.description}</p>
           </Link>
         ))}
       </div>
       <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl">Follow-ups</h2>
+          <h2 className="text-heading-section">Follow-ups</h2>
           <Link href="/follow-ups" className="py-2 text-brand-700">
             Open follow-ups →
           </Link>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
       </section>
       <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-xl">Today’s visits</h2>
+          <h2 className="text-heading-section">Today’s visits</h2>
           <Link href="/consultations" className="py-2 text-brand-700">
             All visits →
           </Link>

@@ -51,7 +51,7 @@ export default function MedicineDetailPage() {
 
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-heading-page text-gray-900">
             {medicine.name}
             {!medicine.is_active && (
               <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-500">
@@ -155,7 +155,7 @@ export default function MedicineDetailPage() {
       {/* Stock history */}
       {medicine.recent_stock_entries && medicine.recent_stock_entries.length > 0 && (
         <div>
-          <h2 className="mb-3 text-lg font-semibold text-gray-900">Stock History</h2>
+          <h2 className="text-heading-section mb-3 text-gray-900">Stock History</h2>
           <div className="rounded-lg border bg-white">
             <table className="w-full text-sm">
               <thead>

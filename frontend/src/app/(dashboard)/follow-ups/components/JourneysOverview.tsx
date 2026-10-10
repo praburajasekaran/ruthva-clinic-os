@@ -76,7 +76,7 @@ export function JourneysOverview({
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-brand-50/80">
             Journeys command center
           </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight">Treatment continuity work, not queue admin</h1>
+          <h1 className="text-heading-page mt-3">Treatment continuity work, not queue admin</h1>
           <p className="mt-4 max-w-2xl text-sm leading-6 text-brand-50/90">
             Start with the patient who needs the next intervention. Every row in Journeys should tell the team
             who this is, what is happening, why it matters, and what to do next.
@@ -85,7 +85,7 @@ export function JourneysOverview({
 
         <div className="rounded-[28px] border border-border bg-surface p-6 shadow-sm">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Current focus</p>
-          <h2 className="mt-2 text-xl font-semibold text-text-primary">{tabLabels[tab]}</h2>
+          <h2 className="text-heading-section mt-2 text-text-primary">{tabLabels[tab]}</h2>
           <p className="mt-3 text-sm leading-6 text-text-secondary">
             {tab === "therapist" && "Keep therapist work lightweight: record outcomes fast and escalate only when needed."}
             {tab === "doctor" && "Clear plan decisions and feedback review without losing patient context."}

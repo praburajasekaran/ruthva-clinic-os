@@ -143,7 +143,7 @@ export default function PatientImportPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Import Patients</h1>
+          <h1 className="text-heading-page text-gray-900">Import Patients</h1>
           <p className="text-sm text-gray-500">
             Upload a CSV file to bulk-import your existing patients
           </p>
@@ -238,7 +238,7 @@ export default function PatientImportPage() {
           </div>
 
           <div className="rounded-lg border border-gray-200 bg-white p-4">
-            <h3 className="mb-2 text-sm font-medium text-gray-700">
+            <h3 className="text-heading-subsection mb-2 text-gray-700">
               Supported columns
             </h3>
             <div className="grid grid-cols-2 gap-x-6 gap-y-1 text-xs text-gray-500">
@@ -298,7 +298,7 @@ export default function PatientImportPage() {
           {/* Error rows */}
           {preview.errors && preview.errors.length > 0 && (
             <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-medium text-red-700">
+              <h3 className="text-heading-subsection mb-2 flex items-center gap-2 text-red-700">
                 <XCircle className="h-4 w-4" />
                 Rows with errors (will be skipped)
               </h3>
@@ -319,7 +319,7 @@ export default function PatientImportPage() {
           {/* Warning rows */}
           {preview.warnings && preview.warnings.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <h3 className="mb-2 flex items-center gap-2 text-sm font-medium text-amber-700">
+              <h3 className="text-heading-subsection mb-2 flex items-center gap-2 text-amber-700">
                 <AlertTriangle className="h-4 w-4" />
                 Rows with warnings (will still import)
               </h3>
@@ -340,7 +340,7 @@ export default function PatientImportPage() {
           {/* Preview table */}
           {preview.preview && preview.preview.length > 0 && (
             <div className="overflow-hidden rounded-lg border border-gray-200 bg-white">
-              <h3 className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700">
+              <h3 className="text-heading-subsection border-b border-gray-200 bg-gray-50 px-4 py-2 text-gray-700">
                 Preview (first {preview.preview.length} rows)
               </h3>
               <div className="overflow-x-auto">
@@ -480,7 +480,7 @@ export default function PatientImportPage() {
                   : "border-emerald-200 bg-emerald-50"
               }`}
             >
-              <h3 className="mb-1 text-sm font-medium text-gray-700">
+              <h3 className="text-heading-subsection mb-1 text-gray-700">
                 Ruthva Adherence Sync
               </h3>
               <p className="text-sm text-gray-600">
@@ -510,7 +510,7 @@ export default function PatientImportPage() {
           {/* Warnings */}
           {results.warnings && results.warnings.length > 0 && (
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-              <h3 className="mb-1 flex items-center gap-2 text-sm font-medium text-amber-700">
+              <h3 className="text-heading-subsection mb-1 flex items-center gap-2 text-amber-700">
                 <AlertTriangle className="h-4 w-4" />
                 Warnings
               </h3>

@@ -191,7 +191,7 @@ function PatientRecord() {
       {(tab === "overview" || tab === "visits") && (
         <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl">
+            <h2 className="text-heading-section">
               {tab === "overview" ? "Recent visits" : "Visits"}
             </h2>
             {tab === "overview" && (
@@ -274,14 +274,14 @@ function PatientRecord() {
       )}
       {tab === "history" && user?.clinic?.discipline === "homeopathy" && (
         <section className="rounded-2xl border border-border bg-white p-6">
-          <h2 className="mb-4 text-xl">Constitutional remedy history</h2>
+          <h2 className="text-heading-section mb-4">Constitutional remedy history</h2>
           <RemedyHistoryTimeline patientId={patient.id} />
         </section>
       )}
       {tab === "details" && (
         <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
           <div className="mb-5 flex items-center justify-between">
-            <h2 className="text-xl">Patient details</h2>
+            <h2 className="text-heading-section">Patient details</h2>
             <Link
               className="text-brand-700"
               href={`/patients/${patient.id}/edit`}

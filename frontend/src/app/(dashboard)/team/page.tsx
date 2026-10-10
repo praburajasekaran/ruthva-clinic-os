@@ -64,7 +64,7 @@ export default function TeamPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Team</h1>
+          <h1 className="text-heading-page text-gray-900">Team</h1>
           <p className="mt-1 text-sm text-gray-500">
             Manage your clinic&apos;s team members and roles
           </p>
@@ -109,7 +109,7 @@ export default function TeamPage() {
       {/* Members list */}
       <div className="rounded-xl border border-gray-200 bg-white">
         <div className="border-b px-6 py-4">
-          <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section flex items-center gap-2 text-gray-900">
             <Users2 className="h-5 w-5 text-gray-400" />
             Members
             {members && (
@@ -162,7 +162,7 @@ export default function TeamPage() {
       {isOwner && pendingInvitations.length > 0 && (
         <div className="rounded-xl border border-gray-200 bg-white">
           <div className="border-b px-6 py-4">
-            <h2 className="flex items-center gap-2 text-base font-semibold text-gray-900">
+            <h2 className="text-heading-section flex items-center gap-2 text-gray-900">
               <Mail className="h-5 w-5 text-gray-400" />
               Pending Invitations
               <span className="text-sm font-normal text-gray-400">
@@ -545,7 +545,7 @@ function InviteModal({
         <div className="mb-6 flex items-center justify-between">
           <h2
             id="invite-modal-title"
-            className="text-lg font-semibold text-gray-900"
+            className="text-heading-section text-gray-900"
           >
             Invite Team Member
           </h2>

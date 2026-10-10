@@ -2,12 +2,14 @@
 
 The `prabu/implement-simple-clinic-workflow` branch was deployed to Cloudflare on 10 October 2026. The app is available at [ruthva.com](https://ruthva.com) and [the Workers origin](https://ruthva-clinic.prabu-b92.workers.dev). PR [#124](https://github.com/praburajasekaran/ruthva-clinic-os/pull/124) remains unmerged. Production now serves this branch; `main` still contains the earlier implementation.
 
-## Deployed versions
+## Initial workflow deployment versions
 
-| Worker | Active version | Previous version |
+| Worker | Workflow release version | Previous version |
 | --- | --- | --- |
 | `ruthva-api` | `bde799ae-602f-4bab-9724-f2f3c571a819` | `a6bed671-8d70-4449-9197-2ae3c4add897` |
 | `ruthva-clinic` | `f9fecce6-aaf9-42f7-ae69-58a62288454e` | `f1985e23-ff73-46c1-9ae5-55c00058f0a9` |
+
+The frontend was subsequently updated to `d877db38-a183-4012-9f7e-059f06b7755b` on 10 October 2026 for the [shared heading typography](heading-typography.md). The API version remains `bde799ae-602f-4bab-9724-f2f3c571a819`.
 
 Migrations `0006`, `0007`, and `0008` are applied to remote D1 database `ruthva-clinic`. Wrangler reported no pending migrations. `OPENROUTER_API_KEY` is configured as a secret on `ruthva-api`. The API has no public Workers URL and is reached through the frontend's `API` service binding.
 

@@ -91,7 +91,7 @@ export function RemedyFollowUpForm({
     <div className="rounded-lg border border-input bg-muted p-4">
       <div className="mb-4 flex items-center gap-2">
         <FlaskConical className="h-4 w-4 text-primary" />
-        <h3 className="text-sm font-semibold text-foreground">
+        <h3 className="text-heading-subsection text-foreground">
           Remedy Response
         </h3>
       </div>

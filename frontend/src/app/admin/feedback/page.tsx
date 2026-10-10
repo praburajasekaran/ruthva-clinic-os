@@ -104,7 +104,7 @@ export default function AdminFeedbackPage() {
   return (
     <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
       <div>
-        <h1 className="text-3xl font-semibold text-gray-900">Feedback</h1>
+        <h1 className="text-heading-page text-gray-900">Feedback</h1>
         <p className="mt-2 text-sm text-gray-600">
           Review bug reports and feature requests from clinic staff.
         </p>
@@ -285,7 +285,7 @@ export default function AdminFeedbackPage() {
               <p className="text-sm font-medium text-emerald-700">
                 {categoryLabels[selected.category]}
               </p>
-              <h2 className="mt-1 text-xl font-semibold text-gray-900">
+              <h2 className="text-heading-section mt-1 text-gray-900">
                 {selected.title}
               </h2>
             </div>
@@ -312,7 +312,7 @@ export default function AdminFeedbackPage() {
               </div>
             </dl>
             <div>
-              <h3 className="mb-2 text-sm font-medium text-gray-700">
+              <h3 className="text-heading-subsection mb-2 text-gray-700">
                 Description
               </h3>
               <p className="whitespace-pre-wrap text-sm text-gray-600">
@@ -321,7 +321,7 @@ export default function AdminFeedbackPage() {
             </div>
             {selected.page_url && (
               <div>
-                <h3 className="mb-2 text-sm font-medium text-gray-700">
+                <h3 className="text-heading-subsection mb-2 text-gray-700">
                   Reported page
                 </h3>
                 <p className="text-sm text-gray-600">{selected.page_url}</p>
@@ -329,7 +329,7 @@ export default function AdminFeedbackPage() {
             )}
             {selected.screenshot_available && (
               <div>
-                <h3 className="mb-2 text-sm font-medium text-gray-700">
+                <h3 className="text-heading-subsection mb-2 text-gray-700">
                   Screenshot
                 </h3>
                 <FeedbackScreenshot key={selected.id} id={selected.id} />

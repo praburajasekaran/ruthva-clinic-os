@@ -16,7 +16,7 @@ export default function PatientsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold text-gray-900">Patients</h1>
+      <h1 className="text-heading-page mb-6 text-gray-900">Patients</h1>
       <PatientUsageIndicator />
       <PatientTable initialData={initialData} />
     </div>

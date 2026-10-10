@@ -82,7 +82,7 @@ export function PatientHistory({
     return (
       <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <h2 className="text-xl">Health history</h2>
+          <h2 className="text-heading-section">Health history</h2>
           {canEdit && (
             <Button
               variant="secondary"
@@ -126,7 +126,7 @@ export function PatientHistory({
           )}
         </dl>
         <div className="mt-6 space-y-3">
-          <h3 className="text-lg">Medical history</h3>
+          <h3 className="text-heading-subsection">Medical history</h3>
           {patient.medical_history.map((row) => (
             <p key={row.id}>
               <strong>{row.disease}</strong>
@@ -145,7 +145,7 @@ export function PatientHistory({
           )}
         </div>
         <div className="mt-6 space-y-3">
-          <h3 className="text-lg">Family history</h3>
+          <h3 className="text-heading-subsection">Family history</h3>
           {patient.family_history.map((row) => (
             <p key={row.id}>
               <strong>
@@ -169,7 +169,7 @@ export function PatientHistory({
         void save();
       }}
     >
-      <h2 className="text-xl">Update health history</h2>
+      <h2 className="text-heading-section">Update health history</h2>
       <fieldset disabled={busy} className="space-y-6">
         <div>
           <p className="mb-2 font-semibold">Allergies</p>
@@ -264,7 +264,7 @@ export function PatientHistory({
           />
         </div>
         <div className="space-y-3">
-          <h3 className="text-lg">Medical history</h3>
+          <h3 className="text-heading-subsection">Medical history</h3>
           {draft.medical_history.map((row, i) => (
             <div key={i} className="rounded-xl border border-border p-4">
               <div className="grid gap-3 sm:grid-cols-2">
@@ -326,7 +326,7 @@ export function PatientHistory({
           </Button>
         </div>
         <div className="space-y-3">
-          <h3 className="text-lg">Family history</h3>
+          <h3 className="text-heading-subsection">Family history</h3>
           {draft.family_history.map((row, i) => (
             <div key={i} className="rounded-xl border border-border p-4">
               <div className="grid gap-3 sm:grid-cols-2">

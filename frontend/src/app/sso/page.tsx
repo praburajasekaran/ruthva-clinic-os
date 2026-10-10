@@ -54,7 +54,7 @@ function SsoContent() {
           <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
             <Leaf className="h-6 w-6 text-red-600" />
           </div>
-          <h1 className="mb-2 text-lg font-semibold text-gray-900">
+          <h1 className="text-heading-page mb-2 text-gray-900">
             Sign-in failed
           </h1>
           <p className="mb-6 text-sm text-gray-500">{error}</p>

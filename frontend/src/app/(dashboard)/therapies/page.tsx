@@ -30,7 +30,7 @@ function Therapies() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl">{name || "Therapies"}</h1>
+        <h1 className="text-heading-page">{name || "Therapies"}</h1>
         <p className="mt-2 text-text-secondary">
           {name
             ? "Patients with recorded sessions or prescribed procedures."
@@ -79,7 +79,7 @@ function Therapies() {
                 href={`/therapies?name=${encodeURIComponent(t.name)}`}
                 className="rounded-2xl border border-border bg-white p-6 hover:border-brand-400"
               >
-                <h2 className="text-xl">{t.name}</h2>
+                <h2 className="text-heading-section">{t.name}</h2>
                 <p className="mt-3 text-sm text-text-muted">
                   {t.patient_count} patient{t.patient_count === 1 ? "" : "s"} ·
                   Latest activity {t.last_activity}

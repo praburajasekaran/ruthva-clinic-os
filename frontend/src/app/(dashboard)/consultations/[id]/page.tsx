@@ -51,7 +51,7 @@ export default function ConsultationDetailPage() {
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Consultation</h1>
+          <h1 className="text-heading-page text-gray-900">Consultation</h1>
           <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
             <Calendar className="h-3.5 w-3.5" />
             {new Date(consultation.consultation_date).toLocaleDateString(
@@ -111,7 +111,7 @@ export default function ConsultationDetailPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Vitals */}
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 text-gray-900">
             Vitals
           </h2>
           <dl className="grid grid-cols-2 gap-3 text-sm">
@@ -149,7 +149,7 @@ export default function ConsultationDetailPage() {
 
         {/* General Assessment */}
         <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
+          <h2 className="text-heading-section mb-4 text-gray-900">
             General Assessment
           </h2>
           <dl className="space-y-3 text-sm">
@@ -201,7 +201,7 @@ export default function ConsultationDetailPage() {
 
       {/* Discipline-specific Diagnostics */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
+        <h2 className="text-heading-section mb-4 text-gray-900">
           {(DIAGNOSTIC_SECTION_LABELS[discipline] ?? DIAGNOSTIC_SECTION_LABELS.siddha).en}
         </h2>
         <DiagnosticDataDisplay
@@ -212,7 +212,7 @@ export default function ConsultationDetailPage() {
 
       {/* Diagnosis */}
       <div className="rounded-lg border border-gray-200 bg-white p-6">
-        <h2 className="mb-4 text-base font-semibold text-gray-900">
+        <h2 className="text-heading-section mb-4 text-gray-900">
           Diagnosis
         </h2>
         <dl className="space-y-3 text-sm">

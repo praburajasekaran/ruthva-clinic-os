@@ -304,7 +304,7 @@ export default function TreatmentPlanDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to prescription
           </Link>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-text-primary">Treatment Plan</h1>
+            <h1 className="text-heading-page mt-3 text-text-primary">Treatment Plan</h1>
             <p className="mt-3 text-sm leading-6 text-text-secondary">
               This page owns execution design: total duration, blocks, sessions, and future editable work.
               Journey continuity remains linked, but the focus here is how treatment will run over time.
@@ -476,7 +476,7 @@ export default function TreatmentPlanDetailPage() {
         <div className="rounded-xl border border-gray-200 bg-white p-6">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <h2 className="text-lg font-semibold text-gray-900">Next Block</h2>
+              <h2 className="text-heading-section text-gray-900">Next Block</h2>
               <p className="text-sm text-gray-500">
                 Add the next set of treatment sessions when this plan needs to continue.
               </p>
@@ -595,7 +595,7 @@ export default function TreatmentPlanDetailPage() {
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div>
                 <div className="flex flex-wrap items-center gap-3">
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-heading-section text-gray-900">
                     Block {block.block_number}
                   </h2>
                   <span
@@ -640,7 +640,7 @@ export default function TreatmentPlanDetailPage() {
                       <div className="flex flex-wrap items-start justify-between gap-3">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <h3 className="font-semibold text-gray-900">
+                            <h3 className="text-heading-subsection text-gray-900">
                               Day {session.day_number}
                               {session.sequence_number > 1 ? ` · Session ${session.sequence_number}` : ""}
                             </h3>

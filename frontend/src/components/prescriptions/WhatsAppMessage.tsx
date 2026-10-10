@@ -378,7 +378,7 @@ export function WhatsAppReminderQueue() {
     >
       <h2
         id="whatsapp-reminders-heading"
-        className="text-base font-semibold text-gray-900"
+        className="text-heading-section text-gray-900"
       >
         WhatsApp follow-up reminders
       </h2>

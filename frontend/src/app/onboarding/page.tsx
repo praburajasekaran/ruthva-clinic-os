@@ -110,7 +110,7 @@ export default function OnboardingPage() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-100">
             <Building2 className="h-6 w-6 text-emerald-700" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-heading-page text-gray-900">
             Set up your clinic
           </h1>
           <p className="mt-1 text-sm text-gray-500">

@@ -58,7 +58,7 @@ function EnvagaiDisplay({ data }: { data: Record<string, string> }) {
         const hasData = Object.keys(values).length > 0;
         return (
           <div key={key} className="rounded-lg border border-gray-100 p-3">
-            <h4 className="text-sm font-medium text-gray-900">
+            <h4 className="text-heading-subsection text-gray-900">
               {tool.label}{" "}
               <span lang="ta" className="text-xs text-gray-400">
                 ({tool.labelTamil})
