@@ -46,8 +46,8 @@ History input includes at most 40 medical and 40 family entries, with total coun
 
 Live fixture checks prove the connection and refresh behavior for synthetic examples. They do not establish clinical accuracy. The UI labels generated text as an AI overview and asks the doctor to check the saved record.
 
-Before a production release, apply Worker migrations `0007_patient_reviews.sql` and `0008_contact_followups.sql`. Configure `OPENROUTER_API_KEY` as a Worker secret. Release the API before the frontend. Without the secret, the patient overview uses saved details. No API key is shipped to the browser.
+Release requires Worker migrations `0007_patient_reviews.sql` and `0008_contact_followups.sql`, an `OPENROUTER_API_KEY` Worker secret, and deployment of the API before the frontend. These requirements were completed on 10 October 2026. See [the deployment record](simple-clinic-deployment.md) for active versions and live checks. Without the secret, the patient overview uses saved details. No API key is shipped to the browser.
 
 The Django patient migration keeps legacy model contracts aligned. New summary and contact routes are implemented in the active Worker runtime.
 
-No production patient records were changed. The branch is for review. Merge and deployment remain separate actions.
+Existing patient records were not used for the AI tests. The branch is deployed and remains under review in PR #124. Merge and deployment remain separate actions.
