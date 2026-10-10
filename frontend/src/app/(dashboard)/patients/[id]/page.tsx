@@ -114,6 +114,13 @@ function PatientRecord() {
         )}
       </PatientBanner>
       <div className="flex flex-wrap items-center gap-3">
+        {(user?.role === "doctor" || user?.role === "admin") && (
+          <Button asChild variant="secondary">
+            <Link href={`/follow-ups?patient=${patient.id}`}>
+              Patient follow-ups
+            </Link>
+          </Button>
+        )}
         {canEdit && (
           <Button asChild>
             <Link href={`/patients/${patient.id}/consultations/new`}>

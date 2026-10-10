@@ -463,6 +463,33 @@ export type FollowUpsResponse = {
   };
 };
 
+export type ContactAction = "reached" | "no_answer" | "call_later" | "question" | "doctor_reply" | "reopen" | "assign";
+export type ContactStaff = { id: number; name: string; role: "doctor" | "admin" };
+export type ContactTask = {
+  id: number;
+  patient_id: number;
+  patient_name: string;
+  patient_record_id: string;
+  phone: string;
+  whatsapp_number: string;
+  clinical_return_date: string | null;
+  contact_date: string;
+  reason: string;
+  status: "open" | "awaiting_doctor" | "completed";
+  assigned_to_id: number | null;
+  assigned_to_name: string;
+  revision: number;
+};
+export type ContactEvent = {
+  id: number;
+  action: ContactAction;
+  note: string;
+  next_contact_date: string | null;
+  assigned_to_name: string | null;
+  actor_name: string;
+  created_at: string;
+};
+
 // ── Data Portability ──
 export type ImportPreviewRow = {
   line: number;

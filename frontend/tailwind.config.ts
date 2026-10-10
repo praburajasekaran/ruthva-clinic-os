@@ -21,8 +21,8 @@ const config: Config = {
       },
       fontFamily: {
         sans: ["'Trebuchet MS'", "Arial", "sans-serif"],
-        serif: ["var(--font-serif)"],
-        mono: ["var(--font-mono)"],
+        serif: ["Georgia", "'Times New Roman'", "serif"],
+        mono: ["ui-monospace", "SFMono-Regular", "Menlo", "monospace"],
       },
       zIndex: {
         60: "60",

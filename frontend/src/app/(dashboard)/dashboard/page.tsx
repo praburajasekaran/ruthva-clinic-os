@@ -41,6 +41,10 @@ const areas = [
 
 export default function DashboardPage() {
   const { user } = useAuth();
+  const { data: contactCounts } = useApi<{
+    due: number;
+    awaiting_doctor: number;
+  }>(user && user.role !== "therapist" ? "/contact-follow-ups/counts/" : null);
   const date = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Asia/Kolkata",
     year: "numeric",
@@ -107,6 +111,24 @@ export default function DashboardPage() {
         <p className="mt-1 text-sm text-text-muted">
           Patient calls, therapy sessions and doctor reviews.
         </p>
+        {contactCounts && (
+          <div className="mt-4 flex flex-wrap gap-3">
+            <Link
+              href="/follow-ups?due=true"
+              className="rounded-lg bg-brand-50 px-4 py-3 text-brand-800"
+            >
+              {contactCounts.due} calls due
+            </Link>
+            {contactCounts.awaiting_doctor > 0 && (
+              <Link
+                href="/follow-ups?status=awaiting_doctor"
+                className="rounded-lg bg-amber-50 px-4 py-3 text-amber-900"
+              >
+                {contactCounts.awaiting_doctor} waiting for a doctor
+              </Link>
+            )}
+          </div>
+        )}
         {workError ? (
           <p role="alert" className="mt-4">
             The clinical worklist could not be loaded.
@@ -152,7 +174,7 @@ export default function DashboardPage() {
         </div>
         {stats && (
           <p className="mt-1 text-sm text-text-muted">
-            {stats.today_patients} patients today ·{" "}
+            {stats.today_patients} patient{stats.today_patients === 1 ? "" : "s"} today ·{" "}
             {stats.pending_prescriptions} prescriptions to finish
           </p>
         )}

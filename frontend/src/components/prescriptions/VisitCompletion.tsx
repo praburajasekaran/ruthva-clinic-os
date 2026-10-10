@@ -115,6 +115,12 @@ export function VisitCompletion({
               {prescription.follow_up_date ? "Edit follow-up" : "Set follow-up date"}
             </Link>
           ) : !prescription.follow_up_date && <p className="mt-3 text-sm text-gray-500">Ask the doctor to record the next follow-up.</p>}
+          {canEdit && (
+            <div className="mt-2">
+              <Link href={`/follow-ups?patient=${patient.id}&plan=true`} className={linkClasses}>Plan a patient call</Link>
+              <p className="text-xs text-gray-500">Assign a contact reminder without changing the clinical return date.</p>
+            </div>
+          )}
         </section>
 
         <section aria-label="Treatment status" className={cardClasses}>

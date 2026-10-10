@@ -4,6 +4,7 @@ import { Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
 type Therapy = { name: string; patient_count: number; last_activity: string };
@@ -15,6 +16,7 @@ type TherapyPatient = {
   activity_count: number;
 };
 function Therapies() {
+  const { user } = useAuth();
   const name = useSearchParams().get("name");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
@@ -48,9 +50,11 @@ function Therapies() {
         <Link href="/follow-ups?view=clinical" className="text-brand-700">
           Session worklist →
         </Link>
-        <Link href="/visits/new" className="text-brand-700">
-          Start a visit to prescribe therapy →
-        </Link>
+        {user?.role === "doctor" && (
+          <Link href="/visits/new" className="text-brand-700">
+            Start a visit to prescribe therapy →
+          </Link>
+        )}
       </div>
       {(listError || patientError) && (
         <p role="alert">Could not load therapy records.</p>

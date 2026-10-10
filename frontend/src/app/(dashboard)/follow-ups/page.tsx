@@ -1,7 +1,8 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -11,6 +12,7 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import { WhatsAppReminderQueue } from "@/components/prescriptions/WhatsAppMessage";
 import { JourneysOverview } from "./components/JourneysOverview";
+import { ContactFollowUps } from "@/components/follow-ups/ContactFollowUps";
 import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
 import type {
   DoctorActionItem,
@@ -52,7 +54,7 @@ const isDoctorItem = (item: FollowUpsResponse["items"][number]): item is DoctorA
 const isLegacyItem = (item: FollowUpsResponse["items"][number]): item is LegacyFollowUpItem =>
   item.queue_type === "legacy";
 
-export default function FollowUpsPage() {
+function ClinicalFollowUpsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<QueueTab>("therapist");
   const [doctorStatus, setDoctorStatus] = useState<DoctorStatus>("open");
@@ -842,3 +844,18 @@ export default function FollowUpsPage() {
     </div>
   );
 }
+
+function FollowUpsContent() {
+  const { user } = useAuth();
+  const search = useSearchParams();
+  const clinical = user?.role === "therapist" || search.get("view") === "clinical";
+  return <div className="space-y-6">
+    {user?.role !== "therapist" && <nav aria-label="Follow-up sections" className="flex flex-wrap gap-2 border-b border-border pb-4">
+      <Link href="/follow-ups" aria-current={!clinical ? "page" : undefined} className={`rounded-lg px-4 py-3 ${!clinical ? "bg-brand-50 font-semibold text-brand-800" : "text-text-secondary"}`}>Patient calls</Link>
+      <Link href="/follow-ups?view=clinical" aria-current={clinical ? "page" : undefined} className={`rounded-lg px-4 py-3 ${clinical ? "bg-brand-50 font-semibold text-brand-800" : "text-text-secondary"}`}>Sessions &amp; reviews</Link>
+    </nav>}
+    {clinical ? <ClinicalFollowUpsPage /> : <ContactFollowUps />}
+  </div>;
+}
+
+export default function FollowUpsPage() { return <Suspense fallback={<Spinner />}><FollowUpsContent /></Suspense>; }
