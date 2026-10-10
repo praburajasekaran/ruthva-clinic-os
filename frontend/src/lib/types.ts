@@ -661,3 +661,16 @@ export type FeedbackResponse = {
   id: number;
   status: string;
 };
+
+export type AdminFeedback = {
+  id: number;
+  category: FeedbackCategory;
+  title: string;
+  description: string;
+  created_at: string;
+  page_url: string;
+  user_role: UserRole;
+  screenshot_available: boolean;
+  clinic: { id: number; name: string };
+  submitter: { name: string; email: string } | null;
+};

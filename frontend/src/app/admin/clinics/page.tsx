@@ -1,12 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import axios from "axios";
-import { ShieldCheck, Search } from "lucide-react";
-import { AuthGuard } from "@/components/auth/AuthGuard";
-import { useAuth } from "@/components/auth/AuthProvider";
+import { Search } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { useApi } from "@/hooks/useApi";
 import api from "@/lib/api";
@@ -21,7 +17,6 @@ const filters = [
 ];
 
 function ClinicAccounts() {
-  const { user, logout } = useAuth();
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -32,7 +27,7 @@ function ClinicAccounts() {
   const [actionError, setActionError] = useState("");
   const params = new URLSearchParams({ search, status, page: String(page) });
   const { data, error, isLoading, refetch } = useApi<AccountList>(
-    user?.is_platform_admin ? `/admin/clinics/?${params}` : null,
+    `/admin/clinics/?${params}`,
   );
 
   async function changeStatus() {
@@ -60,54 +55,8 @@ function ClinicAccounts() {
     }
   }
 
-  if (!user?.is_platform_admin)
-    return (
-      <main className="mx-auto max-w-3xl p-8">
-        <h1 className="text-2xl font-semibold">
-          Ruthva admin access is required
-        </h1>
-        <Link
-          href="/dashboard"
-          className="mt-4 inline-block text-emerald-700 underline"
-        >
-          Return to your clinic
-        </Link>
-      </main>
-    );
-
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b bg-white px-6 py-4">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4">
-          <div className="flex items-center gap-5">
-            <Image
-              src="/ruthva-logo.png"
-              alt="Ruthva"
-              width={120}
-              height={40}
-              className="h-8 w-auto"
-            />
-            <span className="flex items-center gap-2 text-sm font-medium text-emerald-800">
-              <ShieldCheck className="h-5 w-5" />
-              Ruthva admin
-            </span>
-          </div>
-          <div className="flex items-center gap-5 text-sm">
-            {user.clinic?.is_active && (
-              <Link
-                href="/dashboard"
-                className="text-emerald-700 hover:underline"
-              >
-                My clinic
-              </Link>
-            )}
-            <span className="text-gray-500">{user.email}</span>
-            <button onClick={logout} className="text-gray-700 hover:underline">
-              Sign out
-            </button>
-          </div>
-        </div>
-      </header>
+    <>
       <main className="mx-auto max-w-6xl space-y-6 px-6 py-8">
         <div>
           <h1 className="text-3xl font-semibold text-gray-900">
@@ -347,14 +296,10 @@ function ClinicAccounts() {
           </>
         )}
       </Modal>
-    </div>
+    </>
   );
 }
 
 export default function ClinicAccountsPage() {
-  return (
-    <AuthGuard>
-      <ClinicAccounts />
-    </AuthGuard>
-  );
+  return <ClinicAccounts />;
 }
