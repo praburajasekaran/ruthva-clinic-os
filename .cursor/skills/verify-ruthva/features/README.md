@@ -24,7 +24,7 @@ Read this index before a drive. These five feature groups cover the initial core
 | Recipe | User behavior |
 | --- | --- |
 | [Account access](account-access.md) | Signup, OTP verification, onboarding, normal login, demo disciplines, logout, admin access, and clinic activation. |
-| [Patients](patients.md) | Register, cancel, search, keyboard search, open, edit, archive. |
+| [Patients](patients.md) | Register, choose a date of birth with calculated age, cancel, search, keyboard search, open, edit, archive. |
 | [Consultations and prescriptions](consultations-prescriptions.md) | Save a visit, create a prescription, reopen it, and display the print view. |
 | [Treatment and follow-ups](treatment-followups.md) | Create plans from prescriptions, extend blocks, edit planned sessions, and inspect queues. |
 | [Pharmacy](pharmacy.md) | Create a medicine, add stock, check its ledger, and dispense a prescription. |
