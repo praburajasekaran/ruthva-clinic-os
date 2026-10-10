@@ -158,7 +158,14 @@ export async function serialize(
         )
       ).map((x) => output("pharmacy_stockentry", x, "StockEntrySerializer"));
   }
-  return output(table, row, contracts[table][detail ? 1 : 0], extra);
+  const result = output(table, row, contracts[table][detail ? 1 : 0], extra);
+  if (table === tables.consultations && detail)
+    result.prescription = await one(
+      db,
+      "SELECT id FROM prescriptions_prescription WHERE consultation_id=? AND clinic_id=?",
+      [row.id, row.clinic_id],
+    );
+  return result;
 }
 export function patientInsert(
   db: DB,

@@ -1,7 +1,9 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { useParams } from "next/navigation";
+import { useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth/AuthProvider";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PrescriptionBuilder } from "@/components/prescriptions/PrescriptionBuilder";
 import { useApi } from "@/hooks/useApi";
@@ -9,14 +11,22 @@ import type { Consultation, Patient } from "@/lib/types";
 
 export default function NewPrescriptionPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+  const { user } = useAuth();
   const { data: consultation, isLoading } = useApi<Consultation>(
     `/consultations/${params.id}/`,
   );
   const { data: patient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
+  const matchesVisit = consultation?.id === Number(params.id);
+  const savedPrescriptionId = matchesVisit ? consultation?.prescription?.id : undefined;
 
-  if (isLoading) {
+  useEffect(() => {
+    if (savedPrescriptionId) router.replace(`/prescriptions/${savedPrescriptionId}`);
+  }, [savedPrescriptionId, router]);
+
+  if (isLoading || savedPrescriptionId || (consultation && !matchesVisit)) {
     return (
       <div className="flex items-center justify-center py-20">
         <Spinner />
@@ -30,6 +40,10 @@ export default function NewPrescriptionPage() {
         Visit not found.
       </div>
     );
+  }
+
+  if (user?.role !== "doctor") {
+    return <p className="py-20 text-center text-muted-foreground">Only doctors can write prescriptions.</p>;
   }
 
   return (

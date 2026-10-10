@@ -1,7 +1,7 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { PatientBanner } from "@/components/patients/PatientBanner";
 import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
 import { DispenseModal } from "@/components/pharmacy/DispenseModal";
+import { VisitCompletion } from "@/components/prescriptions/VisitCompletion";
 import { TreatmentPlanCreateForm } from "@/components/treatments/TreatmentPlanCreateForm";
 import { WhatsAppMessage } from "@/components/prescriptions/WhatsAppMessage";
 import { KbdBadge } from "@/components/ui/KbdBadge";
@@ -21,27 +22,47 @@ export default function PrescriptionDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const { user } = useAuth();
-  const [showDispense, setShowDispense] = useState(false);
+  const [dispensingIntent, setDispensingIntent] = useState<"unrecorded" | "additional" | null>(null);
   const [showTreatmentForm, setShowTreatmentForm] = useState(false);
-  const { data: prescription, isLoading } = useApi<Prescription>(
+  useEffect(() => {
+    setDispensingIntent(null);
+    setShowTreatmentForm(false);
+  }, [params.id]);
+  const { data: prescription, isLoading, error: prescriptionError, refetch: refreshPrescription } = useApi<Prescription>(
     `/prescriptions/${params.id}/`,
   );
-  const { data: consultation } = useApi<Consultation>(
+  const { data: consultation, error: consultationError, refetch: refreshConsultation } = useApi<Consultation>(
     prescription ? `/consultations/${prescription.consultation}/` : null,
   );
-  const { data: patient } = useApi<Patient>(
+  const { data: patient, error: patientError, refetch: refreshPatient } = useApi<Patient>(
     consultation ? `/patients/${consultation.patient}/` : null,
   );
-  const { data: dispensingRecords, refetch: refreshDispensing } = useApi<DispensingRecord[]>(
+  const dispensing = useApi<DispensingRecord[]>(
     prescription ? `/pharmacy/dispensing/?prescription=${prescription.id}` : null,
   );
-  const { data: plans, isLoading: plansLoading, error: plansError } = useApi<TreatmentPlanListItem[]>(
+  const planQuery = useApi<TreatmentPlanListItem[]>(
     consultation ? `/treatments/plans/?patient_id=${consultation.patient}` : null,
   );
 
-  const hasLinkedMeds = prescription?.medications?.some((m) => m.medicine_id || m.medicine) ?? false;
+  const { data: dispensingRecords, refetch: refreshDispensing } = dispensing;
+  const { data: plans, isLoading: plansLoading, error: plansError } = planQuery;
 
-  if (isLoading) {
+  if (prescriptionError || consultationError || patientError) {
+    return (
+      <div className="space-y-3 py-20 text-center">
+        <p role="alert" className="text-sm text-red-600">
+          {prescriptionError?.detail || consultationError?.detail || patientError?.detail || "Could not load this visit."}
+        </p>
+        <Button variant="outline" onClick={() => {
+          if (prescriptionError) refreshPrescription();
+          else if (consultationError) refreshConsultation();
+          else refreshPatient();
+        }}>Retry visit</Button>
+      </div>
+    );
+  }
+
+  if (isLoading || !prescription || prescription.id !== Number(params.id) || !consultation || consultation.id !== prescription.consultation || !patient || patient.id !== consultation.patient) {
     return (
       <div className="flex items-center justify-center py-20">
         <Spinner />
@@ -49,27 +70,28 @@ export default function PrescriptionDetailPage() {
     );
   }
 
-  if (!prescription) {
-    return (
-      <div className="py-20 text-center text-gray-500">
-        Prescription not found.
-      </div>
-    );
-  }
-
   const medications = prescription.medications ?? [];
   const procedures = prescription.procedures ?? [];
   const treatmentPlans = plans?.filter((plan) => plan.prescription === prescription.id) ?? [];
-  const canManageTreatments = user?.role === "doctor" || user?.role === "admin";
+  const canEdit = user?.role === "doctor";
+  const hasActivePlan = treatmentPlans.some((plan) => plan.status === "active");
+  const recordedMedicineIds = new Set(dispensingRecords?.flatMap((record) => record.items.map((item) => item.medicine)) ?? []);
+  const linkedMedications = [...new Map(medications
+    .filter((med) => med.medicine_id || med.medicine)
+    .map((med) => [med.medicine_id ?? med.medicine, med])).values()];
+  const unrecordedMedications = linkedMedications.filter((med) => {
+    const medicineId = med.medicine_id ?? med.medicine;
+    return medicineId != null && !recordedMedicineIds.has(medicineId);
+  });
 
   return (
     <div className="space-y-6">
-      {patient && <PatientShortcutsInit patientId={patient.id} />}
-      {patient && <PatientBanner patient={patient} />}
+      <PatientShortcutsInit patientId={patient.id} consultationId={consultation.id} prescriptionId={prescription.id} />
+      <PatientBanner patient={patient} />
 
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Prescription</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Visit completion</h1>
           {consultation && (
             <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
               <Calendar className="h-3.5 w-3.5" />
@@ -84,7 +106,7 @@ export default function PrescriptionDetailPage() {
           )}
         </div>
         <div className="flex flex-wrap gap-3">
-          {canManageTreatments && <WhatsAppMessage prescriptionId={prescription.id} />}
+          {(user?.role === "doctor" || user?.role === "admin") && <WhatsAppMessage prescriptionId={prescription.id} />}
           {patient && (
             <Link
               href={`/patients/${patient.id}`}
@@ -97,23 +119,13 @@ export default function PrescriptionDetailPage() {
               />
             </Link>
           )}
-          {hasLinkedMeds && (
-            <button
-              type="button"
-              onClick={() => setShowDispense(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-sm font-medium text-emerald-700 hover:bg-emerald-100"
-            >
-              <Package className="h-4 w-4" />
-              Dispense
-            </button>
-          )}
-          <Link
+          {canEdit && <Link
             href={`/prescriptions/${params.id}/edit`}
             className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
             <Pencil className="h-4 w-4" />
-            Edit
-          </Link>
+            Edit prescription
+          </Link>}
           <Link
             href={`/prescriptions/${params.id}/print`}
             className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
@@ -123,6 +135,24 @@ export default function PrescriptionDetailPage() {
           </Link>
         </div>
       </div>
+
+      <VisitCompletion
+        prescription={prescription}
+        consultation={consultation}
+        patient={patient}
+        dispensing={dispensing}
+        plans={planQuery}
+        canEdit={canEdit}
+        unrecordedMedicationCount={unrecordedMedications.length}
+        onDispense={() => setDispensingIntent("unrecorded")}
+        onAdditionalDispense={() => setDispensingIntent("additional")}
+        onCreatePlan={() => {
+          setShowTreatmentForm(true);
+          document.getElementById("treatment-plans-heading")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      />
+
+      <h2 id="saved-prescription" className="text-lg font-semibold text-gray-900">Saved prescription</h2>
 
       {/* Medications */}
       {medications.length > 0 && (
@@ -272,7 +302,7 @@ export default function PrescriptionDetailPage() {
           <h2 id="treatment-plans-heading" className="text-base font-semibold text-gray-900">
             Treatment plans
           </h2>
-          {canManageTreatments && !showTreatmentForm && (
+          {canEdit && !hasActivePlan && plans !== null && !plansLoading && !plansError && !showTreatmentForm && (
             <Button size="sm" onClick={() => setShowTreatmentForm(true)}>
               New Treatment Plan
             </Button>
@@ -370,13 +400,13 @@ export default function PrescriptionDetailPage() {
       )}
 
       {/* Dispense Modal */}
-      {showDispense && (
+      {dispensingIntent && (
         <DispenseModal
           prescriptionId={prescription.id}
-          medications={medications}
-          onClose={() => setShowDispense(false)}
+          medications={dispensingIntent === "additional" ? linkedMedications : unrecordedMedications}
+          onClose={() => setDispensingIntent(null)}
           onDispensed={() => {
-            setShowDispense(false);
+            setDispensingIntent(null);
             refreshDispensing();
           }}
         />
