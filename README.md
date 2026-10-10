@@ -42,6 +42,15 @@ rtk npm run build
 
 The API tests run against workerd with D1 and R2. Migration tests check preserved records, foreign keys, tenant ownership, and image checksums. CI builds both Workers.
 
+To verify visit completion in Chromium, install the test browser and run the workflow check.
+
+```sh
+rtk npx playwright install chromium
+rtk npm run test:visit-completion
+```
+
+The check starts an isolated workerd database and the frontend on ports 8796 and 3006. It covers new and returning visits, follow-up, treatment plans, dispensing, role permissions, and refresh. It checks record counts and stock through the API. Screenshots and failure traces are saved under `.audit/visit-completion/`.
+
 ## Deploy and migrate
 
 Follow [Deploy Ruthva on Cloudflare](CLOUDFLARE-DEPLOY.md). The deployment commands reject the placeholder D1 ID and local production origins.
