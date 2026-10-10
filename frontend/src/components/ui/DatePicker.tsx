@@ -11,12 +11,13 @@ type DatePickerProps = {
   value: string;
   onChange: (value: string) => void;
   maxDate?: Date;
+  triggerLabel?: string;
   id?: string;
   "aria-describedby"?: string;
   "aria-invalid"?: boolean;
 };
 
-export function DatePicker({ value, onChange, maxDate, id, ...ariaProps }: DatePickerProps) {
+export function DatePicker({ value, onChange, maxDate, triggerLabel, id, ...ariaProps }: DatePickerProps) {
   const today = startOfDay(new Date());
   const parsedDate = value ? parse(value, "yyyy-MM-dd", today) : undefined;
   const selectedDate = parsedDate && isValid(parsedDate) ? parsedDate : undefined;
@@ -40,7 +41,7 @@ export function DatePicker({ value, onChange, maxDate, id, ...ariaProps }: DateP
         <Button type="button" id={id} variant="outline" className="gap-2 font-normal" {...ariaProps}>
           <CalendarIcon aria-hidden="true" className="h-4 w-4 text-muted-foreground" />
           <span className={selectedDate ? "text-foreground" : "text-muted-foreground"}>
-            {selectedDate ? format(selectedDate, "MMM d, yyyy") : "Pick a date"}
+            {triggerLabel ?? (selectedDate ? format(selectedDate, "MMM d, yyyy") : "Pick a date")}
           </span>
         </Button>
       </PopoverTrigger>

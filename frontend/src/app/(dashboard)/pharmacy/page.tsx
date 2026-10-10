@@ -17,7 +17,7 @@ export default function PharmacyPage() {
   return (
     <div>
       <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Pharmacy</h1>
+        <h1 className="text-heading-page text-gray-900">Pharmacy</h1>
         {canWrite && (
           <button
             type="button"

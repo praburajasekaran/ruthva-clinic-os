@@ -5,7 +5,7 @@ import {
   Users,
   Users2,
   Stethoscope,
-  FileText,
+  Hand,
   CalendarClock,
   Pill,
   Menu,
@@ -27,12 +27,12 @@ import { useApi } from "@/hooks/useApi";
 import type { FollowUpsResponse, Medicine } from "@/lib/types";
 
 const navItems = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/", label: "Home", icon: LayoutDashboard },
   { href: "/patients", label: "Patients", icon: Users },
-  { href: "/consultations", label: "Consultations", icon: Stethoscope },
-  { href: "/prescriptions", label: "Prescriptions", icon: FileText },
+  { href: "/consultations", label: "Visits", icon: Stethoscope },
+  { href: "/therapies", label: "Therapies", icon: Hand },
   { href: "/follow-ups", label: "Follow-ups", icon: CalendarClock },
-  { href: "/pharmacy", label: "Pharmacy", icon: Pill },
+  { href: "/pharmacy", label: "Medicines", icon: Pill },
   { href: "/team", label: "Team", icon: Users2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
@@ -46,6 +46,10 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   const [mobileOpen, setMobileOpen] = useState(false);
   const { openSearch } = useShortcuts();
   const { user, logout } = useAuth();
+  const { data: contactCounts, refetch: reloadContacts } = useApi<{
+    open: number;
+    awaiting_doctor: number;
+  }>(user && user.role !== "therapist" ? "/contact-follow-ups/counts/" : null);
   const [logoError, setLogoError] = useState(false);
   const { data: followUpsData } = useApi<FollowUpsResponse>(
     "/dashboard/follow-ups/?tab=all",
@@ -62,6 +66,13 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
   useEffect(() => {
     setLogoError(false);
   }, [clinicLogoUrl]);
+
+  useEffect(() => {
+    const refresh = () => void reloadContacts();
+    window.addEventListener("contact-follow-ups-updated", refresh);
+    return () =>
+      window.removeEventListener("contact-follow-ups-updated", refresh);
+  }, [reloadContacts]);
 
   const isActive = (href: string) => {
     if (href === "/") return pathname === "/" || pathname === "/dashboard";
@@ -80,7 +91,10 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
     setTimeout(() => triggerRef.current?.focus(), 0);
   }
 
-  const followUpCount = followUpsData?.meta?.counts?.total ?? 0;
+  const followUpCount =
+    (followUpsData?.meta?.counts?.total ?? 0) +
+    (contactCounts?.open ?? 0) +
+    (contactCounts?.awaiting_doctor ?? 0);
   const lowStockCount = lowStockData?.length ?? 0;
 
   const nav = (
@@ -106,6 +120,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
               alt="Ruthva"
               width={140}
               height={35}
+              unoptimized
               className="h-10 w-auto"
             />
           </a>
@@ -125,7 +140,9 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
         >
           <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
           <span className="flex-1 text-left">Search patients…</span>
-          <span className="hidden md:inline-flex"><KbdBadge keys={["Ctrl", "K"]} aria-hidden="true" /></span>
+          <span className="hidden md:inline-flex">
+            <KbdBadge keys={["Ctrl", "K"]} aria-hidden="true" />
+          </span>
         </button>
 
         <nav className="space-y-1">
@@ -157,7 +174,9 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
                 <item.icon className="h-5 w-5" aria-hidden="true" />
                 <span className="flex-1">{item.label}</span>
                 {item.href === "/patients" && (
-                  <span className="hidden md:inline-flex"><KbdBadge keys={["N"]} aria-hidden="true" /></span>
+                  <span className="hidden md:inline-flex">
+                    <KbdBadge keys={["N"]} aria-hidden="true" />
+                  </span>
                 )}
                 {item.href === "/follow-ups" && followUpCount > 0 && (
                   <span
@@ -198,7 +217,9 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
             )}
           </div>
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-emerald-700">{clinicName}</p>
+            <p className="truncate text-sm font-semibold text-emerald-700">
+              {clinicName}
+            </p>
           </div>
         </div>
         <div className="mb-2 px-3">
@@ -236,6 +257,7 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           alt="Ruthva"
           width={100}
           height={25}
+          unoptimized
           className="h-7 w-auto"
         />
       </header>
@@ -266,7 +288,6 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
       <aside className="hidden w-64 shrink-0 overflow-y-auto border-r bg-white p-4 md:flex md:flex-col">
         {nav}
       </aside>
-
     </>
   );
 }

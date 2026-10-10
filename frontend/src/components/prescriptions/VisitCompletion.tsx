@@ -47,12 +47,12 @@ export function VisitCompletion({
   return (
     <section aria-labelledby="visit-completion-heading" className="space-y-4">
       <div>
-        <h2 id="visit-completion-heading" className="text-lg font-semibold text-gray-900">Visit status and next actions</h2>
+        <h2 id="visit-completion-heading" className="text-heading-section text-gray-900">Visit status and next actions</h2>
         <p className="mt-1 text-sm text-gray-600">Review the saved records before the patient leaves.</p>
       </div>
       <div className="grid gap-4 md:grid-cols-2">
         <section aria-label="Prescription status" className={cardClasses}>
-          <h3 className="font-semibold text-gray-900">Prescription saved</h3>
+          <h3 className="text-heading-subsection text-gray-900">Prescription saved</h3>
           <p className="mt-2 text-sm text-gray-600">
             {prescription.medications.length} {prescription.medications.length === 1 ? "medication" : "medications"}, {prescription.procedures.length} {prescription.procedures.length === 1 ? "procedure" : "procedures"}.
           </p>
@@ -63,7 +63,7 @@ export function VisitCompletion({
         </section>
 
         <section aria-label="Dispensing status" className={cardClasses}>
-          <h3 className="font-semibold text-gray-900">Dispensing</h3>
+          <h3 className="text-heading-subsection text-gray-900">Dispensing</h3>
           {dispensing.error ? (
             <div className="mt-2">
               <p role="alert" className="text-sm text-red-600">Could not load dispensing records.</p>
@@ -105,7 +105,7 @@ export function VisitCompletion({
         </section>
 
         <section aria-label="Follow-up status" className={cardClasses}>
-          <h3 className="font-semibold text-gray-900">Next follow-up</h3>
+          <h3 className="text-heading-subsection text-gray-900">Next follow-up</h3>
           <p className="mt-2 text-sm text-gray-600">
             {prescription.follow_up_date ? `Recorded for ${dateLabel(prescription.follow_up_date)}.` : "No follow-up date recorded."}
           </p>
@@ -115,10 +115,16 @@ export function VisitCompletion({
               {prescription.follow_up_date ? "Edit follow-up" : "Set follow-up date"}
             </Link>
           ) : !prescription.follow_up_date && <p className="mt-3 text-sm text-gray-500">Ask the doctor to record the next follow-up.</p>}
+          {canEdit && (
+            <div className="mt-2">
+              <Link href={`/follow-ups?patient=${patient.id}&plan=true`} className={linkClasses}>Plan a patient call</Link>
+              <p className="text-xs text-gray-500">Assign a contact reminder without changing the clinical return date.</p>
+            </div>
+          )}
         </section>
 
         <section aria-label="Treatment status" className={cardClasses}>
-          <h3 className="font-semibold text-gray-900">Treatment plan</h3>
+          <h3 className="text-heading-subsection text-gray-900">Treatment plan</h3>
           {plans.error ? (
             <div className="mt-2">
               <p role="alert" className="text-sm text-red-600">Could not load treatment plans.</p>
@@ -148,7 +154,7 @@ export function VisitCompletion({
 
       <section aria-label="Patient history" className={cardClasses}>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="font-semibold text-gray-900">Patient history</h3>
+          <h3 className="text-heading-subsection text-gray-900">Patient history</h3>
           <Link href={`/patients/${patient.id}`} className={linkClasses}>Open full patient history</Link>
         </div>
         {patient.medical_history.length > 0 && (

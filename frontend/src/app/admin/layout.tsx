@@ -13,7 +13,7 @@ function AdminContent({ children }: { children: React.ReactNode }) {
   if (!user?.is_platform_admin)
     return (
       <main className="mx-auto max-w-3xl p-8">
-        <h1 className="text-2xl font-semibold">
+        <h1 className="text-heading-page">
           Ruthva admin access is required
         </h1>
         <Link

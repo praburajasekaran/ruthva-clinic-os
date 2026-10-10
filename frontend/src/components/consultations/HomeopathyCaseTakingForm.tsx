@@ -76,7 +76,7 @@ type Props = {
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <h4 className="mb-3 border-b border-border pb-2 text-base font-semibold text-foreground">
+    <h4 className="text-heading-subsection mb-3 border-b border-border pb-2 text-foreground">
       {children}
     </h4>
   );

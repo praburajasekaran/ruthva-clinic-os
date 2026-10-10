@@ -170,6 +170,10 @@ export type Patient = {
   marital_status: MaritalStatus | "";
   referred_by: string;
   allergies: string;
+  allergies_review: "unknown" | "recorded" | "none";
+  medical_history_review: "unknown" | "reviewed" | "none";
+  current_medicines_status: "unknown" | "taking" | "none";
+  current_medicines: string;
   food_habits: FoodHabit | "";
   activity_level: ActivityLevel | "";
   menstrual_history: string;
@@ -241,6 +245,17 @@ export type Discipline =
 
 // ── Consultation ──
 export type DiagnosticData = Record<string, unknown>;
+
+export type ConsultationListItem = {
+  readonly id: number;
+  patient: number;
+  patient_name: string;
+  patient_record_id: string;
+  consultation_date: string;
+  chief_complaints: string;
+  diagnosis: string;
+  has_prescription: boolean;
+};
 
 export type Consultation = {
   readonly id: number;
@@ -446,6 +461,33 @@ export type FollowUpsResponse = {
       total: number;
     };
   };
+};
+
+export type ContactAction = "reached" | "no_answer" | "call_later" | "question" | "doctor_reply" | "reopen" | "assign";
+export type ContactStaff = { id: number; name: string; role: "doctor" | "admin" };
+export type ContactTask = {
+  id: number;
+  patient_id: number;
+  patient_name: string;
+  patient_record_id: string;
+  phone: string;
+  whatsapp_number: string;
+  clinical_return_date: string | null;
+  contact_date: string;
+  reason: string;
+  status: "open" | "awaiting_doctor" | "completed";
+  assigned_to_id: number | null;
+  assigned_to_name: string;
+  revision: number;
+};
+export type ContactEvent = {
+  id: number;
+  action: ContactAction;
+  note: string;
+  next_contact_date: string | null;
+  assigned_to_name: string | null;
+  actor_name: string;
+  created_at: string;
 };
 
 // ── Data Portability ──

@@ -1,375 +1,327 @@
 "use client";
-import { Spinner } from "@/components/ui/Spinner";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
+import { Archive, ArchiveRestore, Plus } from "lucide-react";
 import { PatientBanner } from "@/components/patients/PatientBanner";
-import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
-import { KbdBadge } from "@/components/ui/KbdBadge";
+import { PatientSummary } from "@/components/patients/PatientSummary";
 import {
-  Archive,
-  ArchiveRestore,
-  Calendar,
-  FileText,
-  Pencil,
-  Plus,
-  Stethoscope,
-  User,
-} from "lucide-react";
+  PatientHistory,
+  patientGaps,
+} from "@/components/patients/PatientHistory";
+import { PatientShortcutsInit } from "@/components/patients/PatientShortcutsInit";
+import { RemedyHistoryTimeline } from "@/components/patients/RemedyHistoryTimeline";
+import { Spinner } from "@/components/ui/Spinner";
+import { Button } from "@/components/ui/Button";
+import { KbdBadge } from "@/components/ui/KbdBadge";
 import { useApi } from "@/hooks/useApi";
 import { pharmacyApi } from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { RemedyHistoryTimeline } from "@/components/patients/RemedyHistoryTimeline";
-import { FlaskConical } from "lucide-react";
 import type { Patient, PaginatedResponse } from "@/lib/types";
 
-type ConsultationListItem = {
+type Visit = {
   id: number;
   consultation_date: string;
   chief_complaints: string;
   diagnosis: string;
   has_prescription: boolean;
 };
+const tabs = [
+  { value: "overview", label: "Overview" },
+  { value: "visits", label: "Visits" },
+  { value: "history", label: "Health history" },
+  { value: "details", label: "Patient details" },
+];
+const fields: { key: keyof Patient; label: string }[] = [
+  { key: "date_of_birth", label: "Date of birth" },
+  { key: "phone", label: "Phone" },
+  { key: "whatsapp_number", label: "WhatsApp" },
+  { key: "email", label: "Email" },
+  { key: "address", label: "Address" },
+  { key: "blood_group", label: "Blood group" },
+  { key: "occupation", label: "Occupation" },
+  { key: "marital_status", label: "Marital status" },
+  { key: "referred_by", label: "Referred by" },
+  { key: "food_habits", label: "Food habits" },
+  { key: "activity_level", label: "Activity level" },
+  { key: "menstrual_history", label: "Menstrual history" },
+  { key: "number_of_children", label: "Number of children" },
+  { key: "vaccination_records", label: "Vaccination records" },
+];
 
-export default function PatientDetailPage() {
+function PatientRecord() {
   const params = useParams<{ id: string }>();
+  const search = useSearchParams();
+  const tab = tabs.some((t) => t.value === search.get("tab"))
+    ? search.get("tab")
+    : "overview";
   const { user } = useAuth();
-  const discipline = user?.clinic?.discipline;
-  const { data: patient, isLoading, refetch } = useApi<Patient>(
-    `/patients/${params.id}/`,
+  const {
+    data: patient,
+    isLoading,
+    error,
+    refetch,
+  } = useApi<Patient>(`/patients/${params.id}/`);
+  const [page, setPage] = useState(1);
+  const { data: visits, error: visitError } = useApi<PaginatedResponse<Visit>>(
+    `/consultations/?patient=${params.id}&page=${page}`,
   );
-  const { data: consultationsData } =
-    useApi<PaginatedResponse<ConsultationListItem>>(
-      `/consultations/?patient=${params.id}`,
-    );
   const [toggling, setToggling] = useState(false);
-
-  const handleToggleActive = async () => {
+  const [actionError, setActionError] = useState("");
+  const canEdit = user?.role === "doctor";
+  async function toggleActive() {
     if (!patient) return;
     setToggling(true);
+    setActionError("");
     try {
       await pharmacyApi.togglePatientActive(patient.id);
-      refetch();
+      await refetch();
+    } catch {
+      setActionError("Could not change patient status. Try again.");
     } finally {
       setToggling(false);
     }
-  };
-
-  if (isLoading) {
+  }
+  if (isLoading || (patient && patient.id !== Number(params.id)))
     return (
-      <div className="flex items-center justify-center py-20">
+      <div className="py-20 text-center">
         <Spinner />
       </div>
     );
-  }
-
-  if (!patient) {
-    return (
-      <div className="py-20 text-center text-gray-500">Patient not found.</div>
-    );
-  }
-
-  const consultations = consultationsData?.results ?? [];
-
+  if (!patient)
+    return <p role="alert">{error?.detail || "Patient not found."}</p>;
+  const gaps = patientGaps(patient);
+  const shownVisits =
+    tab === "overview"
+      ? (visits?.results ?? []).slice(0, 3)
+      : (visits?.results ?? []);
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       <PatientShortcutsInit patientId={patient.id} />
-      <PatientBanner patient={patient} />
-
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-3">
-        <Link
-          href={`/patients/${params.id}/edit`}
-          className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
-        >
-          <Pencil className="h-4 w-4" />
-          Edit Patient
-        </Link>
-        <Link
-          href={`/patients/${params.id}/consultations/new`}
-          className="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700"
-        >
-          <Plus className="h-4 w-4" />
-          New Consultation
-          <KbdBadge
-            keys={["C"]}
-            aria-label="Press C to start a new consultation"
+      <Link
+        href="/patients"
+        className="inline-block py-2 text-sm text-brand-700"
+      >
+        ← All patients
+      </Link>
+      <PatientBanner patient={patient}>
+        {canEdit && (
+          <PatientSummary
+            patient={patient}
+            canGenerate={!user?.clinic?.subdomain?.startsWith("demo")}
           />
-        </Link>
-        <button
-          type="button"
-          onClick={handleToggleActive}
-          disabled={toggling}
-          className={`inline-flex items-center gap-2 rounded-lg border px-4 py-2.5 text-sm font-medium disabled:opacity-50 ${
-            patient.is_active
-              ? "border-gray-300 text-gray-700 hover:bg-gray-50"
-              : "border-emerald-300 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-          }`}
-        >
+        )}
+      </PatientBanner>
+      <div className="flex flex-wrap items-center gap-3">
+        {(user?.role === "doctor" || user?.role === "admin") && (
+          <Button asChild variant="secondary">
+            <Link href={`/follow-ups?patient=${patient.id}`}>
+              Patient follow-ups
+            </Link>
+          </Button>
+        )}
+        {canEdit && (
+          <Button asChild>
+            <Link href={`/patients/${patient.id}/consultations/new`}>
+              <Plus className="h-4 w-4" />
+              Start visit
+              <KbdBadge
+                keys={["C"]}
+                aria-label="Press C to start a new consultation"
+              />
+            </Link>
+          </Button>
+        )}
+        <Button asChild variant="secondary">
+          <Link href={`/patients/${patient.id}/edit`}>Edit patient</Link>
+        </Button>
+        <Button variant="ghost" onClick={toggleActive} disabled={toggling}>
           {patient.is_active ? (
-            <><Archive className="h-4 w-4" /> Archive Patient</>
+            <Archive className="h-4 w-4" />
           ) : (
-            <><ArchiveRestore className="h-4 w-4" /> Reactivate Patient</>
+            <ArchiveRestore className="h-4 w-4" />
           )}
-        </button>
+          {patient.is_active ? "Archive patient" : "Reactivate patient"}
+        </Button>
       </div>
-
-      {/* Archived banner */}
-      {!patient.is_active && (
-        <div className="rounded-lg border border-gray-300 bg-gray-50 p-3 text-sm text-gray-600">
-          This patient is archived and does not count toward your active patient limit.
-        </div>
+      {actionError && (
+        <p role="alert" className="text-red-700">
+          {actionError}
+        </p>
       )}
-
-      {/* Patient Details */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Info Card */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 lg:col-span-1">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <User className="h-4 w-4" />
-            Patient Details
-          </h2>
-          <dl className="space-y-3 text-sm">
-            <div>
-              <dt className="text-gray-500">Gender</dt>
-              <dd className="font-medium capitalize text-gray-900">
-                {patient.gender}
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">Age</dt>
-              <dd className="font-medium text-gray-900">
-                {patient.age} years
-              </dd>
-            </div>
-            <div>
-              <dt className="text-gray-500">Phone</dt>
-              <dd className="font-medium text-gray-900">{patient.phone}</dd>
-            </div>
-            {patient.email && (
-              <div>
-                <dt className="text-gray-500">Email</dt>
-                <dd className="font-medium text-gray-900">{patient.email}</dd>
-              </div>
+      {!patient.is_active && (
+        <p className="rounded-xl border border-border bg-white p-4 text-text-muted">
+          This patient is archived and does not count toward your active patient
+          limit.
+        </p>
+      )}
+      <nav
+        aria-label="Patient record sections"
+        className="flex flex-wrap gap-1 border-b border-border pb-2"
+      >
+        {tabs.map((t) => (
+          <Link
+            key={t.value}
+            aria-current={tab === t.value ? "page" : undefined}
+            onClick={() => setPage(1)}
+            href={`/patients/${patient.id}?tab=${t.value}`}
+            className={`rounded-lg px-4 py-3 ${tab === t.value ? "bg-brand-50 font-semibold text-brand-800" : "text-text-secondary hover:bg-white"}`}
+          >
+            {t.label}
+          </Link>
+        ))}
+      </nav>
+      {canEdit && gaps.length > 0 && tab !== "details" && (
+        <aside className="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+          <p className="font-semibold text-amber-900">Check with the patient</p>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {gaps.map((gap) => (
+              <Link
+                key={gap}
+                href={`/patients/${patient.id}?tab=history`}
+                className="rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm text-amber-900"
+              >
+                {gap} →
+              </Link>
+            ))}
+          </div>
+        </aside>
+      )}
+      {(tab === "overview" || tab === "visits") && (
+        <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="text-heading-section">
+              {tab === "overview" ? "Recent visits" : "Visits"}
+            </h2>
+            {tab === "overview" && (
+              <Link
+                className="text-sm text-brand-700"
+                href={`/patients/${patient.id}?tab=visits`}
+              >
+                See all visits →
+              </Link>
             )}
-            {patient.blood_group && (
-              <div>
-                <dt className="text-gray-500">Blood Group</dt>
-                <dd className="font-medium text-gray-900">
-                  {patient.blood_group}
-                </dd>
-              </div>
-            )}
-            {patient.occupation && (
-              <div>
-                <dt className="text-gray-500">Occupation</dt>
-                <dd className="font-medium text-gray-900">
-                  {patient.occupation}
-                </dd>
-              </div>
-            )}
-            {patient.food_habits && (
-              <div>
-                <dt className="text-gray-500">Food Habits</dt>
-                <dd className="font-medium capitalize text-gray-900">
-                  {patient.food_habits.replace("_", "-")}
-                </dd>
-              </div>
-            )}
-            {patient.whatsapp_number && (
-              <div>
-                <dt className="text-gray-500">WhatsApp</dt>
-                <dd className="font-medium text-gray-900">{patient.whatsapp_number}</dd>
-              </div>
-            )}
-            {patient.marital_status && (
-              <div>
-                <dt className="text-gray-500">Marital Status</dt>
-                <dd className="font-medium capitalize text-gray-900">{patient.marital_status}</dd>
-              </div>
-            )}
-            {patient.referred_by && (
-              <div>
-                <dt className="text-gray-500">Referred By</dt>
-                <dd className="font-medium text-gray-900">{patient.referred_by}</dd>
-              </div>
-            )}
-            {patient.activity_level && (
-              <div>
-                <dt className="text-gray-500">Activity Level</dt>
-                <dd className="font-medium capitalize text-gray-900">{patient.activity_level}</dd>
-              </div>
-            )}
-            {patient.allergies && (
-              <div>
-                <dt className="text-gray-500">Allergies</dt>
-                <dd className="font-medium text-red-700">
-                  {patient.allergies}
-                </dd>
-              </div>
-            )}
-            {patient.menstrual_history && (
-              <div>
-                <dt className="text-gray-500">Menstrual History</dt>
-                <dd className="font-medium text-gray-900">{patient.menstrual_history}</dd>
-              </div>
-            )}
-            {patient.number_of_children != null && (
-              <div>
-                <dt className="text-gray-500">Number of Children</dt>
-                <dd className="font-medium text-gray-900">{patient.number_of_children}</dd>
-              </div>
-            )}
-            {patient.vaccination_records && (
-              <div>
-                <dt className="text-gray-500">Vaccination Records</dt>
-                <dd className="font-medium text-gray-900">{patient.vaccination_records}</dd>
-              </div>
-            )}
-            {patient.address && (
-              <div>
-                <dt className="text-gray-500">Address</dt>
-                <dd className="font-medium text-gray-900">
-                  {patient.address}
-                </dd>
-              </div>
-            )}
-          </dl>
-        </div>
-
-        {/* Consultation History */}
-        <div className="rounded-lg border border-gray-200 bg-white p-6 lg:col-span-2">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <Stethoscope className="h-4 w-4" />
-            Consultation History
-          </h2>
-          {consultations.length === 0 ? (
-            <p className="text-sm text-gray-500">No consultations yet.</p>
+          </div>
+          {visitError ? (
+            <p role="alert" className="mt-4">
+              Visit history could not be loaded.
+            </p>
+          ) : !visits ? (
+            <p className="mt-4 text-text-muted">Loading visits…</p>
+          ) : !shownVisits.length ? (
+            <p className="mt-4 text-text-muted">No visits recorded yet.</p>
           ) : (
-            <div className="space-y-3">
-              {consultations.map((c) => (
+            <div className="mt-4 divide-y divide-border">
+              {shownVisits.map((visit) => (
                 <Link
-                  key={c.id}
-                  href={`/consultations/${c.id}`}
-                  className="block rounded-lg border border-gray-100 p-4 transition-colors hover:bg-gray-50"
+                  key={visit.id}
+                  href={`/consultations/${visit.id}`}
+                  className="block py-4 hover:text-brand-700"
                 >
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <Calendar className="h-3.5 w-3.5" />
-                        {new Date(c.consultation_date).toLocaleDateString(
-                          "en-IN",
-                          {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          },
-                        )}
-                      </div>
-                      {c.chief_complaints && (
-                        <p className="mt-1 text-sm text-gray-700">
-                          {c.chief_complaints}
-                        </p>
-                      )}
-                      {c.diagnosis && (
-                        <p className="mt-0.5 text-sm font-medium text-gray-900">
-                          Dx: {c.diagnosis}
-                        </p>
-                      )}
-                    </div>
-                    {c.has_prescription && (
-                      <span className="flex items-center gap-1 rounded px-2 py-1 text-xs text-emerald-700">
-                        <FileText className="h-3 w-3" />
-                        Rx
-                      </span>
-                    )}
-                  </div>
+                  <p className="text-sm text-text-muted">
+                    {new Date(
+                      `${visit.consultation_date}T00:00:00`,
+                    ).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                    {visit.has_prescription ? " · Prescription recorded" : ""}
+                  </p>
+                  {visit.chief_complaints && (
+                    <p className="mt-1 font-semibold">
+                      {visit.chief_complaints}
+                    </p>
+                  )}
+                  {visit.diagnosis && (
+                    <p className="mt-1 text-text-secondary">
+                      {visit.diagnosis}
+                    </p>
+                  )}
                 </Link>
               ))}
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Medical History */}
-      {patient.medical_history?.length > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
-            Medical History
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="pb-2 font-medium text-gray-700">Disease</th>
-                  <th className="pb-2 font-medium text-gray-700">Duration</th>
-                  <th className="pb-2 font-medium text-gray-700">
-                    Medication
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {patient.medical_history.map((mh) => (
-                  <tr key={mh.id}>
-                    <td className="py-2 text-gray-900">{mh.disease}</td>
-                    <td className="py-2 text-gray-600">{mh.duration}</td>
-                    <td className="py-2 text-gray-600">
-                      {mh.medication || "\u2014"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+          {tab === "visits" && visits && (visits.next || visits.previous) && (
+            <div className="mt-4 flex items-center gap-3">
+              <Button
+                variant="secondary"
+                disabled={!visits.previous}
+                onClick={() => setPage((p) => p - 1)}
+              >
+                Previous
+              </Button>
+              <span>Page {page}</span>
+              <Button
+                variant="secondary"
+                disabled={!visits.next}
+                onClick={() => setPage((p) => p + 1)}
+              >
+                Next
+              </Button>
+            </div>
+          )}
+        </section>
       )}
-
-      {/* Family History */}
-      {patient.family_history?.length > 0 && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 text-base font-semibold text-gray-900">
-            Family History
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="pb-2 font-medium text-gray-700">Relation</th>
-                  <th className="pb-2 font-medium text-gray-700">Disease</th>
-                  <th className="pb-2 font-medium text-gray-700">Duration</th>
-                  <th className="pb-2 font-medium text-gray-700">Remarks</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {patient.family_history.map((fh) => (
-                  <tr key={fh.id}>
-                    <td className="py-2 text-gray-900">{fh.relation}</td>
-                    <td className="py-2 text-gray-600">{fh.disease}</td>
-                    <td className="py-2 text-gray-600">
-                      {fh.duration || "\u2014"}
-                    </td>
-                    <td className="py-2 text-gray-600">
-                      {fh.remarks || "\u2014"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+      {tab === "history" && (
+        <PatientHistory
+          key={patient.id}
+          patient={patient}
+          onSaved={refetch}
+          canEdit={canEdit}
+        />
       )}
-
-      {/* Homeopathy: Constitutional Remedy History */}
-      {discipline === "homeopathy" && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6">
-          <h2 className="mb-4 flex items-center gap-2 text-base font-semibold text-gray-900">
-            <FlaskConical className="h-4 w-4" />
-            Constitutional Remedy History
-          </h2>
+      {tab === "history" && user?.clinic?.discipline === "homeopathy" && (
+        <section className="rounded-2xl border border-border bg-white p-6">
+          <h2 className="text-heading-section mb-4">Constitutional remedy history</h2>
           <RemedyHistoryTimeline patientId={patient.id} />
-        </div>
+        </section>
+      )}
+      {tab === "details" && (
+        <section className="rounded-2xl border border-border bg-white p-5 sm:p-6">
+          <div className="mb-5 flex items-center justify-between">
+            <h2 className="text-heading-section">Patient details</h2>
+            <Link
+              className="text-brand-700"
+              href={`/patients/${patient.id}/edit`}
+            >
+              Add or edit details →
+            </Link>
+          </div>
+          <dl className="grid gap-5 sm:grid-cols-2">
+            <div>
+              <dt className="text-sm text-text-muted">Age</dt>
+              <dd>{patient.calculated_age ?? patient.age} years</dd>
+            </div>
+            <div>
+              <dt className="text-sm text-text-muted">Gender</dt>
+              <dd className="capitalize">{patient.gender}</dd>
+            </div>
+            {fields.map(({ key, label }) => {
+              const value = patient[key];
+              return value === null ||
+                value === undefined ||
+                value === "" ? null : (
+                <div key={key}>
+                  <dt className="text-sm text-text-muted">{label}</dt>
+                  <dd className="whitespace-pre-wrap">
+                    {String(value).replaceAll("_", " ")}
+                  </dd>
+                </div>
+              );
+            })}
+          </dl>
+        </section>
       )}
     </div>
+  );
+}
+
+export default function PatientDetailPage() {
+  return (
+    <Suspense fallback={<Spinner />}>
+      <PatientRecord />
+    </Suspense>
   );
 }

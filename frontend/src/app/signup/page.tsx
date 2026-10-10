@@ -209,7 +209,7 @@ export default function SignupPage() {
 
           {step === "form" ? (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-heading-page text-gray-900">
                 Register your clinic
               </h1>
               <p className="mt-1 text-sm text-gray-500">
@@ -218,7 +218,7 @@ export default function SignupPage() {
             </>
           ) : (
             <>
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-heading-page text-gray-900">
                 Check your email
               </h1>
               <p className="mt-1 text-sm text-gray-500">

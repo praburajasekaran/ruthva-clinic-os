@@ -21,7 +21,7 @@ export function FormSection({
   return (
     <section id={sectionId} className="space-y-5">
       <div className="border-b border-border pb-2">
-        <h3 className="text-base font-semibold text-foreground">{title}</h3>
+        <h3 className="text-heading-section text-foreground">{title}</h3>
         {subtitle && (
           <p className="mt-0.5 text-sm text-muted-foreground">{subtitle}</p>
         )}

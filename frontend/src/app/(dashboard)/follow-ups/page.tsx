@@ -1,7 +1,8 @@
 "use client";
 import { Spinner } from "@/components/ui/Spinner";
 
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/api";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -11,6 +12,7 @@ import { DatePicker } from "@/components/ui/DatePicker";
 import { BlockEntryForm } from "@/components/treatments/BlockEntryForm";
 import { WhatsAppReminderQueue } from "@/components/prescriptions/WhatsAppMessage";
 import { JourneysOverview } from "./components/JourneysOverview";
+import { ContactFollowUps } from "@/components/follow-ups/ContactFollowUps";
 import { ChevronDown, ChevronUp, CheckCircle, Pencil, X, Save } from "lucide-react";
 import type {
   DoctorActionItem,
@@ -52,7 +54,7 @@ const isDoctorItem = (item: FollowUpsResponse["items"][number]): item is DoctorA
 const isLegacyItem = (item: FollowUpsResponse["items"][number]): item is LegacyFollowUpItem =>
   item.queue_type === "legacy";
 
-export default function FollowUpsPage() {
+function ClinicalFollowUpsPage() {
   const { user } = useAuth();
   const [tab, setTab] = useState<QueueTab>("therapist");
   const [doctorStatus, setDoctorStatus] = useState<DoctorStatus>("open");
@@ -477,7 +479,7 @@ export default function FollowUpsPage() {
           {/* Therapist Worklist */}
           {(tab === "therapist" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Therapist execution</h2>}
+              {tab === "all" && <h2 className="text-heading-section text-gray-900">Therapist execution</h2>}
               {therapistItems.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
                   No treatment sessions need recording in this view.
@@ -598,7 +600,7 @@ export default function FollowUpsPage() {
           {/* Doctor Actions */}
           {(tab === "doctor" || tab === "all") && (
             <section className="space-y-3">
-              {tab === "all" && <h2 className="text-base font-semibold text-gray-900">Doctor review</h2>}
+              {tab === "all" && <h2 className="text-heading-section text-gray-900">Doctor review</h2>}
               {doctorItems.length === 0 ? (
                 <div className="rounded-3xl border border-dashed border-border-strong bg-surface-raised p-6 text-sm text-text-secondary">
                   No doctor review items match this view.
@@ -664,7 +666,7 @@ export default function FollowUpsPage() {
                           ) : (
                             <div className="space-y-4 rounded-lg border border-blue-100 bg-blue-50/30 p-4">
                               <div className="flex items-center justify-between">
-                                <h4 className="text-sm font-semibold text-gray-900">Next Block</h4>
+                                <h4 className="text-heading-subsection text-gray-900">Next Block</h4>
                                 <button
                                   type="button"
                                   onClick={() => toggleBlockExpanded(item)}
@@ -825,7 +827,7 @@ export default function FollowUpsPage() {
           {/* Legacy journeys */}
           {(tab === "therapist" || tab === "all") && legacyItems.length > 0 && (
             <section className="space-y-3">
-              <h2 className="text-base font-semibold text-gray-900">Legacy Journey Items</h2>
+              <h2 className="text-heading-section text-gray-900">Legacy Journey Items</h2>
               {legacyItems.map((item, idx) => (
                 <div key={`${item.legacy_type}-${item.patient_id}-${idx}`} className="rounded-[28px] border border-border bg-surface p-5 shadow-sm">
                   <Link href={`/patients/${item.patient_id}`} className="text-lg font-semibold text-text-primary hover:text-brand-700 hover:underline">
@@ -842,3 +844,18 @@ export default function FollowUpsPage() {
     </div>
   );
 }
+
+function FollowUpsContent() {
+  const { user } = useAuth();
+  const search = useSearchParams();
+  const clinical = user?.role === "therapist" || search.get("view") === "clinical";
+  return <div className="space-y-6">
+    {user?.role !== "therapist" && <nav aria-label="Follow-up sections" className="flex flex-wrap gap-2 border-b border-border pb-4">
+      <Link href="/follow-ups" aria-current={!clinical ? "page" : undefined} className={`rounded-lg px-4 py-3 ${!clinical ? "bg-brand-50 font-semibold text-brand-800" : "text-text-secondary"}`}>Patient calls</Link>
+      <Link href="/follow-ups?view=clinical" aria-current={clinical ? "page" : undefined} className={`rounded-lg px-4 py-3 ${clinical ? "bg-brand-50 font-semibold text-brand-800" : "text-text-secondary"}`}>Sessions &amp; reviews</Link>
+    </nav>}
+    {clinical ? <ClinicalFollowUpsPage /> : <ContactFollowUps />}
+  </div>;
+}
+
+export default function FollowUpsPage() { return <Suspense fallback={<Spinner />}><FollowUpsContent /></Suspense>; }

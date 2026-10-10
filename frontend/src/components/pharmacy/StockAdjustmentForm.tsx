@@ -43,7 +43,7 @@ export function StockAdjustmentForm({ medicineId, onClose, onSaved }: Props) {
   return (
     <div className="rounded-lg border bg-white p-4">
       <div className="mb-3 flex items-center justify-between">
-        <h3 className="font-medium text-gray-900">Add Stock</h3>
+        <h3 className="text-heading-subsection text-gray-900">Add Stock</h3>
         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">
           <X className="h-4 w-4" />
         </button>

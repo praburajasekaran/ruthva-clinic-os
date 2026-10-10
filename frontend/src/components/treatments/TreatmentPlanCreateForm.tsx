@@ -97,7 +97,7 @@ export function TreatmentPlanCreateForm({ prescriptionId, onCreated, onCancel }:
 
   return (
     <div className="rounded-lg border border-emerald-200 bg-emerald-50/50 p-6 space-y-5">
-      <h3 className="text-base font-semibold text-gray-900">New Treatment Plan</h3>
+      <h3 className="text-heading-subsection text-gray-900">New Treatment Plan</h3>
 
       {/* Plan-level fields */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">

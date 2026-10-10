@@ -288,6 +288,17 @@ async function diagnostic(c: Ctx, body: Row) {
   }
 }
 
+function patientReview(c: Ctx, body: Row, original: Row = {}) {
+  if (["allergies_review", "medical_history_review", "current_medicines_status", "current_medicines"].some((key) => Object.hasOwn(body, key))) doctor(c);
+  if (Object.hasOwn(body, "allergies") && !Object.hasOwn(body, "allergies_review")) body.allergies_review = str(body, "allergies").trim() ? "recorded" : "unknown";
+  if (Object.hasOwn(body, "medical_history") && !Object.hasOwn(body, "medical_history_review")) body.medical_history_review = Array.isArray(body.medical_history) && body.medical_history.length ? "reviewed" : "unknown";
+  const merged = { ...original, ...body };
+  check(!(merged.allergies_review === "none" && str(merged, "allergies").trim()), "Clear recorded allergies before choosing None known.");
+  check(!(merged.current_medicines_status === "none" && str(merged, "current_medicines").trim()), "Clear current medicines before choosing None.");
+  check(merged.current_medicines_status !== "taking" || str(merged, "current_medicines").trim(), "Enter the current medicines.");
+  check(!(merged.medical_history_review === "none" && Array.isArray(body.medical_history) && body.medical_history.length), "Remove history entries before choosing None known.");
+}
+
 for (const [path, table] of [
   ["/patients", tables.patients],
   ["/consultations", tables.consultations],
@@ -399,8 +410,9 @@ for (const [path, table] of [
   });
   crud.post(`${path}/`, async (c) => {
     if (table !== tables.patients) doctor(c);
-    const body = record(await c.req.json()),
-      data = await validate(
+    const body = record(await c.req.json());
+    if (table === tables.patients) patientReview(c, body);
+    const data = await validate(
         dbOf(c),
         table,
         body,
@@ -440,6 +452,9 @@ for (const [path, table] of [
     if (table !== tables.patients) doctor(c);
     const original = await get(dbOf(c), table, c.req.param("pk"), clinicOf(c)),
       body = record(await c.req.json());
+    if (table === tables.patients) patientReview(c, body, original);
+    if (table === tables.patients && body.medical_history_review === "none" && body.medical_history === undefined)
+      check(!(await one(dbOf(c), "SELECT id FROM patients_medicalhistory WHERE patient_id=? LIMIT 1", [original.id])), "Remove history entries before choosing None known.");
     const data = await validate(
       dbOf(c),
       table,

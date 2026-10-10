@@ -12,6 +12,9 @@ let remoteMode = "valid";
 const consumedSso = new Set();
 let ssoEmail = "clinic-a@clinic.test";
 const sesCalls = [];
+const summaryCalls = [];
+let summaryMode = "valid";
+let summaryHold;
 let sesMode = "success";
 const sesAccessKey = "AKIDEXAMPLE";
 const sesSecret = "test-ses-secret-for-signature-verification";
@@ -82,6 +85,18 @@ before(async () => {
           outboundService: async (request) => {
             try {
               const url = new URL(request.url);
+              if (url.hostname === "openrouter.ai") {
+                assert.equal(url.pathname, "/api/v1/chat/completions");
+                const body = await request.json();
+                summaryCalls.push(body);
+                if (summaryHold) {
+                  const hold = summaryHold;
+                  hold.started();
+                  await hold.wait;
+                }
+                if (summaryMode === "failure") return Response.json({}, { status: 503 });
+                return Response.json({ choices: [{ message: { content: summaryMode === "invalid" ? "# Summary\nInvented details" : "The recorded patient is 30 years old. Medical history includes asthma. Current medicine use has not been confirmed." } }] });
+              }
               if (url.hostname === "email.ap-south-1.amazonaws.com") {
                 assert.equal(request.method, "POST");
                 assert.equal(url.pathname, "/v2/email/outbound-emails");
@@ -150,6 +165,7 @@ before(async () => {
           },
           bindings: {
             JWT_SECRET: "local-test-secret-with-at-least-32-characters",
+            OPENROUTER_API_KEY: "test-provider-key",
             CRON_SECRET: "test-cron",
             FRONTEND_URL: "https://clinic.test",
             CORS_ALLOWED_ORIGINS: "https://clinic.test",
@@ -2006,4 +2022,140 @@ test("public schema, JSON format, and foreign keys preserve the API boundary", a
     ).status,
     401,
   );
+});
+
+test("patient summary uses saved clinic-scoped facts, caches, refreshes and falls back on provider failures", async () => {
+  const account = await signup("summary-clinic"), token = account.access;
+  const records = await clinicalRecords(token, "Private patient name");
+  const path = `/v1/patients/${records.patient.id}/summary/`;
+  const patch = body => request(`/v1/patients/${records.patient.id}/`, { token, method: "PATCH", body });
+  assert.equal((await patch({ medical_history: [{ disease: "Asthma", duration: "2 years", medication: "Previous inhaler" }] })).status, 200);
+  const saved = await request(path, { token });
+  assert.equal(saved.status, 200, JSON.stringify(saved.data));
+  assert.equal(saved.data.source, "saved_facts");
+  assert.match(saved.data.summary, /Asthma/);
+  const count = summaryCalls.length;
+  const generated = await request(path, { token, method: "POST", body: {} });
+  assert.equal(generated.data.status, "ready", JSON.stringify(generated.data));
+  assert.equal(summaryCalls.length, count + 1);
+  const body = summaryCalls.at(-1), facts = JSON.parse(body.messages[1].content);
+  assert.equal(body.provider.data_collection, "deny");
+  assert.equal(body.provider.allow_fallbacks, false);
+  assert.equal(facts.patient.current_medicines_status, "unknown");
+  assert.ok(!body.messages[1].content.includes("Private patient name"));
+  assert.ok(!body.messages[1].content.includes(records.patient.phone));
+  await request(path, { token, method: "POST", body: {} });
+  assert.equal(summaryCalls.length, count + 1, "unchanged saved facts reuse the cached summary");
+  assert.equal((await patch({ current_medicines_status: "taking", current_medicines: "Reported inhaler once daily" })).status, 200);
+  await request(path, { token, method: "POST", body: {} });
+  assert.equal(summaryCalls.length, count + 2);
+  assert.equal(JSON.parse(summaryCalls.at(-1).messages[1].content).patient.current_medicines, "Reported inhaler once daily");
+  assert.equal((await patch({ current_medicines_status: "none" })).status, 400);
+  assert.equal((await patch({ current_medicines_status: "none", current_medicines: "" })).status, 200);
+  summaryMode = "failure";
+  try {
+    const failed = await request(path, { token, method: "POST", body: {} });
+    assert.equal(failed.data.status, "failed");
+    assert.equal(failed.data.source, "saved_facts");
+    assert.match(failed.data.summary, /No current medicines recorded/);
+    summaryMode = "invalid";
+    assert.equal((await request(path, { token, method: "POST", body: {} })).data.status, "failed");
+  } finally { summaryMode = "valid"; }
+  await patch({ allergies: "Allergy detail ".repeat(180), current_medicines_status: "taking", current_medicines: "Medicine with complete instructions ".repeat(180), medical_history: Array.from({ length: 45 }, (_, i) => ({ disease: `Condition ${i}`, duration: "1 year", medication: "" })) });
+  const long = await request(path, { token });
+  assert.ok(long.data.summary.split(/\s+/).length <= 100, "saved-fact fallback remains within 100 words");
+  assert.match(long.data.summary, /review Health history for names and doses/);
+  await request(path, { token, method: "POST", body: {} });
+  const bounded = JSON.parse(summaryCalls.at(-1).messages[1].content);
+  assert.equal(bounded.medical_history.length, 40);
+  assert.equal(bounded.history_counts.medical, 45);
+  assert.equal(bounded.patient.current_medicines, "[Long recorded text omitted; review the patient record]");
+  await patch({ allergies: "Sesame" });
+  let release, started;
+  const waiting = new Promise(resolve => { started = resolve; });
+  summaryHold = { started, wait: new Promise(resolve => { release = resolve; }) };
+  const inFlight = request(path, { token, method: "POST", body: {} });
+  try {
+    await waiting;
+    await patch({ allergies: "Peanut" });
+    release();
+    const changed = await inFlight;
+    assert.equal(changed.data.status, "changed");
+    assert.equal(changed.data.source, "saved_facts");
+    assert.match(changed.data.summary, /Peanut/);
+    assert.ok(!changed.data.summary.includes("Sesame"));
+  } finally { release(); summaryHold = undefined; }
+  const other = await signup("summary-other");
+  assert.equal((await request(path, { token: other.access })).status, 404);
+  assert.equal((await request(path, { token: other.access, method: "POST", body: {} })).status, 404);
+});
+
+test("therapy records group case variants and link only patients in the current clinic", async () => {
+  const a = await signup("therapy-a"), b = await signup("therapy-b");
+  const x = await clinicalRecords(a.access, "Therapy patient A"), y = await clinicalRecords(b.access, "Therapy patient B");
+  for (const [token, record, name] of [[a.access,x,"Varma"],[b.access,y,"Varma"]]) {
+    const changed = await request(`/v1/prescriptions/${record.rx.id}/`, { token, method: "PATCH", body: { procedures: [{ name }] } });
+    assert.equal(changed.status, 200, JSON.stringify(changed.data));
+  }
+  const list = await request("/v1/therapies/", { token: a.access });
+  assert.equal(list.status, 200, JSON.stringify(list.data));
+  assert.deepEqual(list.data.results.map(t => [t.name,t.patient_count]), [["Varma",1]]);
+  const detail = await request("/v1/therapies/?name=varma", { token: a.access });
+  assert.equal(detail.data.count, 1);
+  assert.equal(detail.data.results[0].patient_id, x.patient.id);
+  assert.ok(!JSON.stringify(detail.data).includes("Therapy patient B"));
+});
+
+test("contact follow-ups persist ownership, retries, doctor replies and atomic concurrent attempts", async () => {
+  const account = await signup("contact-clinic"), other = await signup("contact-other");
+  const token = account.access, records = await clinicalRecords(token);
+  const roleTokens = {};
+  const owner = await db.prepare("SELECT * FROM users_user WHERE id=?").bind(account.user.id).first();
+  for (const role of ["admin","therapist"]) {
+    const copy = {...owner,username:`contact-${role}`,email:`contact-${role}@clinic.test`,first_name:role,role,is_clinic_owner:0};
+    delete copy.id;
+    const keys = Object.keys(copy);
+    await db.prepare(`INSERT INTO users_user (${keys.join(',')}) VALUES (${keys.map(()=>'?').join(',')})`).bind(...Object.values(copy)).run();
+    const logged = await request("/v1/auth/token/", {method:"POST",body:{username:copy.username,password:"ClinicTestPass123"}});
+    assert.equal(logged.status,200,JSON.stringify(logged.data));
+    roleTokens[role] = logged.data.access;
+  }
+  const staff = await request("/v1/contact-follow-ups/staff/",{token});
+  const adminId = staff.data.find(s=>s.role==='admin').id;
+  await request(`/v1/prescriptions/${records.rx.id}/`,{token,method:"PATCH",body:{follow_up_date:"2026-10-17"}});
+  const body={patient_id:records.patient.id,assigned_to_id:adminId,contact_date:"2026-10-10",reason:"Check progress after the visit",request_id:"contact-create-request-001"};
+  const created=await request("/v1/contact-follow-ups/",{token,method:"POST",body});
+  assert.equal(created.status,201,JSON.stringify(created.data));
+  const taskId=created.data.id,path=`/v1/contact-follow-ups/${taskId}/`;
+  assert.equal((await request("/v1/contact-follow-ups/",{token,method:"POST",body})).data.id,taskId,"retrying creation reuses the task");
+  assert.equal((await request(path,{token:roleTokens.admin})).status,200);
+  assert.equal((await request(path,{token:roleTokens.therapist})).status,403);
+  assert.equal((await request(path,{token:other.access})).status,404);
+  assert.equal((await request("/v1/contact-follow-ups/counts/",{token:roleTokens.therapist})).status,403);
+  const event=(eventBody,actor=roleTokens.admin)=>request(`${path}events/`,{token:actor,method:"POST",body:eventBody});
+  const retry=await event({action:"no_answer",expected_revision:0,next_contact_date:"2026-10-11",note:"No response to the call"});
+  assert.equal(retry.status,200,JSON.stringify(retry.data));
+  assert.equal(retry.data.contact_date,"2026-10-11");
+  assert.equal(retry.data.clinical_return_date,"2026-10-17");
+  assert.equal((await event({action:"question",expected_revision:1,note:"Patient asks when to return"})).data.status,"awaiting_doctor");
+  assert.equal((await event({action:"doctor_reply",expected_revision:2,note:"Please arrange the booked review"})).status,403);
+  assert.equal((await event({action:"reached",expected_revision:2})).status,409);
+  assert.equal((await event({action:"doctor_reply",expected_revision:2,note:"Please arrange the booked review"},token)).data.status,"open");
+  const concurrent=await Promise.all([event({action:"no_answer",expected_revision:3,next_contact_date:"2026-10-12"}),event({action:"call_later",expected_revision:3,next_contact_date:"2026-10-12"})]);
+  assert.deepEqual(concurrent.map(x=>x.status).sort(),[200,409]);
+  const detail=await request(path,{token});
+  assert.equal(detail.data.events.length,4,"the losing attempt does not append an event");
+  assert.equal(detail.data.events.find(e=>e.action==='doctor_reply').note,"Please arrange the booked review");
+  assert.equal((await event({action:"reached",expected_revision:4,note:"Patient confirmed the review"})).data.status,"completed");
+  assert.equal((await event({action:"reopen",expected_revision:5,next_contact_date:"2026-10-13"})).status,403);
+  assert.equal((await event({action:"reopen",expected_revision:5,next_contact_date:"2026-10-13"},token)).data.status,"open");
+  assert.equal((await event({action:"assign",expected_revision:6,assigned_to_id:other.user.id},token)).status,404);
+  assert.equal((await event({action:"assign",expected_revision:6,assigned_to_id:account.user.id},token)).status,200);
+  assert.equal((await request(path,{token:roleTokens.admin})).status,403);
+  await assert.rejects(db.prepare("UPDATE contact_followup SET assigned_to_id=? WHERE id=?").bind(other.user.id,taskId).run(),/another clinic/);
+  const summary=await request(`/v1/patients/${records.patient.id}/summary/`,{token,method:"POST",body:{}});
+  assert.equal(summary.data.status,"ready");
+  const facts=JSON.parse(summaryCalls.at(-1).messages[1].content);
+  assert.equal(facts.contact_followups[0].contact_date,"2026-10-13");
+  assert.equal(facts.contact_followups[0].clinical_return_date,"2026-10-17");
 });

@@ -95,7 +95,7 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
   return (
     <div className="mb-6 rounded-lg border bg-white p-6">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-gray-900">
+        <h2 className="text-heading-section text-gray-900">
           {isEdit ? "Edit Medicine" : "Add Medicine"}
         </h2>
         <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600">

@@ -128,7 +128,7 @@ function AcceptInviteContent() {
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
             <Leaf className="h-6 w-6 text-red-600" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900">
+          <h1 className="text-heading-page text-gray-900">
             Invalid Invitation
           </h1>
           <p className="mt-2 text-sm text-gray-500">{loadError}</p>
@@ -148,7 +148,7 @@ function AcceptInviteContent() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <InviteLogo logoUrl={invite?.logo_url} />
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-heading-page text-gray-900">
             Join {invite?.clinic_name}
           </h1>
           <p className="mt-1 text-sm text-gray-500">

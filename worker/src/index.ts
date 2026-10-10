@@ -6,6 +6,8 @@ import type { App, Clinic } from "./data";
 import { auth, escape, platformAdmin, tokenUser } from "./auth";
 import { admin } from "./admin";
 import { clinical } from "./clinical";
+import { patientSummary } from "./patient-summary";
+import { contactFollowUps } from "./contact-followups";
 import { team, invite } from "./team";
 import { treatments } from "./treatments";
 import { integrations } from "./integrations";
@@ -138,6 +140,8 @@ app.route("/api/v1", reports);
 app.route("/api/v1", resources);
 app.route("/api/v1", whatsapp);
 app.route("/api/v1", clinical);
+app.route("/api/v1", patientSummary);
+app.route("/api/v1", contactFollowUps);
 app.get("/api/schema/", (c) => {
   const paths: Record<string, Record<string, unknown>> = {};
   for (const route of app.routes) {

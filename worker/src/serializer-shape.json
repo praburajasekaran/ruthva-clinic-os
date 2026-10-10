@@ -2101,6 +2101,70 @@
       "choices": [],
       "min": null,
       "max": null
+    },
+    "allergies_review": {
+      "type": "ChoiceField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "allergies_review",
+      "maxLength": 20,
+      "blank": false,
+      "choices": [
+        "unknown",
+        "recorded",
+        "none"
+      ],
+      "min": null,
+      "max": null
+    },
+    "medical_history_review": {
+      "type": "ChoiceField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "medical_history_review",
+      "maxLength": 20,
+      "blank": false,
+      "choices": [
+        "unknown",
+        "reviewed",
+        "none"
+      ],
+      "min": null,
+      "max": null
+    },
+    "current_medicines_status": {
+      "type": "ChoiceField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "current_medicines_status",
+      "maxLength": 20,
+      "blank": false,
+      "choices": [
+        "unknown",
+        "taking",
+        "none"
+      ],
+      "min": null,
+      "max": null
+    },
+    "current_medicines": {
+      "type": "CharField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "current_medicines",
+      "maxLength": null,
+      "blank": true,
+      "choices": [],
+      "min": null,
+      "max": null
     }
   },
   "MedicineListSerializer": {

@@ -43,6 +43,7 @@ class PatientDetailSerializer(serializers.ModelSerializer):
             "id", "record_id", "name", "age", "date_of_birth", "calculated_age",
             "gender", "phone", "whatsapp_number", "email", "address", "blood_group",
             "occupation", "marital_status", "referred_by", "allergies",
+            "allergies_review", "medical_history_review", "current_medicines_status", "current_medicines",
             "food_habits", "activity_level", "menstrual_history",
             "number_of_children", "vaccination_records",
             "is_active", "medical_history", "family_history",

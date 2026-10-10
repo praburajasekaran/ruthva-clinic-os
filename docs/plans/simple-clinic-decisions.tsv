@@ -1,0 +1,18 @@
+decision	reason	evidence
+Extend the production app	Preserve D1, clinic authentication, examinations and dispensing	main ff34141; clinical.ts and VisitCompletion
+Separate current medicines from prescriptions	An issued prescription does not prove current use	Prototype live summary failure
+Separate contact date from clinical return date	Assistant retries must not change clinical advice	Accepted visit-first workflow
+Use existing admin staff for assistant assignment	Avoid new role permissions and team limits	team.ts supports doctor, therapist, admin
+One implementation owner	Project instructions require sequential main-thread work	AGENTS.md tool mapping
+Server patient search	The previous visit picker searched only the first 20 records	clinic-home browser test finds an older record after creating 22
+Keep conditional sidebar colors	Gray applies on white; hover colors change text and background together	Reviewed three gray-on-color hook findings as false positives; no suppressions added
+Keep conditional clinical task badge colors	Open uses amber text on amber; resolved uses gray text on gray	Reviewed follow-ups badge hook finding as a false positive; no suppression added
+Bound summary input without cutting doses	Long text is explicitly omitted and large histories include counts	Summary integration test covers 45 history entries and long medicine instructions
+Reject a summary for changed facts	A saved edit can occur during provider generation	Delayed provider test returns current saved facts after an allergy change
+Forward live fixture requests with explicit fetch arguments	Requests from Miniflare need compatible URL, headers and body in Node	Initial live check fell back; explicit forwarding passed generation and saved edit refresh
+Serve the small logo directly	The browser showed a faint optimized logo despite correct source pixels	CUA screenshot after unoptimized image shows the black logo clearly
+Use the installed ARM Node for CodeGraph	The default Node could not load the native database module	CodeGraph sync succeeded with Node v22.22.1
+Use GitHub CLI for the PR	Origin CLI is absent	command -v origin returned no executable
+Review code and comments in the main thread	Project instructions forbid agent delegation; deslop and control-ui are unavailable	Direct diff review and CUA proof; removed two obsolete font comments
+Refresh the sidebar after contact mutations	A completed or newly planned call must change the pending badge	Contact browser test checks the badge after planning
+Install dependencies in the worktree for the final build	Shared dependency paths broke native module packaging	Cloudflare build passed after npm ci in the worktree; original dependencies were untouched
