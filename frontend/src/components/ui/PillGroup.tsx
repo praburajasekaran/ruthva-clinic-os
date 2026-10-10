@@ -31,7 +31,7 @@ export function PillGroup({ options, value, onChange, label }: PillGroupProps) {
             role="radio"
             aria-checked={isSelected}
             onClick={() => onChange(isSelected ? "" : optValue)}
-            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
+            className={`min-h-11 rounded-full border px-4 py-2 text-sm font-medium transition-colors md:min-h-0 md:px-3 md:py-1.5 ${
               isSelected
                 ? "border-primary bg-accent text-primary"
                 : "border-input bg-background text-muted-foreground hover:border-ring hover:bg-accent"

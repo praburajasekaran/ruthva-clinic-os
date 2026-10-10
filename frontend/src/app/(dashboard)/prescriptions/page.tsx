@@ -99,7 +99,7 @@ export default function PrescriptionsPage() {
 
     return (
         <div>
-            <div className="mb-6 flex items-center justify-between">
+            <div className="mb-6 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
                 <div>
                     <h1 className="text-2xl font-bold text-gray-900">Prescriptions</h1>
                     <p className="mt-1 text-sm text-gray-500">
@@ -213,15 +213,15 @@ export default function PrescriptionsPage() {
             </Modal>
 
             {prescriptions.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 py-16">
+                <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-gray-300 px-5 py-16 text-center">
                     <FileText className="mb-3 h-12 w-12 text-gray-400" />
                     <p className="text-lg font-medium text-gray-600">No prescriptions yet</p>
-                    <p className="mt-1 text-sm text-gray-400">
+                    <p className="mt-1 text-sm text-gray-500">
                         Prescriptions will appear here once created
                     </p>
                 </div>
             ) : (
-                <div className="overflow-hidden rounded-lg border bg-white shadow-sm">
+                <div className="overflow-x-auto rounded-lg border bg-white shadow-sm">
                     <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                             <tr>

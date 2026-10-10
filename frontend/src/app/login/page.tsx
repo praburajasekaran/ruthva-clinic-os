@@ -87,7 +87,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
+    <main className="flex min-h-dvh items-center justify-center bg-gray-50 px-4 py-8">
       <div className="w-full max-w-sm">
         {/* Task 4: Always-rendered live region for step transition announcements */}
         <div aria-live="polite" className="sr-only" aria-atomic="true">
@@ -160,14 +160,14 @@ export default function LoginPage() {
                 placeholder="doctor@clinic.com"
                 aria-invalid={!!error}
                 aria-describedby={error ? "login-error" : undefined}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                className="min-h-12 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || !email.trim()}
-              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="min-h-12 w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Sending code..." : "Send login code"}
             </button>
@@ -195,14 +195,14 @@ export default function LoginPage() {
                 placeholder="000000"
                 aria-invalid={!!error}
                 aria-describedby={error ? "login-error" : undefined}
-                className="w-full rounded-lg border border-gray-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
+                className="min-h-12 w-full rounded-lg border border-gray-300 px-3 py-3 text-center font-mono text-2xl tracking-[0.5em] shadow-sm focus:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
               />
             </div>
 
             <button
               type="submit"
               disabled={loading || code.length !== 6}
-              className="w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
+              className="min-h-12 w-full rounded-lg bg-emerald-700 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-emerald-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 disabled:opacity-50"
             >
               {loading ? "Verifying..." : "Verify"}
             </button>
@@ -214,14 +214,14 @@ export default function LoginPage() {
                 setCode("");
                 setError(null);
               }}
-              className="flex w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
+              className="flex min-h-12 w-full items-center justify-center gap-2 rounded-lg px-4 py-2 text-sm text-gray-500 hover:text-gray-700"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
             </button>
 
             {!isDemo && (
-              <p className="text-center text-xs text-gray-400">
+              <p className="text-center text-xs text-gray-500">
                 Didn&apos;t receive the code? Check your spam folder or{" "}
                 <button
                   type="button"
@@ -253,7 +253,7 @@ export default function LoginPage() {
               setEmail("demo@ruthva.com");
               void handleRequestOTP(undefined, "demo@ruthva.com");
             }}
-            className="mt-3 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
+            className="mt-3 min-h-12 w-full rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm text-gray-600 shadow-sm transition-colors hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700"
           >
             Try Demo
           </button>

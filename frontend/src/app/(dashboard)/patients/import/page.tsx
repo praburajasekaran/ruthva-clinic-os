@@ -151,10 +151,10 @@ export default function PatientImportPage() {
       </div>
 
       {/* Stepper */}
-      <div className="mb-8 flex items-center gap-2">
+      <div className="mb-8 grid grid-cols-3 gap-2 sm:flex sm:items-center">
         {(["upload", "preview", "results"] as const).map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
-            {i > 0 && <div className="h-px w-8 bg-gray-200" />}
+          <div key={s} className="flex flex-col items-center gap-2 sm:flex-row">
+            {i > 0 && <div className="hidden h-px w-8 bg-gray-200 sm:block" />}
             <div
               className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                 step === s
@@ -264,7 +264,7 @@ export default function PatientImportPage() {
       {step === "preview" && preview && (
         <div className="space-y-4">
           {/* Summary */}
-          <div className="flex gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:flex">
             <div className="flex-1 rounded-lg border border-gray-200 bg-white p-4 text-center">
               <p className="text-2xl font-bold text-gray-900">
                 {preview.total_rows}
@@ -450,7 +450,7 @@ export default function PatientImportPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid gap-3 sm:grid-cols-3">
             <div className="rounded-lg border border-emerald-200 bg-white p-4 text-center">
               <p className="text-2xl font-bold text-emerald-700">
                 {results.created}
