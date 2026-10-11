@@ -188,6 +188,7 @@ export default function SignupPage() {
 
   const formValid =
     firstName.trim() && email.trim() && discipline && !emailTaken;
+  const disciplineLabel = DISCIPLINES.find((d) => d.value === discipline)?.label;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
@@ -210,10 +211,12 @@ export default function SignupPage() {
           {step === "form" ? (
             <>
               <h1 className="text-heading-page text-gray-900">
-                Register your clinic
+                {disciplineLabel
+                  ? `Register your ${disciplineLabel} clinic`
+                  : "Register your clinic"}
               </h1>
               <p className="mt-1 text-sm text-gray-500">
-                Create your AYUSH clinic account
+                Create your {disciplineLabel || "AYUSH"} clinic account
               </p>
             </>
           ) : (
