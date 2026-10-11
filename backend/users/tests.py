@@ -98,6 +98,28 @@ class UpdateMeAPITest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["email"], "newemail@test.com")
 
+    def test_qualifications_saved_read_back_and_cleared(self):
+        response = self.client.patch(self.URL, {"qualifications": " BSMS, MD (S) "})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["qualifications"], "BSMS, MD (S)")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.qualifications, "BSMS, MD (S)")
+        self.assertEqual(self.user.role, "doctor")
+        self.assertEqual(self.client.get("/api/v1/auth/me/").data["qualifications"], "BSMS, MD (S)")
+        response = self.client.patch(self.URL, {"qualifications": ""})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.qualifications, "")
+
+    def test_qualifications_length_limit_preserves_saved_profile(self):
+        self.user.qualifications = "BAMS"
+        self.user.save(update_fields=["qualifications"])
+        response = self.client.patch(self.URL, {"qualifications": "A" * 151})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("qualifications", response.data)
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.qualifications, "BAMS")
+
     def test_update_email_duplicate_rejected(self):
         User.objects.create_user(
             username="other", email="taken@test.com", password="Pass1234!",

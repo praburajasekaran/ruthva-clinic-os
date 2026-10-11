@@ -11,11 +11,13 @@ Clinic pages, clinical forms, account screens, and admin pages use one heading h
 
 Size, line height, weight, and tracking are defined together. Georgia remains the heading typeface. Sizes use `rem` and responsive limits so browser text scaling still applies.
 
-`FormSection` uses the main section role. Its bilingual titles pass `variant="heading"` to `BilingualLabel`. English inherits the parent heading style; Tamil uses the secondary heading role with extra line height and normal tracking. Field labels retain the default variant.
+`FormSection` uses the main section role. Interface headings and field labels use English only. Section titles inherit the parent heading style. Field labels use the shared `Label` component or `FormField`. Existing clinical text can still contain Tamil.
 
 Landing page display typography and prescription print sizes have separate layout requirements and retain their existing styles.
 
 ## Verification
+
+The original typography release was verified with bilingual headings. The interface was changed to English labels on 11 October 2026; the heading sizes remain the same.
 
 - Frontend type checking and lint passed.
 - Existing home and complete-visit browser workflows passed: two tests.

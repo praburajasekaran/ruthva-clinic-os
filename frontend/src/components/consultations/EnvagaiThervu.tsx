@@ -24,9 +24,6 @@ export function EnvagaiThervu({ values, onChange }: EnvagaiThervuProps) {
         >
           <div className="mb-3 flex items-baseline gap-2">
             <h4 className="text-heading-subsection text-foreground">{tool.label}</h4>
-            <span lang="ta" className="text-xs text-muted-foreground">
-              ({tool.labelTamil})
-            </span>
             <span className="text-xs text-muted-foreground/60">{tool.translation}</span>
             {key === "nadi" && (() => {
               const nadiType = getFieldValue(values[key] ?? "", "type").toLowerCase();

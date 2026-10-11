@@ -7,7 +7,6 @@ import { addDays, format, isValid, parseISO } from "date-fns";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { BilingualLabel } from "@/components/ui/BilingualLabel";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { MedicationRow } from "./MedicationRow";
@@ -283,7 +282,7 @@ export function PrescriptionBuilder({
   return (
     <form onSubmit={(e) => handleSubmit(e, false)} className="space-y-6">
       {/* Medications */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.medications.en} tamil={SECTION_LABELS.medications.ta} as="span" variant="heading" />} id="medications">
+      <FormSection title={SECTION_LABELS.medications.en} id="medications">
         <div className="space-y-4">
           {state.medications.map((med, idx) => (
             <MedicationRow
@@ -316,7 +315,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Procedures */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.procedures.en} tamil={SECTION_LABELS.procedures.ta} as="span" variant="heading" />} id="procedures">
+      <FormSection title={SECTION_LABELS.procedures.en} id="procedures">
         <div className="space-y-3">
           {state.procedures.map((proc, idx) => (
             <div
@@ -400,9 +399,9 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Advice */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.advice.en} tamil={SECTION_LABELS.advice.ta} as="span" variant="heading" />} id="advice">
+      <FormSection title={SECTION_LABELS.advice.en} id="advice">
         <div className="space-y-4">
-          <FormField label={`${ADVICE_LABELS.diet.ta} — ${ADVICE_LABELS.diet.en}`}>
+          <FormField label={ADVICE_LABELS.diet.en}>
             {(props) => (
               <textarea
                 {...props}
@@ -416,7 +415,7 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label={`${ADVICE_LABELS.lifestyle.ta} — ${ADVICE_LABELS.lifestyle.en}`}>
+          <FormField label={ADVICE_LABELS.lifestyle.en}>
             {(props) => (
               <textarea
                 {...props}
@@ -430,7 +429,7 @@ export function PrescriptionBuilder({
               />
             )}
           </FormField>
-          <FormField label={`${ADVICE_LABELS.exercise.ta} — ${ADVICE_LABELS.exercise.en}`}>
+          <FormField label={ADVICE_LABELS.exercise.en}>
             {(props) => (
               <textarea
                 {...props}
@@ -448,7 +447,7 @@ export function PrescriptionBuilder({
       </FormSection>
 
       {/* Follow-up */}
-      <FormSection title={<BilingualLabel english={SECTION_LABELS.followUp.en} tamil={SECTION_LABELS.followUp.ta} as="span" variant="heading" />} id="follow-up">
+      <FormSection title={SECTION_LABELS.followUp.en} id="follow-up">
         <div className="space-y-4">
           <FormField
             label="Follow-up Date"
