@@ -1644,6 +1644,22 @@
         "target": null,
         "min": null,
         "max": null
+      },
+      "general_notes": {
+        "column": "general_notes",
+        "type": "TextField",
+        "nullable": false,
+        "blank": true,
+        "maxLength": null,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [],
+        "default": "",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
       }
     },
     "ordering": [

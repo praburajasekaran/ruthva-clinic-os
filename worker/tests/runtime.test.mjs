@@ -810,6 +810,100 @@ test("concurrent email changes cannot reuse proof or revive a previous session",
       401,
     );
 });
+test("patient general notes save, survive unrelated edits, clear, and reject invalid values", async () => {
+  const clinic = await signup("patient-notes"),
+    token = clinic.access;
+  const created = await request("/v1/patients/", {
+    token,
+    method: "POST",
+    body: {
+      name: "Notes Patient",
+      age: 35,
+      gender: "male",
+      phone: "9000000011",
+      general_notes:
+        "Prefers evening appointments.\nBring prior_reports. தமிழ்",
+    },
+  });
+  assert.equal(created.status, 201, JSON.stringify(created.data));
+  assert.equal(
+    created.data.general_notes,
+    "Prefers evening appointments.\nBring prior_reports. தமிழ்",
+  );
+  const path = `/v1/patients/${created.data.id}/`;
+  const saved = () =>
+    db
+      .prepare("SELECT general_notes FROM patients_patient WHERE id=?")
+      .bind(created.data.id)
+      .first("general_notes");
+  assert.equal(
+    await saved(),
+    "Prefers evening appointments.\nBring prior_reports. தமிழ்",
+  );
+  const edited = await request(path, {
+    token,
+    method: "PATCH",
+    body: { general_notes: "Contact after 6pm.\nUse WhatsApp." },
+  });
+  assert.equal(edited.status, 200);
+  assert.equal(
+    (await request(path, { token })).data.general_notes,
+    "Contact after 6pm.\nUse WhatsApp.",
+  );
+  const unrelated = await request(path, {
+    token,
+    method: "PATCH",
+    body: { occupation: "Teacher" },
+  });
+  assert.equal(unrelated.status, 200);
+  assert.equal(await saved(), "Contact after 6pm.\nUse WhatsApp.");
+  for (const value of [null, 42, {}, []]) {
+    assert.equal(
+      (
+        await request(path, {
+          token,
+          method: "PATCH",
+          body: { general_notes: value },
+        })
+      ).status,
+      400,
+    );
+    assert.equal(await saved(), "Contact after 6pm.\nUse WhatsApp.");
+  }
+  const other = await signup("patient-notes-other");
+  assert.equal(
+    (
+      await request(path, {
+        token: other.access,
+        method: "PATCH",
+        body: { general_notes: "Other clinic" },
+      })
+    ).status,
+    404,
+  );
+  assert.equal(await saved(), "Contact after 6pm.\nUse WhatsApp.");
+  const cleared = await request(path, {
+    token,
+    method: "PATCH",
+    body: { general_notes: "" },
+  });
+  assert.equal(cleared.status, 200);
+  assert.equal((await request(path, { token })).data.general_notes, "");
+  assert.equal(await saved(), "");
+  const blank = await request("/v1/patients/", {
+    token,
+    method: "POST",
+    body: {
+      name: "No Notes Patient",
+      age: 25,
+      gender: "female",
+      phone: "9000000012",
+    },
+  });
+  assert.equal(blank.status, 201);
+  assert.equal(blank.data.general_notes, "");
+});
+
 test("health, authentication, tenant isolation, nested clinical records, and stock rollback", async () => {
   assert.equal((await request("/health/")).data.status, "ok");
   assert.equal((await request("/v1/patients/")).status, 401);

@@ -28,6 +28,7 @@ export default function EditPatientPage() {
           phone: p.phone ?? "",
           email: p.email ?? "",
           address: p.address ?? "",
+          general_notes: p.general_notes ?? "",
           blood_group: p.blood_group ?? "",
           occupation: p.occupation ?? "",
           marital_status: p.marital_status ?? "",

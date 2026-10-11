@@ -5,6 +5,7 @@ A clinic registers patients, finds saved records through the list or global sear
 ## Sub-features
 
 - `patients-create` validates and persists basic patient details.
+- `patients-general-notes` saves optional multiline notes on registration and patient edit.
 - `patients-dob` selects a birth date through month/year controls, calculates age, and prevents future dates.
 - `patients-cancel` leaves no patient record for a discarded draft.
 - `patients-search` finds a patient by name, phone, or record ID and handles no matches.
@@ -32,6 +33,8 @@ Preconditions:
 
 - Normal verified clinic, not demo. Account onboarding is complete.
 - The initial clinic has no patients. Create `Verification Patient` before search/edit/archive recipes.
+
+- **General notes.** On `/patients/new`, fill the required patient fields. Fill `General notes` with two lines, including `prior_reports` and Tamil text. The field is visible in Basic Information without expanding clinical details. Save with `Register Patient`, choose `Patient details`, and reload. Require the saved notes with their original underscores and line breaks. Compare `general_notes` in `ruthva_data patients-notes-created`. Choose `Edit patient`, require the saved textarea value, replace the notes, and save with `Save Changes`. Reopen and compare the UI with `ruthva_data patients-notes-edited`. Clear the notes and save again. After reload, Patient details must omit General notes, and D1 must store an empty string. Also create a patient with notes left blank. Check the textarea and save action at a mobile viewport. Save separate captures for registration and mobile layout.
 
 - **Empty-state entry.** Run `ruthva_browser find role link click --name Patients`, then `ruthva_browser find role button click --name "Register Patient"`. Wait for `**/patients/new`. Capture `patients-create-empty-state-before`.
 - **Create.** Run `ruthva_browser find placeholder "Patient full name" fill "Verification Patient"`, `ruthva_browser find placeholder "Age in years" fill 35`, `ruthva_browser find role radio click --name Female`, and `ruthva_browser find placeholder "10-digit mobile number" fill 9000000001`. Choose `ruthva_browser find role button click --name "Register Patient"`. Wait with `ruthva_browser wait --url '**/patients/*'`, then require the detail snapshot to contain the saved name, age, gender, phone, and record ID. Capture `patients-create-after`; run `ruthva_data`, and confirm exactly one corresponding `patients_patient` row in the clinic.
