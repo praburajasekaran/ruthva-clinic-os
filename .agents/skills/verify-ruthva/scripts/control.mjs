@@ -24,7 +24,7 @@ const saveManifest = (value) => writeFileSync(manifestPath, JSON.stringify(value
 const pause = (ms) => new Promise((done) => setTimeout(done, ms));
 const sourceFiles = ["frontend/src", "frontend/public", "frontend/package.json", "frontend/package-lock.json",
   "frontend/next.config.mjs", "frontend/tsconfig.json", "frontend/tailwind.config.ts",
-  "frontend/postcss.config.mjs", "worker/src", "worker/migrations", "worker/package.json",
+  "frontend/postcss.config.mjs", "shared", "worker/src", "worker/migrations", "worker/package.json",
   "worker/package-lock.json", "worker/wrangler.jsonc", "backend/fonts"];
 
 function fingerprint() {
@@ -241,6 +241,7 @@ async function launch() {
     writeFileSync(join(evidence, "build.log"), build);
     const web = join(scratch, "web");
     mkdirSync(web);
+    cpSync(join(root, "shared"), join(scratch, "shared"), { recursive: true });
     for (const file of ["src", "public", "package.json", "next.config.mjs", "tsconfig.json", "tailwind.config.ts", "postcss.config.mjs"])
       cpSync(join(root, "frontend", file), join(web, file), { recursive: true });
     symlinkSync(join(root, "frontend/node_modules"), join(web, "node_modules"), "dir");
