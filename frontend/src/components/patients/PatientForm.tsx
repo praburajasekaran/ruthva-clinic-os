@@ -34,6 +34,7 @@ const emptyForm: PatientFormState = {
   whatsapp_number: "",
   email: "",
   address: "",
+  general_notes: "",
   blood_group: "",
   occupation: "",
   marital_status: "",
@@ -381,6 +382,18 @@ export function PatientForm({ mode = "create", patientId, initialData }: Patient
                 onChange={(e) => updateField("address", e.target.value)}
                 placeholder="Full address"
                 rows={2}
+                className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              />
+            )}
+          </FormField>
+          <FormField label="General notes" error={allErrors.general_notes}>
+            {(props) => (
+              <textarea
+                {...props}
+                value={form.general_notes}
+                onChange={(e) => updateField("general_notes", e.target.value)}
+                placeholder="Additional notes about the patient"
+                rows={3}
                 className="w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               />
             )}

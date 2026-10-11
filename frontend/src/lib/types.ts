@@ -166,6 +166,7 @@ export type Patient = {
   whatsapp_number: string;
   email: string;
   address: string;
+  general_notes: string;
   blood_group: BloodGroup | "";
   occupation: string;
   marital_status: MaritalStatus | "";
@@ -226,6 +227,7 @@ export type PatientFormState = {
   whatsapp_number: string;
   email: string;
   address: string;
+  general_notes: string;
   blood_group: BloodGroup | "";
   occupation: string;
   marital_status: MaritalStatus | "";

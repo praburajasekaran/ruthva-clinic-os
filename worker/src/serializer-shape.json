@@ -2165,6 +2165,19 @@
       "choices": [],
       "min": null,
       "max": null
+    },
+    "general_notes": {
+      "type": "CharField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "general_notes",
+      "maxLength": null,
+      "blank": true,
+      "choices": [],
+      "min": null,
+      "max": null
     }
   },
   "MedicineListSerializer": {

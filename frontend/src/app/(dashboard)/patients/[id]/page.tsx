@@ -311,6 +311,14 @@ function PatientRecord() {
                 </div>
               );
             })}
+            {patient.general_notes && (
+              <div className="min-w-0 sm:col-span-2">
+                <dt className="text-sm text-text-muted">General notes</dt>
+                <dd className="whitespace-pre-wrap break-words">
+                  {patient.general_notes}
+                </dd>
+              </div>
+            )}
           </dl>
         </section>
       )}

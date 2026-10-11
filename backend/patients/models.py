@@ -46,6 +46,7 @@ class Patient(models.Model):
     whatsapp_number = models.CharField(max_length=15, blank=True, default="")
     email = models.EmailField(blank=True, default="")
     address = models.TextField(blank=True, default="")
+    general_notes = models.TextField(blank=True, default="")
     blood_group = models.CharField(
         max_length=5, blank=True, default="", choices=BLOOD_GROUP_CHOICES
     )
