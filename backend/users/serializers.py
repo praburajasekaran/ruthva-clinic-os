@@ -91,7 +91,7 @@ class PendingSignupSerializer(serializers.Serializer):
     """Validates signup initiation data (before OTP verification)."""
 
     first_name = serializers.CharField(max_length=150)
-    last_name = serializers.CharField(max_length=150, required=False, default="")
+    last_name = serializers.CharField(max_length=150, required=False, allow_blank=True, default="")
     email = serializers.EmailField()
     discipline = serializers.ChoiceField(choices=Clinic.DISCIPLINE_CHOICES)
 

@@ -5260,7 +5260,7 @@
       "nullable": false,
       "source": "last_name",
       "maxLength": 150,
-      "blank": false,
+      "blank": true,
       "choices": [],
       "min": null,
       "max": null

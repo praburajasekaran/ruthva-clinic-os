@@ -1552,6 +1552,7 @@ test("OTP expiry, attempt limit, single consumption, and onboarding", async () =
         method: "POST",
         body: {
           first_name: "Doctor",
+          last_name: "",
           email: signupEmail,
           discipline: "siddha",
         },
