@@ -15,6 +15,9 @@ type Props = {
   onChange: (value: string, medicine?: Medicine) => void;
   placeholder?: string;
   discipline?: Discipline;
+  id?: string;
+  required?: boolean;
+  className?: string;
 };
 
 export function MedicineAutocomplete({
@@ -22,6 +25,9 @@ export function MedicineAutocomplete({
   onChange,
   placeholder = "Type medicine name...",
   discipline,
+  id,
+  required,
+  className = "flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
 }: Props) {
   const [open, setOpen] = useState(false);
   const [activeSuggestion, setActiveSuggestion] =
@@ -87,9 +93,11 @@ export function MedicineAutocomplete({
     <div className="relative">
       <input
         ref={inputRef}
+        id={id}
+        required={required}
         type="text"
         role="combobox"
-        aria-label="Drug Name"
+        aria-label={id ? undefined : "Drug Name"}
         aria-expanded={showListbox}
         aria-controls={showListbox ? listboxId : undefined}
         aria-activedescendant={
@@ -146,7 +154,7 @@ export function MedicineAutocomplete({
           }
         }}
         placeholder={placeholder}
-        className="flex h-11 w-full rounded-lg border border-input bg-background px-3 py-2 text-base placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+        className={className}
       />
 
       {open && (suggestions.length > 0 || isLoading) && (
