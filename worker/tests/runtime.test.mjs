@@ -1292,6 +1292,130 @@ async function clinicalRecords(token, name = "Patient") {
     rx: rx.data,
   };
 }
+test("drug suggestion usage is clinic scoped, personalized by doctor, and counts saved prescriptions once", async () => {
+  const a = await signup("drug-usage-a");
+  const b = await signup("drug-usage-b");
+  const path = "/v1/pharmacy/medicine-suggestions/?search=choorarnam";
+  assert.equal((await request(path)).status, 401);
+  assert.deepEqual((await request(path, { token: a.access })).data, {
+    results: [],
+    usage: [],
+  });
+
+  const first = await clinicalRecords(a.access, "First drug usage");
+  const second = await clinicalRecords(a.access, "Second drug usage");
+  const foreign = await clinicalRecords(b.access, "Foreign drug usage");
+  const saveDrugs = async (token, rxId, names) => {
+    const result = await request(`/v1/prescriptions/${rxId}/`, {
+      token,
+      method: "PATCH",
+      body: { medications: names.map((drug_name) => ({ drug_name })) },
+    });
+    assert.equal(result.status, 200, JSON.stringify(result.data));
+  };
+  await saveDrugs(a.access, first.rx.id, [
+    "Nilavembu kudineer Choorarnam",
+    "NILAVEMBU-KUDINEER CHOORARNAM",
+    "Alpha Choorarnam",
+  ]);
+  await saveDrugs(a.access, second.rx.id, ["Nilavembu kudineer Choorarnam"]);
+  await saveDrugs(b.access, foreign.rx.id, ["Foreign Choorarnam"]);
+  // Represent a second doctor in the same clinic without an invitation quota dependency.
+  await db
+    .prepare(
+      `INSERT INTO users_user(id,username,email,password,first_name,last_name,is_superuser,is_staff,is_active,date_joined,role,is_clinic_owner,clinic_id,email_verified_at)
+    SELECT 999999987,'usage-colleague','usage-colleague@clinic.test',password,'Colleague','',0,0,1,date_joined,'doctor',0,clinic_id,email_verified_at FROM users_user WHERE id=?`,
+    )
+    .bind(a.user.id)
+    .run();
+  await db
+    .prepare(
+      "UPDATE consultations_consultation SET conducted_by_id=999999987 WHERE id=?",
+    )
+    .bind(second.consultation.id)
+    .run();
+  const result = await request(path, { token: a.access });
+  assert.equal(result.status, 200);
+  const usage = new Map(
+    result.data.usage.map((item) => [
+      item.name.toLowerCase().replace(/[^\p{L}\p{N}]/gu, ""),
+      item,
+    ]),
+  );
+  assert.equal(usage.size, 2);
+  assert.equal(usage.get("nilavembukudineerchoorarnam").clinic_count, 2);
+  assert.equal(usage.get("nilavembukudineerchoorarnam").doctor_count, 1);
+  assert.equal(usage.get("alphachoorarnam").doctor_count, 1);
+  assert.deepEqual((await request(path, { token: b.access })).data.usage, [
+    { name: "Foreign Choorarnam", doctor_count: 1, clinic_count: 1 },
+  ]);
+  assert.equal(
+    (await request(path, { token: a.access, slug: "drug-usage-b" })).status,
+    403,
+  );
+  await saveDrugs(a.access, first.rx.id, ["Beta Choorarnam"]);
+  const refreshed = (await request(path, { token: a.access })).data.usage;
+  assert.equal(
+    refreshed.find((item) => item.name === "Nilavembu kudineer Choorarnam")
+      .doctor_count,
+    0,
+  );
+  assert.ok(
+    refreshed.some(
+      (item) => item.name === "Beta Choorarnam" && item.doctor_count === 1,
+    ),
+  );
+  assert.ok(!refreshed.some((item) => item.name === "Alpha Choorarnam"));
+  for (let index = 0; index < 25; index++) {
+    const med = await request("/v1/pharmacy/medicines/", {
+      token: a.access,
+      method: "POST",
+      body: { name: `Clinic Choorarnam ${index}`, category: "tablet", dosage_form: "tablets" },
+    });
+    assert.equal(med.status, 201, JSON.stringify(med.data));
+  }
+  const inactive = await request("/v1/pharmacy/medicines/", {
+    token: a.access,
+    method: "POST",
+    body: { name: "Inactive Choorarnam", category: "tablet", dosage_form: "tablets", is_active: false },
+  });
+  assert.equal(inactive.status, 201);
+  const matches = await request(
+    "/v1/pharmacy/medicine-suggestions/?search=CLINIC-CHOORARNAM",
+    { token: a.access },
+  );
+  assert.equal(
+    matches.data.results.length,
+    25,
+    "all active matching stock entries reach ranking before the UI limit",
+  );
+  const fuzzyMedicine = await request("/v1/pharmacy/medicines/", {
+    token: a.access, method: "POST", body: { name: "Thiripala Chooranam", name_ta: "திரிபலா சூரணம்", brand_name: "Vatha Sura", category: "tablet", dosage_form: "tablets" },
+  });
+  assert.equal(fuzzyMedicine.status, 201, JSON.stringify(fuzzyMedicine.data));
+  for (const query of ["Thiribala", "tiripala", "tiribala", "Choornam", "sooranam", "soornam", "Vathasura", "Vadasura", "vadhasura", "திரிபலா"]) {
+    const fuzzy = await request(`/v1/pharmacy/medicine-suggestions/?search=${encodeURIComponent(query)}`, {token: a.access});
+    assert.equal(fuzzy.status, 200);
+    assert.ok(fuzzy.data.results.some(item => item.id === fuzzyMedicine.data.id), `${query} finds the active clinic medicine by name, Tamil name, or brand`);
+    assert.ok(!fuzzy.data.results.some(item => item.id === inactive.data.id));
+  }
+  for (const [name, query] of [["Sombu", "Sopmu"], ["Ashwagandha", "Ashwagnda"], ["Newly Listed Remedy", "newlylistedremdey"]]) {
+    const medicine = await request("/v1/pharmacy/medicines/", {
+      token: a.access, method: "POST", body: { name, category: "other", dosage_form: "tablets" },
+    });
+    assert.equal(medicine.status, 201, JSON.stringify(medicine.data));
+    const found = await request(`/v1/pharmacy/medicine-suggestions/?search=${query}`, {token: a.access});
+    assert.ok(found.data.results.some(item => item.id === medicine.data.id), `${query} finds a newly added clinic drug without an alias entry`);
+  }
+  assert.deepEqual(
+    (
+      await request("/v1/pharmacy/medicine-suggestions/?search=c", {
+        token: a.access,
+      })
+    ).data,
+    { results: [], usage: [] },
+  );
+});
 test("saved visits expose their prescription for repeatable completion review", async () => {
   const account = await signup("visit-completion");
   const patient = await request("/v1/patients/", {

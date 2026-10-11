@@ -26,6 +26,8 @@ import {
 } from "./data";
 import type { App, Ctx, DB, Row } from "./data";
 import { assertion } from "./auth";
+import { medicineUsage, normalizeMedicineName } from "./medicine-suggestions";
+import { medicineNameMatches } from "../../shared/medicine-search";
 
 export const clinical = new Hono<App>();
 const crud = new Hono<App>();
@@ -765,5 +767,38 @@ clinical.post("/pharmacy/dispensing/", async (c) => {
   }
   await dbOf(c).batch(statements);
   return c.json(await dispenseOutput(dbOf(c), created.row), 201);
+});
+clinical.get("/pharmacy/medicine-suggestions/", async (c) => {
+  const search = normalizeMedicineName(c.req.query("search") ?? "");
+  if (search.length < 2) return c.json({ results: [], usage: [] });
+  const db = dbOf(c),
+    clinicId = clinicOf(c);
+  const [medicines, history] = await Promise.all([
+    all(
+      db,
+      "SELECT * FROM pharmacy_medicine WHERE clinic_id=? AND is_active=1 ORDER BY name,id",
+      [clinicId],
+    ),
+    all(
+      db,
+      `SELECT DISTINCT m.drug_name,m.prescription_id,c.conducted_by_id
+      FROM prescriptions_prescription p
+      JOIN consultations_consultation c ON c.id=p.consultation_id AND c.clinic_id=p.clinic_id
+      JOIN prescriptions_medication m ON m.prescription_id=p.id
+      WHERE p.clinic_id=?`,
+      [clinicId],
+    ),
+  ]);
+  const matches = medicines.filter((medicine) =>
+    [medicine.name, medicine.name_ta, medicine.brand_name].some((name) =>
+      medicineNameMatches(String(name ?? ""), search),
+    ),
+  );
+  return c.json({
+    results: await Promise.all(
+      matches.map((row) => serialize(db, tables.medicines, row, false)),
+    ),
+    usage: medicineUsage(history, c.get("user").id),
+  });
 });
 clinical.route("/", crud);

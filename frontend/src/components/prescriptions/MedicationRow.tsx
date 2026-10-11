@@ -78,6 +78,7 @@ export function MedicationRow({
           <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.drugName.en}</Label>
           <MedicineAutocomplete
             value={data.drug_name}
+            discipline={discipline}
             onChange={(val: string, medicine?: Medicine) => {
               onChange("drug_name", val);
               onChange("medicine", medicine?.id ?? null);
