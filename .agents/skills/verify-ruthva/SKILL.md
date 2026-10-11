@@ -29,7 +29,7 @@ rtk npx --yes playwright@1.58.1 install chromium
 For agent-browser 0.9.1, `agent-browser install` can download a newer Playwright browser revision while the installed runtime still expects revision 1208. The pinned command above was exercised after that executable-missing failure. If using a different agent-browser version, match its installed Playwright runtime before downloading a browser.
 
 ```sh
-RUTHVA_CONTROL=.cursor/skills/verify-ruthva/scripts/control.mjs
+RUTHVA_CONTROL=.agents/skills/verify-ruthva/scripts/control.mjs
 RUTHVA_RUN="verify-$(rtk proxy date -u +%Y%m%d-%H%M%S)"
 ruthva_browser() { rtk node "$RUTHVA_CONTROL" browser "$RUTHVA_RUN" "$@"; }
 ruthva_capture() { rtk node "$RUTHVA_CONTROL" capture "$RUTHVA_RUN" "$@"; }
