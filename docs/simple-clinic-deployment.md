@@ -51,6 +51,16 @@ Frontend type and lint checks passed. Three synthetic browser tests passed: home
 
 The live prescription form showed all four shortcuts and the manual picker. Health and login endpoints returned HTTP 200 on both public origins. The production build contained no local test API URLs. Screenshots and smoke results are saved under the ignored `.audit/follow-up-date/` directory.
 
+## English interface labels
+
+Frontend version `682e3736-e0d9-4e05-bf40-62c615c20cca` was deployed on 11 October 2026. The previous frontend version is `1f14dadd-733b-4f8b-8cdc-fa8c06459f7a`. The API version, database, secrets, custom domain, and API service binding are unchanged.
+
+Prescription and visit form headings, field labels, Siddha assessment labels, dosha badges, medicine category and dosage options, and prescription print headings use English. The form also shows English frequency and timing choices without duplicate Tamil helper labels. Existing clinical data, including Tamil advice, instructions, diagnostic notes, medicine names, and recorded patient directions, are preserved.
+
+Frontend type and lint checks passed. Three existing synthetic browser tests passed: complete visits for new and returning patients, and follow-up date shortcuts. A synthetic prescription save preserved Tamil advice, instructions, frequency, timing, and its follow-up date. The print preview had English table headers and retained Tamil clinical advice. Manual prescription and Siddha checks found no Tamil labels. The mobile prescription form had no horizontal overflow at 390 pixels. Audit files are under the ignored `.audit/english-labels/` directory.
+
+The deployed prescription edit page showed English section headings and no Tamil labels. It was inspected without changing or saving patient information. Health and login endpoints returned HTTP 200 on both public origins. The production build contained no local test API URLs.
+
 ## Recovery
 
 The previous Worker version IDs are recorded above and in the ignored pre-release audit file. Restore those Worker versions if application rollback becomes necessary. Do not reverse D1 migrations as part of a Worker rollback. Keep the `ruthva.com` domain and private API service binding in place.
