@@ -270,7 +270,7 @@ export function ConsultationForm({
               />
             )}
           </FormField>
-          <FormField label="Temperature (\u00b0F)">
+          <FormField label="Temperature (°F)">
             {(props) => (
               <Input
                 {...props}
