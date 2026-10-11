@@ -5466,6 +5466,19 @@
       "choices": [],
       "min": null,
       "max": null
+    },
+    "qualifications": {
+      "type": "CharField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "qualifications",
+      "maxLength": 150,
+      "blank": true,
+      "choices": [],
+      "min": null,
+      "max": null
     }
   },
   "UserUpdateSerializer": {
@@ -5530,6 +5543,19 @@
       "source": "new_password",
       "maxLength": null,
       "blank": false,
+      "choices": [],
+      "min": null,
+      "max": null
+    },
+    "qualifications": {
+      "type": "CharField",
+      "required": false,
+      "readOnly": false,
+      "writeOnly": false,
+      "nullable": false,
+      "source": "qualifications",
+      "maxLength": 150,
+      "blank": true,
       "choices": [],
       "min": null,
       "max": null

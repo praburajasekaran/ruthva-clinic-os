@@ -38,6 +38,7 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
   const [email, setEmail] = useState(user.email);
+  const [qualifications, setQualifications] = useState(user.qualifications ?? "");
   const [isLoading, setIsLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -48,6 +49,7 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
     setSuccess(false);
 
     const payload: Record<string, string> = { first_name: firstName, last_name: lastName, email };
+    if (user.role === "doctor") payload.qualifications = qualifications;
 
     setIsLoading(true);
     try {
@@ -56,7 +58,7 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
       setSuccess(true);
     } catch (err) {
       const fieldErrors: Record<string, string> = {};
-      for (const field of ["first_name", "last_name", "email"]) {
+      for (const field of ["first_name", "last_name", "email", "qualifications"]) {
         const msg = extractError(err, field);
         if (msg) fieldErrors[field] = msg;
       }
@@ -95,6 +97,20 @@ function ProfileSection({ user, onSaved }: { user: UserType; onSaved: (u: UserTy
               )}
             </FormField>
           </div>
+          {user.role === "doctor" && (
+            <FormField label="Qualifications" hint="Shown below your name in the sidebar. For example: BSMS, BAMS, MD (S)." error={errors.qualifications}>
+              {(props) => (
+                <Input
+                  {...props}
+                  value={qualifications}
+                  onChange={(e) => setQualifications(e.target.value)}
+                  maxLength={150}
+                  placeholder="e.g. BSMS, MD (S)"
+                  hasError={!!errors.qualifications}
+                />
+              )}
+            </FormField>
+          )}
           <FormField label="Email" required error={errors.email}>
             {(props) => (
               <Input
@@ -713,7 +729,10 @@ export default function SettingsPage() {
         tabIndex={0}
         hidden={activeTab !== "profile"}
       >
-        <ProfileSection user={displayUser} onSaved={setLocalUser} />
+        <ProfileSection user={displayUser} onSaved={(savedUser) => {
+          setLocalUser(savedUser);
+          void refreshUser();
+        }} />
       </div>
 
       {user.is_clinic_owner && user.clinic && (

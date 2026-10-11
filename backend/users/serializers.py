@@ -147,7 +147,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             "id", "username", "email", "first_name", "last_name",
-            "role", "is_clinic_owner",
+            "role", "qualifications", "is_clinic_owner",
         ]
 
 
@@ -157,7 +157,7 @@ class UserUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ["first_name", "last_name", "email", "current_password", "new_password"]
+        fields = ["first_name", "last_name", "email", "qualifications", "current_password", "new_password"]
 
     def validate_email(self, value):
         user = self.instance
