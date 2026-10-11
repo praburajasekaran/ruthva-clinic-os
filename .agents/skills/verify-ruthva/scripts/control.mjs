@@ -25,7 +25,7 @@ const pause = (ms) => new Promise((done) => setTimeout(done, ms));
 const sourceFiles = ["frontend/src", "frontend/public", "frontend/package.json", "frontend/package-lock.json",
   "frontend/next.config.mjs", "frontend/tsconfig.json", "frontend/tailwind.config.ts",
   "frontend/postcss.config.mjs", "worker/src", "worker/migrations", "worker/package.json",
-  "worker/package-lock.json", "worker/wrangler.jsonc", "backend/fonts"];
+  "worker/package-lock.json", "worker/wrangler.jsonc", "shared", "backend/fonts"];
 
 function fingerprint() {
   const hash = createHash("sha256");
@@ -243,6 +243,7 @@ async function launch() {
     mkdirSync(web);
     for (const file of ["src", "public", "package.json", "next.config.mjs", "tsconfig.json", "tailwind.config.ts", "postcss.config.mjs"])
       cpSync(join(root, "frontend", file), join(web, file), { recursive: true });
+    cpSync(join(root, "shared"), join(scratch, "shared"), { recursive: true });
     symlinkSync(join(root, "frontend/node_modules"), join(web, "node_modules"), "dir");
     const log = openSync(join(evidence, "server.log"), "a");
     const child = spawn(process.execPath, [self, "serve", run], { cwd: root, detached: true, stdio: ["ignore", log, log] });
@@ -289,7 +290,7 @@ else if (command === "capture") {
   if (!/^[a-z0-9][a-z0-9-]*$/.test(label)) throw new Error("Data requires an optional evidence label.");
   const output = exec("rtk", ["proxy", "python3", "-c", `
 import json, pathlib, sqlite3, sys
-tables = ['clinics_clinic', 'users_user', 'patients_patient', 'consultations_consultation', 'prescriptions_prescription', 'prescriptions_medication', 'prescriptions_procedureentry', 'pharmacy_medicine', 'pharmacy_stockentry', 'pharmacy_dispensingrecord', 'pharmacy_dispensingitem', 'treatments_treatmentplan', 'treatments_treatmentblock', 'treatments_treatmentsession', 'treatments_sessionfeedback', 'treatments_doctoractiontask']
+tables = ['clinics_clinic', 'users_user', 'patients_patient', 'patients_medicalhistory', 'patients_familyhistory', 'consultations_consultation', 'prescriptions_prescription', 'prescriptions_medication', 'prescriptions_procedureentry', 'pharmacy_medicine', 'pharmacy_stockentry', 'pharmacy_dispensingrecord', 'pharmacy_dispensingitem', 'treatments_treatmentplan', 'treatments_treatmentblock', 'treatments_treatmentsession', 'treatments_sessionfeedback', 'treatments_doctoractiontask', 'contact_followup', 'contact_followup_event']
 result = {}
 for path in pathlib.Path(sys.argv[1]).rglob('*.sqlite'):
     db = sqlite3.connect(path.as_uri() + '?mode=ro', uri=True)
