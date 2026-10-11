@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { type FormEvent, useReducer } from "react";
+import { type FormEvent, useId, useReducer } from "react";
 import { Plus } from "lucide-react";
 import { addDays, format, isValid, parseISO } from "date-fns";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,7 @@ import { FormSection } from "@/components/forms/FormSection";
 import { MedicationRow } from "./MedicationRow";
 import { useMutation } from "@/hooks/useMutation";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { TherapyOptions } from "@/components/therapies/TherapyOptions";
 import {
   SECTION_LABELS,
   ADVICE_LABELS,
@@ -191,6 +192,7 @@ export function PrescriptionBuilder({
 }: PrescriptionBuilderProps) {
   const router = useRouter();
   const { user } = useAuth();
+  const therapyListId = useId();
   const discipline = user?.clinic?.discipline ?? "siddha";
   const isEdit = mode === "edit";
   const parsedVisitDate = consultationDate ? parseISO(consultationDate) : null;
@@ -316,6 +318,10 @@ export function PrescriptionBuilder({
 
       {/* Procedures */}
       <FormSection title={SECTION_LABELS.procedures.en} id="procedures">
+        <TherapyOptions id={therapyListId} />
+        <p className="mb-3 text-sm text-text-muted">
+          Choose a saved therapy or enter a new name. Save reusable names on the Therapies page.
+        </p>
         <div className="space-y-3">
           {state.procedures.map((proc, idx) => (
             <div
@@ -323,10 +329,13 @@ export function PrescriptionBuilder({
               className="grid gap-3 border-t border-border pt-5 sm:grid-cols-3"
             >
               <div>
-                <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                <label htmlFor={`${therapyListId}-${idx}`} className="mb-1 block text-xs font-medium text-muted-foreground">
                   Procedure Name
                 </label>
                 <Input
+                  id={`${therapyListId}-${idx}`}
+                  list={therapyListId}
+                  maxLength={255}
                   value={proc.name}
                   onChange={(e) =>
                     dispatch({

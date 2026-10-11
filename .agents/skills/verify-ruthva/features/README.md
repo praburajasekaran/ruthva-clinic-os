@@ -1,6 +1,6 @@
 # Ruthva verification map
 
-Read this index before a drive. These five feature groups cover the initial core clinic workflow. Each recipe lists user entry points separately; proof through one entry does not cover the others.
+Read this index before a drive. These seven feature groups cover the core clinic workflow, including the clinic navigation and assigned patient calls. Each recipe lists user entry points separately; proof through one entry does not cover the others.
 
 ## Baseline preconditions
 
@@ -24,9 +24,11 @@ Read this index before a drive. These five feature groups cover the initial core
 | Recipe | User behavior |
 | --- | --- |
 | [Account access](account-access.md) | Signup, OTP verification, onboarding, normal login, demo disciplines, logout, admin access, and clinic activation. |
-| [Patients](patients.md) | Register, choose a date of birth with calculated age, cancel, search, keyboard search, open, edit, archive. |
-| [Consultations and prescriptions](consultations-prescriptions.md) | Save a visit, create a prescription, reopen it, and display the print view. |
+| [Clinic navigation](clinic-navigation.md) | Home, start a visit, visit and prescription lists, and therapy-to-patient navigation. |
+| [Patients](patients.md) | Register, choose a date of birth with calculated age, cancel, search, keyboard search, record tabs, health history, edit, archive. |
+| [Consultations and prescriptions](consultations-prescriptions.md) | Save a visit, select medicines, set a follow-up date, review visit completion, and display the print view. |
 | [Treatment and follow-ups](treatment-followups.md) | Create plans from prescriptions, extend blocks, edit planned sessions, and inspect queues. |
+| [Patient calls](contact-followups.md) | Plan assigned contacts, record retry dates, ask and answer doctor questions, complete, and reopen. |
 | [Pharmacy](pharmacy.md) | Create a medicine, add stock, check its ledger, and dispense a prescription. |
 
 For one shared mutation pass, create the normal account and patient first. Then create and stock the pharmacy medicine before selecting it from the prescription autocomplete. Dispensing requires the saved catalog ID; matching a typed drug name is insufficient.
@@ -35,4 +37,4 @@ For one shared mutation pass, create the normal account and patient first. Then 
 
 The initial creation coverage is in [PROOF.md](../PROOF.md). Keep later maintenance results in ignored run notes. Recipe existence is not proof. Real SES delivery, Cloudflare service binding, Browser Rendering PDF, Ruthva integrations, and GitHub delivery are separate remote boundaries. The local harness blocks external API calls and captures SES calls.
 
-The account recipe includes admin access and clinic activation. Launch with `--admin-email verification-admin@clinic.test` for positive activation checks. Other user surfaces exist: Team/invitation acceptance, Settings, and patient CSV import and exports. They are outside this initial map; add recipes before claiming coverage for changes to them. Worker runtime tests supplement browser proof for tenant constraints, roles, quotas, stock rollback, and external contracts. Run `rtk npm --prefix worker test` when the changed behavior needs those guarantees.
+The account recipe includes admin access and clinic activation. Launch with `--admin-email verification-admin@clinic.test` for positive activation checks. Other user surfaces exist: Team/invitation acceptance, Settings and qualifications, patient CSV import and exports, WhatsApp handoffs, and the admin feedback inbox. They are outside this map; add recipes before claiming coverage for changes to them. AI patient-summary generation requires the remote AI binding; the local patient recipe covers the saved-details fallback. Worker runtime tests supplement browser proof for tenant constraints, roles, quotas, stock rollback, contact revisions, and external contracts. Run `rtk npm --prefix worker test` when the changed behavior needs those guarantees.
