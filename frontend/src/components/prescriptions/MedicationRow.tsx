@@ -3,7 +3,7 @@
 import { GripVertical, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/Input";
 import { PillGroup } from "@/components/ui/PillGroup";
-import { BilingualLabel } from "@/components/ui/BilingualLabel";
+import { Label } from "@/components/ui/Label";
 import { MedicineAutocomplete } from "@/components/pharmacy/MedicineAutocomplete";
 import {
   FREQUENCY_OPTIONS,
@@ -75,10 +75,7 @@ export function MedicationRow({
       <div className="space-y-4">
         {/* Drug Name — full width */}
         <div>
-          <BilingualLabel
-            english={MEDICATION_LABELS.drugName.en}
-            tamil={MEDICATION_LABELS.drugName.ta}
-          />
+          <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.drugName.en}</Label>
           <MedicineAutocomplete
             value={data.drug_name}
             onChange={(val: string, medicine?: Medicine) => {
@@ -91,10 +88,7 @@ export function MedicationRow({
 
         {/* Dosage + Unit + Duration */}
         <div>
-          <BilingualLabel
-            english={MEDICATION_LABELS.dosage.en}
-            tamil={MEDICATION_LABELS.dosage.ta}
-          />
+          <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.dosage.en}</Label>
           <div className="flex items-center gap-3">
             <Input
               type="text"
@@ -115,10 +109,7 @@ export function MedicationRow({
 
         {/* Duration */}
         <div className="sm:max-w-xs">
-          <BilingualLabel
-            english={MEDICATION_LABELS.duration.en}
-            tamil={MEDICATION_LABELS.duration.ta}
-          />
+          <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.duration.en}</Label>
           <Input
             value={data.duration}
             onChange={(e) => onChange("duration", e.target.value)}
@@ -129,10 +120,7 @@ export function MedicationRow({
         {/* Frequency + Timing — side by side on desktop */}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <BilingualLabel
-              english={MEDICATION_LABELS.frequency.en}
-              tamil={MEDICATION_LABELS.frequency.ta}
-            />
+            <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.frequency.en}</Label>
             <PillGroup
               options={FREQUENCY_OPTIONS.map((f) => ({ value: f.value, label: f.value }))}
               value={data.frequency}
@@ -146,17 +134,11 @@ export function MedicationRow({
             {data.frequency && (
               <p className="mt-1 text-xs text-muted-foreground">
                 {FREQUENCY_OPTIONS.find((f) => f.value === data.frequency)?.label}
-                {data.frequency_tamil && (
-                  <span lang="ta" className="ml-2">{data.frequency_tamil}</span>
-                )}
               </p>
             )}
           </div>
           <div>
-            <BilingualLabel
-              english={MEDICATION_LABELS.timing.en}
-              tamil={MEDICATION_LABELS.timing.ta}
-            />
+            <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.timing.en}</Label>
             <PillGroup
               options={TIMING_OPTIONS}
               value={data.timing}
@@ -167,20 +149,12 @@ export function MedicationRow({
               }}
               label="Timing"
             />
-            {data.timing_tamil && (
-              <p lang="ta" className="mt-1 text-xs text-muted-foreground">
-                {data.timing_tamil}
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Instructions — EN + Tamil side by side */}
+        {/* Instructions */}
         <div>
-          <BilingualLabel
-            english={MEDICATION_LABELS.instructions.en}
-            tamil={MEDICATION_LABELS.instructions.ta}
-          />
+          <Label className="mb-1.5 block text-foreground">{MEDICATION_LABELS.instructions.en}</Label>
           <Input
             value={data.instructions}
             onChange={(e) => onChange("instructions", e.target.value)}

@@ -6,7 +6,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { DatePicker } from "@/components/ui/DatePicker";
-import { BilingualLabel } from "@/components/ui/BilingualLabel";
+import { Label } from "@/components/ui/Label";
 import { FormField } from "@/components/forms/FormField";
 import { FormSection } from "@/components/forms/FormSection";
 import { DiagnosticFormRouter } from "./DiagnosticFormRouter";
@@ -227,7 +227,7 @@ export function ConsultationForm({
 
       {/* Vitals — always visible */}
       <FormSection
-        title={<BilingualLabel english={SECTION_LABELS.vitals.en} tamil={SECTION_LABELS.vitals.ta} as="span" variant="heading" />}
+        title={SECTION_LABELS.vitals.en}
         id="vitals"
       >
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
@@ -315,7 +315,7 @@ export function ConsultationForm({
       {/* General Assessment */}
       {(showAssessment || hasAssessmentData) && (
         <FormSection
-          title={<BilingualLabel english={SECTION_LABELS.generalAssessment.en} tamil={SECTION_LABELS.generalAssessment.ta} as="span" variant="heading" />}
+          title={SECTION_LABELS.generalAssessment.en}
           subtitle="Appetite, bowel, sleep, and mental state"
           id="general-assessment"
         >
@@ -323,14 +323,14 @@ export function ConsultationForm({
             <div className="grid gap-5 sm:grid-cols-2">
               {(
                 [
-                  { field: "appetite" as const, notesField: "appetite_notes" as const, label: ASSESSMENT_LABELS.appetite.en, labelTamil: ASSESSMENT_LABELS.appetite.ta },
-                  { field: "bowel" as const, notesField: "bowel_notes" as const, label: ASSESSMENT_LABELS.bowel.en, labelTamil: ASSESSMENT_LABELS.bowel.ta },
-                  { field: "micturition" as const, notesField: "micturition_notes" as const, label: ASSESSMENT_LABELS.micturition.en, labelTamil: ASSESSMENT_LABELS.micturition.ta },
-                  { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: ASSESSMENT_LABELS.sleep.en, labelTamil: ASSESSMENT_LABELS.sleep.ta },
+                  { field: "appetite" as const, notesField: "appetite_notes" as const, label: ASSESSMENT_LABELS.appetite.en },
+                  { field: "bowel" as const, notesField: "bowel_notes" as const, label: ASSESSMENT_LABELS.bowel.en },
+                  { field: "micturition" as const, notesField: "micturition_notes" as const, label: ASSESSMENT_LABELS.micturition.en },
+                  { field: "sleep_quality" as const, notesField: "sleep_notes" as const, label: ASSESSMENT_LABELS.sleep.en },
                 ] as const
-              ).map(({ field, notesField, label, labelTamil }) => (
+              ).map(({ field, notesField, label }) => (
                 <div key={field}>
-                  <BilingualLabel english={label} tamil={labelTamil} as="label" className="mb-2" />
+                  <Label className="mb-2 block text-foreground">{label}</Label>
                   <div className="flex gap-2" role="group" aria-label={`${label} status`}>
                     <button
                       type="button"
@@ -392,7 +392,7 @@ export function ConsultationForm({
       {/* Discipline-specific Diagnostics */}
       {(showDiagnostics || hasDiagnosticData) && (
         <FormSection
-          title={<BilingualLabel english={diagLabel.en} tamil={diagLabel.ta} as="span" variant="heading" />}
+          title={diagLabel.en}
           id="diagnostics"
         >
           <DiagnosticFormRouter
@@ -406,7 +406,7 @@ export function ConsultationForm({
       {/* Diagnosis */}
       {(showDiagnosis || hasDiagnosisData) && (
         <FormSection
-          title={<BilingualLabel english={SECTION_LABELS.diagnosis.en} tamil={SECTION_LABELS.diagnosis.ta} as="span" variant="heading" />}
+          title={SECTION_LABELS.diagnosis.en}
           id="diagnosis-section"
         >
           <div className="space-y-5">

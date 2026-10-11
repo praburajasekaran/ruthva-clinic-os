@@ -59,10 +59,7 @@ function EnvagaiDisplay({ data }: { data: Record<string, string> }) {
         return (
           <div key={key} className="rounded-lg border border-gray-100 p-3">
             <h4 className="text-heading-subsection text-gray-900">
-              {tool.label}{" "}
-              <span lang="ta" className="text-xs text-gray-400">
-                ({tool.labelTamil})
-              </span>
+              {tool.label}
             </h4>
             {hasData ? (
               <dl className="mt-2 space-y-1 text-xs">

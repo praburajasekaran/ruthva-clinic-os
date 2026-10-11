@@ -6,25 +6,12 @@ import { FREQUENCY_OPTIONS, TIMING_OPTIONS } from "@/lib/constants/envagai-optio
 import {
   PRINT_LABELS,
   ADVICE_LABELS,
-  MEDICATION_LABELS,
 } from "@/lib/constants/bilingual-labels";
 import { PrintTrigger } from "./PrintTrigger";
 import { useApi } from "@/hooks/useApi";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { QRCodeSVG } from "qrcode.react";
 import type { Prescription, Consultation, Patient } from "@/lib/types";
-
-function BilingualTh({ ta, en }: { ta: string; en: string }) {
-  return (
-    <>
-      <span>{en}</span>
-      <br />
-      <span lang="ta" className="text-[8pt] font-normal opacity-60">
-        {ta}
-      </span>
-    </>
-  );
-}
 
 export default function PrintPrescriptionPage() {
   const params = useParams<{ id: string }>();
@@ -252,27 +239,10 @@ export default function PrintPrescriptionPage() {
             <thead>
               <tr>
                 <th style={{ width: "28px" }}>#</th>
-                <th>
-                  <BilingualTh
-                    ta={MEDICATION_LABELS.drugName.ta}
-                    en="Medicine"
-                  />
-                </th>
-                <th>
-                  <BilingualTh ta={MEDICATION_LABELS.dosage.ta} en="Dosage" />
-                </th>
-                <th>
-                  <BilingualTh
-                    ta={MEDICATION_LABELS.frequency.ta}
-                    en="Frequency"
-                  />
-                </th>
-                <th>
-                  <BilingualTh
-                    ta={MEDICATION_LABELS.duration.ta}
-                    en="Duration"
-                  />
-                </th>
+                <th>Medicine</th>
+                <th>Dosage</th>
+                <th>Frequency</th>
+                <th>Duration</th>
               </tr>
             </thead>
             <tbody>
@@ -340,10 +310,7 @@ export default function PrintPrescriptionPage() {
           <p
             className="mb-1 text-[11pt] font-bold uppercase tracking-wide text-gray-900"
           >
-            {PRINT_LABELS.procedures.en}{" "}
-            <span className="text-[9pt] font-normal text-gray-400" lang="ta">
-              {PRINT_LABELS.procedures.ta}
-            </span>
+            {PRINT_LABELS.procedures.en}
           </p>
           <ul className="list-inside list-disc pl-1 text-[10pt]">
             {procedures.map((proc) => (
@@ -368,10 +335,7 @@ export default function PrintPrescriptionPage() {
           <p
             className="mb-1 text-[11pt] font-bold uppercase tracking-wide text-gray-900"
           >
-            {PRINT_LABELS.advice.en}{" "}
-            <span className="text-[9pt] font-normal text-gray-400" lang="ta">
-              {PRINT_LABELS.advice.ta}
-            </span>
+            {PRINT_LABELS.advice.en}
           </p>
           <div className="space-y-0.5 pl-1 text-[10pt]">
             {(prescription.diet_advice_ta || prescription.diet_advice) && (
