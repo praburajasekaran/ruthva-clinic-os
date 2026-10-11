@@ -1,0 +1,1 @@
+ALTER TABLE users_user ADD COLUMN qualifications VARCHAR(150) NOT NULL DEFAULT '';

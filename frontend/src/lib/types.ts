@@ -7,6 +7,7 @@ export type User = {
   email: string;
   first_name: string;
   last_name: string;
+  qualifications: string;
   role: UserRole;
   is_clinic_owner: boolean;
   clinic: ClinicInfo | null;

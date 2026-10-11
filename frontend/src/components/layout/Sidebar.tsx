@@ -226,7 +226,23 @@ export function Sidebar({ onMobileOpenChange }: SidebarProps) {
           <p className="truncate text-sm font-medium text-gray-900">
             {user?.first_name} {user?.last_name}
           </p>
-          <p className="truncate text-xs text-gray-500">{user?.role}</p>
+          {user?.role === "doctor" ? (
+            user.qualifications?.trim() ? (
+              <p className="break-words text-xs leading-relaxed text-gray-500">
+                {user.qualifications}
+              </p>
+            ) : (
+              <Link
+                href="/settings"
+                onClick={closeMobileMenu}
+                className="inline-flex min-h-11 items-center text-xs text-emerald-700 hover:underline md:min-h-0"
+              >
+                Add qualifications
+              </Link>
+            )
+          ) : (
+            <p className="text-xs text-gray-500">{user?.role}</p>
+          )}
         </div>
         <button
           type="button"

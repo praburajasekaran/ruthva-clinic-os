@@ -228,6 +228,22 @@
         "target": null,
         "min": null,
         "max": null
+      },
+      "qualifications": {
+        "column": "qualifications",
+        "type": "CharField",
+        "nullable": false,
+        "blank": true,
+        "maxLength": 150,
+        "decimalPlaces": null,
+        "maxDigits": null,
+        "choices": [],
+        "default": "",
+        "factory": null,
+        "auto": false,
+        "target": null,
+        "min": null,
+        "max": null
       }
     },
     "ordering": [

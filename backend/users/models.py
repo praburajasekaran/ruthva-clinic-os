@@ -20,6 +20,7 @@ class User(AbstractUser):
         blank=True,
     )
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="doctor")
+    qualifications = models.CharField(max_length=150, blank=True, default="")
     is_clinic_owner = models.BooleanField(default=False)
 
     class Meta:
