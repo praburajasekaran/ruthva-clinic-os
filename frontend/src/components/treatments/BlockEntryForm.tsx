@@ -1,6 +1,8 @@
 "use client";
 
 import { Plus, Trash2 } from "lucide-react";
+import { useId } from "react";
+import { TherapyOptions } from "@/components/therapies/TherapyOptions";
 import type { MediumType, SessionPlanEntry } from "@/lib/types";
 
 type Props = {
@@ -34,6 +36,7 @@ function computeCoveredDays(entries: SessionPlanEntry[], blockStartDay: number, 
 }
 
 export function BlockEntryForm({ blockStartDay, blockEndDay, entries, onChange }: Props) {
+  const therapyListId = useId();
   const updateEntry = (index: number, field: keyof SessionPlanEntry, value: string | number) => {
     onChange(entries.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
   };
@@ -63,6 +66,7 @@ export function BlockEntryForm({ blockStartDay, blockEndDay, entries, onChange }
 
   return (
     <div className="space-y-3">
+      <TherapyOptions id={therapyListId} />
       <div className="flex items-center justify-between">
         <h4 className="text-heading-subsection text-gray-700">Procedures</h4>
         <button
@@ -137,14 +141,18 @@ export function BlockEntryForm({ blockStartDay, blockEndDay, entries, onChange }
 
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="col-span-2 sm:col-span-1">
-              <label className="block text-xs font-medium text-gray-600">Procedure</label>
+              <label htmlFor={`${therapyListId}-${idx}`} className="block text-xs font-medium text-gray-600">Procedure</label>
               <input
+                id={`${therapyListId}-${idx}`}
+                list={therapyListId}
+                maxLength={255}
                 type="text"
                 value={entry.procedure_name}
                 onChange={(e) => updateEntry(idx, "procedure_name", e.target.value)}
                 placeholder="e.g. Abhyanga"
                 className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-emerald-500 focus:ring-emerald-500"
               />
+              <p className="mt-1 text-xs text-gray-500">Choose a saved therapy or enter a new name.</p>
             </div>
             <div>
               <label className="block text-xs font-medium text-gray-600">Medium</label>
