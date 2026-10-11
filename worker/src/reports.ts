@@ -4,9 +4,12 @@ import {
   check,
   clinicOf,
   dbOf,
+  flag,
   num,
   one,
   owner,
+  record,
+  stmt,
   str,
   today,
 } from "./data";
@@ -26,8 +29,26 @@ reports.get("/therapies/", async (c) => {
     const results = await all(db, `WITH activity AS (${therapyRecords}) SELECT p.id patient_id,p.name patient_name,p.record_id,max(a.activity_date) last_activity,count(*) activity_count FROM activity a JOIN patients_patient p ON p.id=a.patient_id WHERE p.clinic_id=? AND ${condition} GROUP BY p.id ORDER BY last_activity DESC,p.id LIMIT 20 OFFSET ?`, [clinic, clinic, clinic, name, (page - 1) * 20]);
     return c.json({ name, count: count?.count ?? 0, results });
   }
-  const results = await all(db, `WITH activity AS (${therapyRecords}) SELECT min(trim(name)) name,count(DISTINCT patient_id) patient_count,max(activity_date) last_activity FROM activity WHERE trim(name)<>'' GROUP BY lower(trim(name)) ORDER BY name`, [clinic, clinic]);
+  const results = await all(db, `WITH activity AS (${therapyRecords} UNION ALL SELECT NULL patient_id,name,NULL activity_date FROM clinic_therapy WHERE clinic_id=?) SELECT coalesce(min(CASE WHEN patient_id IS NULL THEN trim(name) END),min(trim(name))) name,count(DISTINCT patient_id) patient_count,max(activity_date) last_activity FROM activity WHERE trim(name)<>'' GROUP BY lower(trim(name)) ORDER BY name`, [clinic, clinic, clinic]);
   return c.json({ results });
+});
+reports.post("/therapies/", async (c) => {
+  const user = c.get("user");
+  check(
+    user.role === "doctor" || flag(user, "is_clinic_owner"),
+    "Only clinic owners and doctors can add therapies.",
+    403,
+  );
+  const body = record(await c.req.json());
+  const name = str(body, "name").trim();
+  check(name.length > 0 && name.length <= 255, "Enter a therapy name of at most 255 characters.");
+  const result = await stmt(
+    dbOf(c),
+    "INSERT INTO clinic_therapy (clinic_id,name) VALUES (?,?) ON CONFLICT DO NOTHING",
+    [clinicOf(c), name],
+  ).run();
+  check(result.meta.changes === 1, "This therapy is already saved for your clinic.", 409);
+  return c.json({ id: result.meta.last_row_id, name }, 201);
 });
 reports.get("/dashboard/stats/", async (c) => {
   const date = today(),

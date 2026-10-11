@@ -1,13 +1,19 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { type FormEvent, Suspense, useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useApi } from "@/hooks/useApi";
+import { useMutation } from "@/hooks/useMutation";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { Spinner } from "@/components/ui/Spinner";
-type Therapy = { name: string; patient_count: number; last_activity: string };
+import { Input } from "@/components/ui/Input";
+type Therapy = {
+  name: string;
+  patient_count: number;
+  last_activity: string | null;
+};
 type TherapyPatient = {
   patient_id: number;
   patient_name: string;
@@ -20,23 +26,121 @@ function Therapies() {
   const name = useSearchParams().get("name");
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const { data: therapies, error: listError } = useApi<{ results: Therapy[] }>(
-    name ? null : "/therapies/",
+  const [isAdding, setIsAdding] = useState(false);
+  const [therapyName, setTherapyName] = useState("");
+  const [savedName, setSavedName] = useState("");
+  const {
+    mutate,
+    error: saveError,
+    isLoading: isSaving,
+    reset,
+  } = useMutation<{ name: string }, { id: number; name: string }>(
+    "post",
+    "/therapies/",
   );
+  const canAdd =
+    (user?.role === "doctor" || user?.is_clinic_owner) &&
+    user?.email !== "demo@ruthva.com";
+  const {
+    data: therapies,
+    error: listError,
+    isLoading,
+    refetch,
+  } = useApi<{ results: Therapy[] }>(name ? null : "/therapies/");
   const { data: patients, error: patientError } = useApi<{
     count: number;
     results: TherapyPatient[];
   }>(name ? `/therapies/?name=${encodeURIComponent(name)}&page=${page}` : null);
+
+  async function addTherapy(event: FormEvent) {
+    event.preventDefault();
+    const saved = await mutate({ name: therapyName.trim() });
+    if (!saved) return;
+    setSavedName(saved.name);
+    setTherapyName("");
+    setSearch("");
+    setIsAdding(false);
+    await refetch();
+  }
+
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-heading-page">{name || "Therapies"}</h1>
-        <p className="mt-2 text-text-secondary">
-          {name
-            ? "Patients with recorded sessions or prescribed procedures."
-            : "Open a therapy to see the patients and their records."}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-heading-page">{name || "Therapies"}</h1>
+          <p className="mt-2 text-text-secondary">
+            {name
+              ? "Patients with recorded sessions or prescribed procedures."
+              : "Save your clinic's therapies and open a therapy to see its patient records."}
+          </p>
+        </div>
+        {!name && canAdd && !isAdding && (
+          <Button
+            onClick={() => {
+              reset();
+              setSavedName("");
+              setIsAdding(true);
+            }}
+          >
+            Add therapy
+          </Button>
+        )}
       </div>
+      {!name && isAdding && (
+        <form
+          onSubmit={addTherapy}
+          className="max-w-lg space-y-4 rounded-2xl border border-border bg-white p-6"
+        >
+          <div>
+            <label htmlFor="therapy-name" className="mb-2 block font-medium">
+              Therapy name
+            </label>
+            <Input
+              id="therapy-name"
+              value={therapyName}
+              onChange={(event) => {
+                setTherapyName(event.target.value);
+                reset();
+              }}
+              placeholder="e.g. Varmam Therapy"
+              maxLength={255}
+              required
+              autoFocus
+              disabled={isSaving}
+            />
+            <p className="mt-2 text-sm text-text-muted">
+              Available to your clinic in prescriptions and treatment plans.
+            </p>
+          </div>
+          {saveError && (
+            <p role="alert" className="text-sm text-destructive">
+              {saveError.detail || "Could not save the therapy."}
+            </p>
+          )}
+          <div className="flex gap-3">
+            <Button type="submit" disabled={isSaving || !therapyName.trim()}>
+              {isSaving ? "Saving..." : "Save therapy"}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={isSaving}
+              onClick={() => {
+                setIsAdding(false);
+                setTherapyName("");
+                reset();
+              }}
+            >
+              Cancel
+            </Button>
+          </div>
+        </form>
+      )}
+      {!name && savedName && (
+        <p role="status" className="text-brand-700">
+          {savedName} was added to your clinic&apos;s therapies.
+        </p>
+      )}
       <div className="flex flex-wrap gap-4">
         {name && (
           <Link
@@ -82,18 +186,28 @@ function Therapies() {
                 <h2 className="text-heading-section">{t.name}</h2>
                 <p className="mt-3 text-sm text-text-muted">
                   {t.patient_count} patient{t.patient_count === 1 ? "" : "s"} ·
-                  Latest activity {t.last_activity}
+                  {t.last_activity
+                    ? `Latest activity ${t.last_activity}`
+                    : "No patient activity yet"}
                 </p>
               </Link>
             ))}
           {!therapies.results.length && (
             <p className="text-text-muted">
-              Therapies will appear here when a procedure or session is
-              recorded.
+              {canAdd
+                ? "Add your clinic's first therapy. Therapies also appear when a procedure or session is recorded."
+                : "Therapies appear here when your clinic adds one or records a procedure or session."}
             </p>
           )}
+          {!!therapies.results.length &&
+            !therapies.results.some((therapy) =>
+              therapy.name.toLowerCase().includes(search.toLowerCase()),
+            ) && (
+              <p className="text-text-muted">No therapies match your search.</p>
+            )}
         </div>
       )}
+      {!name && isLoading && !therapies && <Spinner />}
       {name && patients && (
         <div className="divide-y divide-border rounded-2xl border border-border bg-white">
           {patients.results.map((p) => (

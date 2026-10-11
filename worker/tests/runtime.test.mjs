@@ -2230,6 +2230,60 @@ test("therapy records group case variants and link only patients in the current 
   assert.ok(!JSON.stringify(detail.data).includes("Therapy patient B"));
 });
 
+test("clinic owners and doctors save reusable therapies without patient activity", async () => {
+  const account = await signup("custom-therapy"), other = await signup("custom-therapy-other");
+  const token = account.access;
+  const create = (name, actor = token, extra = {}) => request("/v1/therapies/", {
+    token: actor, method: "POST", body: { name, ...extra },
+  });
+  assert.equal((await request("/v1/therapies/", { method: "POST", body: { name: "Private" } })).status, 401);
+  for (const invalid of ["", "   ", "x".repeat(256), 123, null]) {
+    assert.equal((await create(invalid)).status, 400);
+  }
+  assert.equal((await request("/v1/therapies/", { token, method: "POST", body: [] })).status, 400);
+  const saved = await create("  Custom Varmam  ", token, { clinic_id: other.clinic.id });
+  assert.equal(saved.status, 201, JSON.stringify(saved.data));
+  assert.equal(saved.data.name, "Custom Varmam");
+  assert.ok(saved.data.id > 0);
+  assert.deepEqual((await request("/v1/therapies/", { token })).data.results, [
+    { name: "Custom Varmam", patient_count: 0, last_activity: null },
+  ]);
+  assert.deepEqual((await request("/v1/therapies/", { token: other.access })).data.results, []);
+  assert.equal((await create(" custom varmam ")).status, 409);
+  assert.equal((await create("Custom Varmam", other.access)).status, 201);
+  assert.equal((await request("/v1/therapies/?name=Custom%20Varmam", { token })).data.count, 0);
+  const concurrent = await Promise.all([create("Concurrent Therapy"), create(" concurrent therapy ")]);
+  assert.deepEqual(concurrent.map((result) => result.status).sort(), [201, 409]);
+  const tamil = await create("வர்ம சிகிச்சை");
+  assert.equal(tamil.status, 201, JSON.stringify(tamil.data));
+  const owner = await db.prepare("SELECT * FROM users_user WHERE id=?").bind(account.user.id).first();
+  for (const [role, isOwner, expected] of [["doctor", 0, 201], ["admin", 0, 403], ["therapist", 0, 403], ["admin", 1, 201]]) {
+    const copy = { ...owner, username: `therapy-${role}-${isOwner}`, email: `therapy-${role}-${isOwner}@clinic.test`, role, is_clinic_owner: isOwner };
+    delete copy.id;
+    const keys = Object.keys(copy);
+    await db.prepare(`INSERT INTO users_user (${keys.join(",")}) VALUES (${keys.map(() => "?").join(",")})`).bind(...Object.values(copy)).run();
+    const logged = await request("/v1/auth/token/", { method: "POST", body: { username: copy.username, password: "ClinicTestPass123" } });
+    assert.equal(logged.status, 200, JSON.stringify(logged.data));
+    assert.equal((await create(`${role}-${isOwner} Therapy`, logged.data.access)).status, expected);
+    assert.ok((await request("/v1/therapies/", { token: logged.data.access })).data.results.some((therapy) => therapy.name === "Custom Varmam"));
+  }
+  const records = await clinicalRecords(token, "Custom therapy patient");
+  const changed = await request(`/v1/prescriptions/${records.rx.id}/`, {
+    token, method: "PATCH", body: { procedures: [{ name: "custom varmam" }] },
+  });
+  assert.equal(changed.status, 200, JSON.stringify(changed.data));
+  const activity = (await request("/v1/therapies/", { token })).data.results.filter((therapy) => therapy.name.toLowerCase() === "custom varmam");
+  assert.deepEqual(activity, [{ name: "Custom Varmam", patient_count: 1, last_activity: records.consultation.consultation_date }]);
+  const detail = await request("/v1/therapies/?name=Custom%20Varmam", { token });
+  assert.equal(detail.data.count, 1);
+  assert.equal(detail.data.results[0].patient_id, records.patient.id);
+  const persisted = await db.prepare("SELECT clinic_id,name FROM clinic_therapy WHERE id=?").bind(saved.data.id).first();
+  assert.deepEqual(persisted, { clinic_id: account.clinic.id, name: "Custom Varmam" });
+  await request("/v1/auth/request-otp/", { method: "POST", body: { email: "demo@ruthva.com" } });
+  const demo = await request("/v1/auth/verify-otp/", { method: "POST", body: { email: "demo@ruthva.com", code: "123456" } });
+  assert.equal((await create("Demo Therapy", demo.data.access)).status, 403);
+});
+
 test("contact follow-ups persist ownership, retries, doctor replies and atomic concurrent attempts", async () => {
   const account = await signup("contact-clinic"), other = await signup("contact-other");
   const token = account.access, records = await clinicalRecords(token);
