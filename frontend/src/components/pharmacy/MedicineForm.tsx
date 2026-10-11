@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { X } from "lucide-react";
 import { pharmacyApi } from "@/lib/api";
+import { useAuth } from "@/components/auth/AuthProvider";
+import { MedicineAutocomplete } from "./MedicineAutocomplete";
 import type { Medicine, MedicineCategory, DosageForm } from "@/lib/types";
 
 const CATEGORY_OPTIONS: { value: MedicineCategory; label: string }[] = [
@@ -47,6 +49,8 @@ type Props = {
 };
 
 export function MedicineForm({ medicine, onClose, onSaved }: Props) {
+  const { user } = useAuth();
+  const nameId = useId();
   const isEdit = !!medicine;
   const [form, setForm] = useState({
     name: medicine?.name ?? "",
@@ -109,12 +113,13 @@ export function MedicineForm({ medicine, onClose, onSaved }: Props) {
 
       <form onSubmit={handleSubmit} className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium text-gray-700">Name *</label>
-          <input
-            type="text"
+          <label htmlFor={nameId} className="mb-1 block text-sm font-medium text-gray-700">Name *</label>
+          <MedicineAutocomplete
+            id={nameId}
             required
             value={form.name}
-            onChange={(e) => update("name", e.target.value)}
+            discipline={user?.clinic?.discipline}
+            onChange={(name) => update("name", name)}
             className="w-full rounded-lg border px-3 py-2 text-sm focus-visible:border-emerald-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2"
           />
         </div>
