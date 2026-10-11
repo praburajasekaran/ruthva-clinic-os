@@ -1,6 +1,7 @@
 {
   "private": true,
   "scripts": {
+    "test:medicine-autocomplete": "node --test scripts/tests/medicine-autocomplete.test.mjs",
     "test:visit-completion": "npm --prefix worker run build && playwright test --config scripts/visit-completion.config.mjs",
     "prepare": "husky",
     "dev": "node scripts/dev.mjs",
