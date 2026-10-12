@@ -269,7 +269,7 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
       onSaved();
     } catch (err) {
       const fieldErrors: Record<string, string> = {};
-      for (const field of ["name", "address", "phone", "email", "tagline", "paper_size", "logo_url", "primary_color"]) {
+      for (const field of ["name", "address", "phone", "email", "tagline", "paper_size", "logo_url", "primary_color", "letterhead_mode", "top_margin_mm", "bottom_margin_mm", "google_review_url"]) {
         const msg = extractError(err, field);
         if (msg) fieldErrors[field] = msg;
       }
@@ -490,7 +490,7 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
               </Select>
             )}
           </FormField>
-          <FormField label="Prescription letterhead" hint="Controls whether your logo and clinic details appear on printed prescriptions.">
+          <FormField label="Prescription letterhead" hint="Choose Pre-printed to turn off the clinic header and logo when using your own letterhead." error={errors.letterhead_mode}>
             {(props) => (
               <Select
                 {...props}
@@ -503,32 +503,42 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
                 }}
                 className="max-w-[320px]"
               >
-                <option value="digital">Digital — logo + clinic details printed</option>
-                <option value="preprinted">Pre-printed — blank header for stationery</option>
+                <option value="digital">Digital (print clinic header and logo)</option>
+                <option value="preprinted">Pre-printed (turn off clinic header and logo)</option>
               </Select>
             )}
           </FormField>
+          {letterheadMode === "preprinted" && (
+            <p className="text-sm text-gray-600">
+              The clinic header and logo will be hidden on paper and in downloaded PDFs.
+              Adjust the top margin to leave room for your stationery header.
+              In the browser print dialog, turn off Headers and footers and use 100% scale.
+              Print one sample on your letterhead to check the position.
+            </p>
+          )}
           <div className="grid gap-4 sm:grid-cols-2">
-            <FormField label="Top margin" hint="mm — space above content">
+            <FormField label="Top margin" hint="Millimetres of space above the prescription. Allowed range is 5 to 100." error={errors.top_margin_mm}>
               {(props) => (
                 <Input
                   {...props}
                   type="number"
                   min={5}
                   max={100}
+                  hasError={!!errors.top_margin_mm}
                   value={topMarginMm}
                   onChange={(e) => setTopMarginMm(Number(e.target.value))}
                   className="max-w-[120px]"
                 />
               )}
             </FormField>
-            <FormField label="Bottom margin" hint="mm — space below content">
+            <FormField label="Bottom margin" hint="Millimetres of space below the prescription. Allowed range is 5 to 100." error={errors.bottom_margin_mm}>
               {(props) => (
                 <Input
                   {...props}
                   type="number"
                   min={5}
                   max={100}
+                  hasError={!!errors.bottom_margin_mm}
                   value={bottomMarginMm}
                   onChange={(e) => setBottomMarginMm(Number(e.target.value))}
                   className="max-w-[120px]"
@@ -536,7 +546,7 @@ function ClinicSection({ clinic, onSaved }: { clinic: ClinicInfo; onSaved: () =>
               )}
             </FormField>
           </div>
-          <FormField label="Google Review URL" hint="QR code will appear on prescriptions when set.">
+          <FormField label="Google Review URL" hint="QR code will appear on prescriptions when set." error={errors.google_review_url}>
             {(props) => (
               <Input
                 {...props}
